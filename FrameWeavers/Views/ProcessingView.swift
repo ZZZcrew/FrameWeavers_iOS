@@ -1,22 +1,12 @@
 import SwiftUI
 
-/// 处理视图 - 遵循MVVM架构的主视图
+/// 处理视图 - 遵循MVVM架构，只负责UI展示
 struct ProcessingView: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject var viewModel: VideoUploadViewModel
-    @ObservedObject var galleryViewModel: ProcessingGalleryViewModel
-    @State private var navigateToResults = false
+    @Environment(VideoUploadViewModel.self) private var viewModel
+    @State private var galleryViewModel = ProcessingGalleryViewModel()
     @State private var frames: [String: CGRect] = [:]
     @Namespace private var galleryNamespace
-
-    /// 初始化处理视图
-    /// - Parameters:
-    ///   - viewModel: 视频上传视图模型
-    ///   - galleryViewModel: 画廊视图模型，如果不提供则创建新实例
-    init(viewModel: VideoUploadViewModel, galleryViewModel: ProcessingGalleryViewModel? = nil) {
-        self.viewModel = viewModel
-        self.galleryViewModel = galleryViewModel ?? ProcessingGalleryViewModel()
-    }
     
     // 定时器
     let scrollTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
@@ -79,39 +69,21 @@ struct ProcessingView: View {
             self.frames.merge(value, uniquingKeysWith: { $1 })
         }
         .onReceive(scrollTimer) { _ in
-            // 在所有等待状态下都播放滚动动画
-            if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed {
-                galleryViewModel.currentScrollIndex += 1
-            }
+            handleScrollTimer()
         }
         .onReceive(jumpTimer) { _ in
-            // 只有在有基础帧数据时才播放跳跃动画
-            if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed && !viewModel.baseFrames.isEmpty {
-                withAnimation(.easeInOut(duration: 1.2)) {
-                    galleryViewModel.triggerJumpAnimation(from: frames)
-                }
-            }
+            handleJumpTimer()
         }
         .onAppear {
-            if viewModel.uploadStatus == .pending {
-                viewModel.uploadVideo()
-            }
+            handleViewAppear()
         }
         .onChange(of: viewModel.uploadStatus) { _, newStatus in
-            if newStatus == .completed {
-                DispatchQueue.main.asyncAfter(deadline: .now()) { // + 10
-                    navigateToResults = true
-                }
-            }
+            handleStatusChange(newStatus)
         }
         .onChange(of: viewModel.baseFrames) { _, newFrames in
-            print("🔄 ProcessingView: baseFrames 发生变化, 数量: \(newFrames.count)")
-            if !newFrames.isEmpty {
-                print("🎯 设置基础帧到 galleryViewModel")
-                galleryViewModel.setBaseFrames(newFrames)
-            }
+            handleBaseFramesChange(newFrames)
         }
-        .navigationDestination(isPresented: $navigateToResults) {
+        .navigationDestination(isPresented: .constant(viewModel.uploadStatus == .completed && viewModel.comicResult != nil)) {
             if let result = viewModel.comicResult {
                 OpenResultsView(comicResult: result)
             }
@@ -140,13 +112,21 @@ extension ProcessingView {
                 mainImageName: galleryViewModel.mainImageName,
                 stackedImages: galleryViewModel.stackedImages,
                 namespace: galleryNamespace,
-                galleryViewModel: galleryViewModel
+                baseFrames: galleryViewModel.baseFrameDataMap,
+                hideSourceImageId: galleryViewModel.hideSourceImageId
             )
                 .anchorPreference(key: FramePreferenceKey.self, value: .bounds) { anchor in
                     return ["photoStackTarget": self.frames(from: anchor)]
                 }
 
-            FilmstripView(galleryViewModel: galleryViewModel, uploadViewModel: viewModel, namespace: galleryNamespace)
+            FilmstripView(
+                imageNames: galleryViewModel.imageNames,
+                loopedImageNames: galleryViewModel.loopedImageNames,
+                hideSourceImageId: galleryViewModel.hideSourceImageId,
+                baseFrames: galleryViewModel.baseFrameDataMap,
+                namespace: galleryNamespace,
+                scrollOffset: galleryViewModel.scrollOffset
+            )
 
             // 统一的进度条显示，在所有等待状态下都显示
             ProcessingLoadingView(progress: viewModel.uploadProgress, status: viewModel.uploadStatus)
@@ -162,6 +142,50 @@ extension ProcessingView {
         // 这个方法主要用于PhotoStackView的target frame
         return CGRect(x: UIScreen.main.bounds.midX - 150, y: 100, width: 300, height: 200)
     }
+
+    // MARK: - 事件处理方法
+
+    /// 处理滚动定时器事件
+    private func handleScrollTimer() {
+        // 在所有等待状态下都播放滚动动画
+        if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed {
+            galleryViewModel.currentScrollIndex += 1
+        }
+    }
+
+    /// 处理跳跃动画定时器事件
+    private func handleJumpTimer() {
+        // 只有在有基础帧数据时才播放跳跃动画
+        if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed && !viewModel.baseFrames.isEmpty {
+            withAnimation(.easeInOut(duration: 1.2)) {
+                galleryViewModel.triggerJumpAnimation(from: frames)
+            }
+        }
+    }
+
+    /// 处理视图出现事件
+    private func handleViewAppear() {
+        if viewModel.uploadStatus == .pending {
+            viewModel.uploadVideo()
+        }
+    }
+
+    /// 处理状态变化
+    /// - Parameter newStatus: 新的上传状态
+    private func handleStatusChange(_ newStatus: UploadStatus) {
+        // 状态变化的处理逻辑已经移到ViewModel中
+        // 这里只保留必要的UI响应
+    }
+
+    /// 处理基础帧数据变化
+    /// - Parameter newFrames: 新的基础帧数据
+    private func handleBaseFramesChange(_ newFrames: [BaseFrameData]) {
+        print("🔄 ProcessingView: baseFrames 发生变化, 数量: \(newFrames.count)")
+        if !newFrames.isEmpty {
+            print("🎯 设置基础帧到 galleryViewModel")
+            galleryViewModel.setBaseFrames(newFrames)
+        }
+    }
 }
 
 // MARK: - Preview
@@ -171,6 +195,7 @@ struct ProcessingView_Previews: PreviewProvider {
         let viewModel = VideoUploadViewModel()
         viewModel.uploadStatus = .processing
         viewModel.uploadProgress = 0.5
-        return ProcessingView(viewModel: viewModel)
+        return ProcessingView()
+            .environment(viewModel)
     }
 }
