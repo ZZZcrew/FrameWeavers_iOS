@@ -1,11 +1,10 @@
 import SwiftUI
 
+/// 选择故事风格视图 - 遵循MVVM架构，只负责UI展示
 struct SelectStyleView: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject var viewModel: VideoUploadViewModel
-    @State private var selectedStyle: String = ""
-    @State private var navigateToProcessing = false
-    @StateObject private var galleryViewModel = ProcessingGalleryViewModel()
+    @Environment(VideoUploadViewModel.self) private var viewModel
+    @State private var galleryViewModel = ProcessingGalleryViewModel()
     
     // 定义故事风格
     private let storyStyles = [
@@ -44,7 +43,7 @@ struct SelectStyleView: View {
                             (x: 360, y: 220)   // 右下象限右上角
                         ]
                         
-                        let pinIndex = selectedStyle.isEmpty ? 1 : (storyStyles.firstIndex { $0.0 == selectedStyle } ?? 1)
+                        let pinIndex = viewModel.selectedStyle.isEmpty ? 1 : (storyStyles.firstIndex { $0.0 == viewModel.selectedStyle } ?? 1)
                         Image("图钉")
                             .resizable()
                             .scaledToFit()
@@ -58,18 +57,18 @@ struct SelectStyleView: View {
                             (x: 110, y: 290),  // 左下
                             (x: 290, y: 290)   // 右下
                         ]
-                        
+
                         ForEach(Array(storyStyles.enumerated()), id: \.offset) { index, style in
                             let styleKey = style.0
                             let styleText = style.1
-                            
+
                             Button(action: {
-                                selectedStyle = styleKey
+                                viewModel.selectStyle(styleKey)
                             }) {
                                 Text(styleText)
                                     .font(.custom("WSQuanXing", size: 24))
                                     .fontWeight(.bold)
-                                    .foregroundColor(selectedStyle == styleKey ? Color(hex: "#FF6B35") : Color(hex: "#855C23"))
+                                    .foregroundColor(viewModel.selectedStyle == styleKey ? Color(hex: "#FF6B35") : Color(hex: "#855C23"))
                             }
                             .position(x: CGFloat(positions[index].x), y: CGFloat(positions[index].y))
                         }
@@ -80,7 +79,7 @@ struct SelectStyleView: View {
 
                     // 开始生成按钮
                     Button(action: {
-                        startGeneration()
+                        _ = viewModel.startGeneration()
                     }) {
                         ZStack {
                             Image("翻开画册")
@@ -92,14 +91,14 @@ struct SelectStyleView: View {
                                 .font(.custom("WSQuanXing", size: 24))
                                 .fontWeight(.bold)
                                 .foregroundColor(
-                                    selectedStyle.isEmpty ?
+                                    viewModel.selectedStyle.isEmpty ?
                                         Color(hex: "#CCCCCC") :
                                         Color(hex: "#855C23")
                                 )
                         }
                     }
-                    .disabled(selectedStyle.isEmpty)
-                    .opacity(selectedStyle.isEmpty ? 0.6 : 1.0)
+                    .disabled(viewModel.selectedStyle.isEmpty)
+                    .opacity(viewModel.selectedStyle.isEmpty ? 0.6 : 1.0)
                     
                     // // 显示已选择的视频数量
                     // Text("已选择 \(viewModel.selectedVideos.count) 个视频")
@@ -112,8 +111,10 @@ struct SelectStyleView: View {
                     //     .foregroundColor(.gray)
                 }
             }
-            .navigationDestination(isPresented: $navigateToProcessing) {
-                ProcessingView(viewModel: viewModel, galleryViewModel: galleryViewModel)
+            .navigationDestination(isPresented: .constant(viewModel.shouldNavigateToProcessing)) {
+                ProcessingView()
+                    .environment(viewModel)
+                    .environment(galleryViewModel)
             }
             .navigationBarBackButtonHidden(true)
             .toolbar {
@@ -132,16 +133,6 @@ struct SelectStyleView: View {
             print("SelectStyleView: 初始状态 \(viewModel.uploadStatus.rawValue)")
         }
     }
-    
-    private func startGeneration() {
-        guard !selectedStyle.isEmpty else { return }
-
-        // 使用ViewModel处理业务逻辑
-        if viewModel.startGeneration(with: selectedStyle) {
-            // 只有成功开始生成时才导航
-            navigateToProcessing = true
-        }
-    }
 }
 
 // MARK: - SwiftUI Preview
@@ -152,6 +143,7 @@ struct SelectStyleView_Previews: PreviewProvider {
             URL(string: "file:///mock/video1.mp4")!,
             URL(string: "file:///mock/video2.mp4")!
         ])
-        return SelectStyleView(viewModel: viewModel)
+        return SelectStyleView()
+            .environment(viewModel)
     }
 }
