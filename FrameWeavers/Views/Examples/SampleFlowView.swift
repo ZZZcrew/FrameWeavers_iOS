@@ -15,7 +15,10 @@ struct SampleFlowView: View {
         NavigationStack {
             SampleSelectStyleView(viewModel: mockViewModel, comicResult: comicResult)
         }
-        .navigationBarBackButtonHidden(true)
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        // .navigationBarBackButtonHidden(false)
+        // .toolbarBackground(Color.clear, for: .navigationBar)
     }
 }
 

@@ -160,6 +160,7 @@ struct SampleAlbumsView: View {
                     }
                 }
             }
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

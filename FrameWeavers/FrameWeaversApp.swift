@@ -19,6 +19,7 @@ struct FrameWeaversApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .tint(Color(hex: "#2F2617"))
         }
         .modelContainer(sharedModelContainer)
     }

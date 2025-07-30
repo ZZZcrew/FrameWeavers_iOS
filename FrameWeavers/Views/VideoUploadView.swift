@@ -22,6 +22,8 @@ struct VideoUploadView: View {
             .navigationDestination(isPresented: $viewModel.shouldNavigateToStyleSelection) {
                 SelectStyleView(viewModel: viewModel)
             }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

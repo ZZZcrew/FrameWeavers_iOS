@@ -115,17 +115,10 @@ struct StyleSelectionView<ViewModel: VideoUploadViewModel>: View {
                     //     .foregroundColor(.gray)
                 }
             }
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(Color(hex: "#2F2617"))
-                    }
-                }
-            }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            // .navigationBarBackButtonHidden(false)
+            // .toolbarBackground(Color.clear, for: .navigationBar)
         .onAppear {
             print("SelectStyleView: 已选择 \(viewModel.selectedVideos.count) 个视频")
             print("SelectStyleView: 初始状态 \(viewModel.uploadStatus.rawValue)")
