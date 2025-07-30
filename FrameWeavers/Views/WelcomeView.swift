@@ -1,8 +1,10 @@
 import SwiftUI
 import PhotosUI
 
+/// 欢迎视图 - 遵循MVVM架构，只负责UI展示
 struct WelcomeView: View {
-    @Binding var selectedItems: [PhotosPickerItem]
+    @Environment(VideoUploadViewModel.self) private var viewModel
+    @State private var selectedItems: [PhotosPickerItem] = []
     @State private var showingSampleAlbums = false
 
     var body: some View {
@@ -81,6 +83,22 @@ struct WelcomeView: View {
         .navigationBarTitleDisplayMode(.inline)
         .fullScreenCover(isPresented: $showingSampleAlbums) {
             SampleAlbumsView()
+        }
+        .onChange(of: selectedItems) { _, newItems in
+            handleVideoSelection(newItems)
+        }
+    }
+
+    // MARK: - 私有方法
+
+    /// 处理视频选择
+    /// - Parameter items: 选择的PhotosPicker项目
+    private func handleVideoSelection(_ items: [PhotosPickerItem]) {
+        Task {
+            let videoURLs = await viewModel.processSelectedItems(items)
+            await MainActor.run {
+                viewModel.selectVideos(videoURLs)
+            }
         }
     }
 }
