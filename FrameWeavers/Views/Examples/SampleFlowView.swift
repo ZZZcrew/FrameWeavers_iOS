@@ -52,12 +52,22 @@ struct SampleProcessingView: View {
                 navigateToResults = false
             }
             .onChange(of: viewModel.uploadStatus) { _, newStatus in
+                print("🔄 SampleProcessingView: 状态变化 -> \(newStatus)")
+                print("🔄 SampleProcessingView: comicResult 是否存在: \(viewModel.comicResult != nil)")
+                print("🔄 SampleProcessingView: hasNavigated: \(hasNavigated)")
+
                 if newStatus == .completed && !hasNavigated {
+                    print("✅ SampleProcessingView: 准备导航到结果页面")
                     hasNavigated = true  // 标记已处理，防止重复
                     // 延迟一秒后导航到结果页面
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        print("🚀 SampleProcessingView: 开始导航")
                         navigateToResults = true
                     }
+                } else if newStatus == .completed && hasNavigated {
+                    print("⚠️ SampleProcessingView: 已经导航过了，跳过")
+                } else if newStatus == .failed {
+                    print("❌ SampleProcessingView: 处理失败，不导航")
                 }
             }
             .navigationDestination(isPresented: $navigateToResults) {
