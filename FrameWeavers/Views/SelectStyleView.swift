@@ -82,7 +82,7 @@ struct SelectStyleView: View {
                         _ = viewModel.startGeneration()
                     }) {
                         ZStack {
-                            Image("翻开画册")
+                            Image("button1")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 250, height: 44)

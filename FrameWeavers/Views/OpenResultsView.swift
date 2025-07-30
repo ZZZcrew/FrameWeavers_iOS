@@ -57,7 +57,7 @@ struct OpenResultsView: View {
                     ComicResultView(comicResult: comicResult)
                 } label: {
                     ZStack {
-                        Image("翻开画册")
+                        Image("button1")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 250, height: 44)
