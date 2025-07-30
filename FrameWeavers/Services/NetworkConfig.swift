@@ -5,9 +5,9 @@ struct NetworkConfig {
     // 基础URL配置 - 根据运行环境自动选择
     static let baseURL: String = {
         #if targetEnvironment(simulator)
-        return "https://e8065295b2fd.ngrok-free.app"
+        return "http://frame-api.zeabur.app/"
         #else
-        return "https://e8065295b2fd.ngrok-free.app"
+        return "http://frame-api.zeabur.app/"
         #endif
     }()
 
