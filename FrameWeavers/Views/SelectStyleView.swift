@@ -141,7 +141,6 @@ struct RealSelectStyleView: View {
 /// 真实上传模式专用的处理视图
 struct RealProcessingView: View {
     @ObservedObject var viewModel: VideoUploadViewModel
-    @State private var navigateToResults = false
     @State private var hasNavigated = false  // 防止重复导航
 
     var body: some View {
@@ -153,7 +152,7 @@ struct RealProcessingView: View {
                 }
                 // 重置导航状态
                 hasNavigated = false
-                navigateToResults = false
+                viewModel.shouldNavigateToResults = false
             }
             .onChange(of: viewModel.uploadStatus) { _, newStatus in
                 print("🔄 RealProcessingView: 状态变化 -> \(newStatus)")
@@ -166,21 +165,14 @@ struct RealProcessingView: View {
                     // 延迟一秒后导航到结果页面
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                         print("🚀 RealProcessingView: 开始导航")
-                        navigateToResults = true
+                        print("🚀 RealProcessingView: 设置 shouldNavigateToResults = true")
+                        viewModel.shouldNavigateToResults = true
+                        print("🚀 RealProcessingView: shouldNavigateToResults 已设置为: \(viewModel.shouldNavigateToResults)")
                     }
                 } else if newStatus == .completed && hasNavigated {
                     print("⚠️ RealProcessingView: 已经导航过了，跳过")
                 } else if newStatus == .failed {
                     print("❌ RealProcessingView: 处理失败，不导航")
-                }
-            }
-            .navigationDestination(isPresented: $navigateToResults) {
-                if let comicResult = viewModel.comicResult {
-                    OpenResultsView(comicResult: comicResult)
-                } else {
-                    // 错误处理视图
-                    Text("生成失败，请重试")
-                        .foregroundColor(.red)
                 }
             }
     }

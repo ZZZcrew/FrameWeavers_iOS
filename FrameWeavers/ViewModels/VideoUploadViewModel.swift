@@ -17,6 +17,7 @@ class VideoUploadViewModel: ObservableObject {
     @Published var isShowingPicker = false
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
     @Published var shouldNavigateToStyleSelection = false // 导航状态
+    @Published var shouldNavigateToResults = false // 导航到结果页面
     @Published var selectedStyle: String = "" // 选择的故事风格
     // 移除 shouldNavigateToProcessing，改用NavigationLink
 
