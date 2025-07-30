@@ -1,0 +1,5 @@
+.DS_Store
+.gitattributes
+buildServer.json
+/uploads
+FrameWeavers.xcodeproj/project.xcworkspace/xcuserdata/chii_magnus.xcuserdatad/UserInterfaceState.xcuserstate
