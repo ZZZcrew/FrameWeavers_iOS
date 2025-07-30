@@ -13,55 +13,53 @@ struct ProcessingView: View {
     let jumpTimer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                // 背景色
-                Color(red: 0.91, green: 0.88, blue: 0.83).ignoresSafeArea()
-                
-                VStack(spacing: 40) {
-                    // 始终显示胶片画廊视图
-                    filmGalleryView
-                }
-                .padding(.vertical, 50)
-                
-                // 飞行图片覆盖层
-                if let info = galleryViewModel.flyingImageInfo {
-                    let baseFrame = galleryViewModel.getBaseFrame(for: info.id)
-                    if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
-                        AsyncImage(url: url) { image in
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.3))
-                                .overlay(ProgressView().scaleEffect(0.5))
-                        }
+        ZStack {
+            // 背景色
+            Color(red: 0.91, green: 0.88, blue: 0.83).ignoresSafeArea()
+
+            VStack(spacing: 40) {
+                // 始终显示胶片画廊视图
+                filmGalleryView
+            }
+            .padding(.vertical, 50)
+
+            // 飞行图片覆盖层
+            if let info = galleryViewModel.flyingImageInfo {
+                let baseFrame = galleryViewModel.getBaseFrame(for: info.id)
+                if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
+                    AsyncImage(url: url) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .overlay(ProgressView().scaleEffect(0.5))
+                    }
+                    .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .matchedGeometryEffect(id: info.id, in: galleryNamespace)
+                    .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
+                    .transition(.identity)
+                } else if baseFrame == nil {
+                    // 只有在没有基础帧数据时才显示本地图片
+                    Image(info.id)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
                         .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .matchedGeometryEffect(id: info.id, in: galleryNamespace)
                         .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
                         .transition(.identity)
-                    } else if baseFrame == nil {
-                        // 只有在没有基础帧数据时才显示本地图片
-                        Image(info.id)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                            .matchedGeometryEffect(id: info.id, in: galleryNamespace)
-                            .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
-                            .transition(.identity)
-                    } else {
-                        // 有基础帧数据但URL无效时显示错误状态
-                        Rectangle()
-                            .fill(Color.orange.opacity(0.3))
-                            .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                            .matchedGeometryEffect(id: info.id, in: galleryNamespace)
-                            .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
-                            .transition(.identity)
-                    }
+                } else {
+                    // 有基础帧数据但URL无效时显示错误状态
+                    Rectangle()
+                        .fill(Color.orange.opacity(0.3))
+                        .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .matchedGeometryEffect(id: info.id, in: galleryNamespace)
+                        .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
+                        .transition(.identity)
                 }
             }
         }
@@ -82,11 +80,6 @@ struct ProcessingView: View {
         }
         .onChange(of: viewModel.baseFrames) { _, newFrames in
             handleBaseFramesChange(newFrames)
-        }
-        .navigationDestination(isPresented: .constant(viewModel.uploadStatus == .completed && viewModel.comicResult != nil)) {
-            if let result = viewModel.comicResult {
-                OpenResultsView(comicResult: result)
-            }
         }
         .navigationBarBackButtonHidden(true)
         .toolbar {

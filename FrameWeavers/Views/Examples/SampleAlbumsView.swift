@@ -132,7 +132,7 @@ struct SampleAlbumsView: View {
     ]
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 Image("背景单色")
                     .resizable()

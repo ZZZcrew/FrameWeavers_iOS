@@ -149,6 +149,7 @@ struct RealSelectStyleView: View {
 struct RealProcessingView: View {
     @ObservedObject var viewModel: VideoUploadViewModel
     @State private var navigateToResults = false
+    @State private var hasNavigated = false  // 防止重复导航
 
     var body: some View {
         ProcessingView(viewModel: viewModel)
@@ -157,9 +158,13 @@ struct RealProcessingView: View {
                 if viewModel.uploadStatus == .pending {
                     _ = viewModel.startGeneration()
                 }
+                // 重置导航状态
+                hasNavigated = false
+                navigateToResults = false
             }
             .onChange(of: viewModel.uploadStatus) { _, newStatus in
-                if newStatus == .completed {
+                if newStatus == .completed && !hasNavigated {
+                    hasNavigated = true  // 标记已处理，防止重复
                     // 延迟一秒后导航到结果页面
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                         navigateToResults = true
