@@ -1,8 +1,7 @@
 ---
-alwaysApply: true
 description: 移动端响应式设计和字体规范指南，涵盖iOS/iPadOS系统字体、动态类型支持和跨设备适配
+alwaysApply: false
 ---
-
 # 📱 移动端响应式设计规范
 
 ## 🎯 核心原则

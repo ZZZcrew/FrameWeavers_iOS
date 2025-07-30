@@ -1,7 +1,6 @@
 ---
-type: "manual"
+type: "always_apply"
 ---
-
 
 # iOS MVVM 架构完整指南
 
