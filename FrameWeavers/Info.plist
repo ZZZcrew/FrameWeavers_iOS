@@ -14,5 +14,10 @@
 		<string>fetch</string>
 		<string>audio</string>
 	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.frameweavers.videoUpload</string>
+		<string>com.frameweavers.comicGeneration</string>
+	</array>
 </dict>
 </plist>
