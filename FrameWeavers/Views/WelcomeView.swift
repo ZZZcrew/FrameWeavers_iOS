@@ -3,7 +3,7 @@ import PhotosUI
 
 /// 欢迎视图 - 遵循MVVM架构，只负责UI展示
 struct WelcomeView: View {
-    @Environment(VideoUploadViewModel.self) private var viewModel
+    @ObservedObject var viewModel: VideoUploadViewModel
     @State private var selectedItems: [PhotosPickerItem] = []
     @State private var showingSampleAlbums = false
 

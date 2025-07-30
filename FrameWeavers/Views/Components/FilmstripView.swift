@@ -1,30 +1,40 @@
 import SwiftUI
 
-/// 胶片条视图组件
+/// 胶片条视图组件 - 纯UI组件，遵循单一职责原则
 struct FilmstripView: View {
-    @ObservedObject var galleryViewModel: ProcessingGalleryViewModel
-    @ObservedObject var uploadViewModel: VideoUploadViewModel
+    let imageNames: [String]
+    let loopedImageNames: [String]
+    let hideSourceImageId: String?
+    let baseFrames: [String: BaseFrameData]
     let namespace: Namespace.ID
-    
-    // 用于持续滚动的偏移量
-    @State private var scrollOffset: CGFloat = 0
-    @State private var isScrolling = false
-    
-    // 滚动速度（每秒移动的像素）
-    private let scrollSpeed: CGFloat = 50
+    let scrollOffset: CGFloat
+
+    init(imageNames: [String],
+         loopedImageNames: [String],
+         hideSourceImageId: String? = nil,
+         baseFrames: [String: BaseFrameData] = [:],
+         namespace: Namespace.ID,
+         scrollOffset: CGFloat = 0) {
+        self.imageNames = imageNames
+        self.loopedImageNames = loopedImageNames
+        self.hideSourceImageId = hideSourceImageId
+        self.baseFrames = baseFrames
+        self.namespace = namespace
+        self.scrollOffset = scrollOffset
+    }
     
     var body: some View {
         GeometryReader { geometry in
-            let singleLoopWidth = CGFloat(galleryViewModel.imageNames.count) * 130.0
-            
+            let singleLoopWidth = CGFloat(imageNames.count) * 130.0
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
-                    ForEach(galleryViewModel.loopedImageNames.indices, id: \.self) { index in
-                        let imageName = galleryViewModel.loopedImageNames[index]
-                        let baseFrame = galleryViewModel.getBaseFrame(for: imageName)
+                    ForEach(loopedImageNames.indices, id: \.self) { index in
+                        let imageName = loopedImageNames[index]
+                        let baseFrame = baseFrames[imageName]
                         FilmstripFrameView(
                             imageName: imageName,
-                            isHidden: galleryViewModel.hideSourceImageId == imageName,
+                            isHidden: hideSourceImageId == imageName,
                             namespace: namespace,
                             isSource: false, // 显式设置为 false
                             baseFrame: baseFrame
@@ -46,19 +56,6 @@ struct FilmstripView: View {
             .frame(height: 100)
             .background(Color.black.opacity(0.8))
             .overlay(sprocketHoles)
-            .onAppear {
-                withAnimation(.linear(duration: 10).repeatForever(autoreverses: false)) {
-                    scrollOffset = singleLoopWidth
-                }
-            }
-            .onChange(of: uploadViewModel.uploadStatus) { _, newStatus in
-                if newStatus == .completed || newStatus == .failed {
-                    // 停止动画
-                    withAnimation(.linear(duration: 0)) {
-                        scrollOffset = scrollOffset
-                    }
-                }
-            }
         }
         .frame(height: 100)
     }

@@ -1,5 +1,4 @@
 import SwiftUI
-import Combine
 
 /// 连环画结果视图模型
 /// 负责管理连环画阅读的业务逻辑和状态
@@ -11,7 +10,6 @@ class ComicResultViewModel: ObservableObject {
     
     // MARK: - Private Properties
     private let comicResult: ComicResult
-    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Computed Properties
     
@@ -49,7 +47,7 @@ class ComicResultViewModel: ObservableObject {
     
     init(comicResult: ComicResult) {
         self.comicResult = comicResult
-        setupBindings()
+        updateReadingProgress()
     }
     
     // MARK: - Public Methods
@@ -108,16 +106,7 @@ class ComicResultViewModel: ObservableObject {
     }
     
     // MARK: - Private Methods
-    
-    private func setupBindings() {
-        // 监听页面变化，更新阅读进度
-        $currentPage
-            .sink { [weak self] _ in
-                self?.updateReadingProgress()
-            }
-            .store(in: &cancellables)
-    }
-    
+
     private func updateReadingProgress() {
         guard totalPages > 0 else {
             readingProgress = 0.0

@@ -3,7 +3,7 @@ import PhotosUI
 
 /// 视频上传主视图 - 遵循MVVM架构，只负责UI展示
 struct VideoUploadView: View {
-    @State private var viewModel = VideoUploadViewModel()
+    @StateObject private var viewModel = VideoUploadViewModel()
 
     var body: some View {
         NavigationStack {
@@ -15,13 +15,12 @@ struct VideoUploadView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 20) {
-                    WelcomeView()
-                        .environment(viewModel)
+                    WelcomeView(viewModel: viewModel)
 
                     // 导航到选择风格界面
                     NavigationLink(
-                        destination: SelectStyleView().environment(viewModel),
-                        isActive: .constant(viewModel.shouldNavigateToStyleSelection)
+                        destination: SelectStyleView(viewModel: viewModel),
+                        isActive: $viewModel.shouldNavigateToStyleSelection
                     ) {
                         EmptyView()
                     }
@@ -29,6 +28,5 @@ struct VideoUploadView: View {
                 .padding()
             }
         }
-        .environment(viewModel)
     }
 }

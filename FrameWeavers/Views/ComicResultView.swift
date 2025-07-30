@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// 连环画结果视图 - 遵循MVVM架构，只负责UI展示
 struct ComicResultView: View {
     @Environment(\.dismiss) private var dismiss
     let comicResult: ComicResult

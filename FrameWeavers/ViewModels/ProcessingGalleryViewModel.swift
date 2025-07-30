@@ -11,6 +11,7 @@ class ProcessingGalleryViewModel: ObservableObject {
     @Published var stackedImages: [String] = [] // 已堆叠的图片列表
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
     @Published var isUsingBaseFrames: Bool = false // 是否使用基础帧
+    @Published var scrollOffset: CGFloat = 0 // 滚动偏移量
 
     let imageNames = ["Image1", "Image2", "Image3", "Image4", "Image1", "Image2", "Image3", "Image4"]
 
@@ -29,6 +30,15 @@ class ProcessingGalleryViewModel: ObservableObject {
         } else {
             return imageNames
         }
+    }
+
+    /// 基础帧数据映射，用于组件访问
+    var baseFrameDataMap: [String: BaseFrameData] {
+        var map: [String: BaseFrameData] = [:]
+        for frame in baseFrames {
+            map[frame.id.uuidString] = frame
+        }
+        return map
     }
 
     init() {

@@ -1,17 +1,23 @@
 import SwiftUI
 
-/// 照片堆叠视图组件
+/// 照片堆叠视图组件 - 纯UI组件，遵循单一职责原则
 struct PhotoStackView: View {
     let mainImageName: String
     let stackedImages: [String]
     let namespace: Namespace.ID
-    let galleryViewModel: ProcessingGalleryViewModel?
+    let baseFrames: [String: BaseFrameData] // 基础帧数据映射
+    let hideSourceImageId: String? // 隐藏的源图片ID
 
-    init(mainImageName: String, stackedImages: [String], namespace: Namespace.ID, galleryViewModel: ProcessingGalleryViewModel? = nil) {
+    init(mainImageName: String,
+         stackedImages: [String],
+         namespace: Namespace.ID,
+         baseFrames: [String: BaseFrameData] = [:],
+         hideSourceImageId: String? = nil) {
         self.mainImageName = mainImageName
         self.stackedImages = stackedImages
         self.namespace = namespace
-        self.galleryViewModel = galleryViewModel
+        self.baseFrames = baseFrames
+        self.hideSourceImageId = hideSourceImageId
     }
 
     var body: some View {
@@ -21,7 +27,7 @@ struct PhotoStackView: View {
                 let imageName = stackedImages[index]
                 let offset = CGFloat(index) * 3
                 let rotation = Double.random(in: -8...8)
-                let baseFrame = galleryViewModel?.getBaseFrame(for: imageName)
+                let baseFrame = baseFrames[imageName]
 
                 ZStack {
                     if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
@@ -67,7 +73,7 @@ struct PhotoStackView: View {
             // 主图卡片
             ZStack {
                 if !mainImageName.isEmpty {
-                    let mainBaseFrame = galleryViewModel?.getBaseFrame(for: mainImageName)
+                    let mainBaseFrame = baseFrames[mainImageName]
                     if let baseFrame = mainBaseFrame, let url = baseFrame.thumbnailURL {
                         AsyncImage(url: url) { image in
                             image

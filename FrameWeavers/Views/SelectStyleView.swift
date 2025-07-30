@@ -3,8 +3,8 @@ import SwiftUI
 /// 选择故事风格视图 - 遵循MVVM架构，只负责UI展示
 struct SelectStyleView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(VideoUploadViewModel.self) private var viewModel
-    @State private var galleryViewModel = ProcessingGalleryViewModel()
+    @ObservedObject var viewModel: VideoUploadViewModel
+    @StateObject private var galleryViewModel = ProcessingGalleryViewModel()
     
     // 定义故事风格
     private let storyStyles = [
@@ -111,10 +111,8 @@ struct SelectStyleView: View {
                     //     .foregroundColor(.gray)
                 }
             }
-            .navigationDestination(isPresented: .constant(viewModel.shouldNavigateToProcessing)) {
-                ProcessingView()
-                    .environment(viewModel)
-                    .environment(galleryViewModel)
+            .navigationDestination(isPresented: $viewModel.shouldNavigateToProcessing) {
+                ProcessingView(viewModel: viewModel)
             }
             .navigationBarBackButtonHidden(true)
             .toolbar {
@@ -143,7 +141,6 @@ struct SelectStyleView_Previews: PreviewProvider {
             URL(string: "file:///mock/video1.mp4")!,
             URL(string: "file:///mock/video2.mp4")!
         ])
-        return SelectStyleView()
-            .environment(viewModel)
+        return SelectStyleView(viewModel: viewModel)
     }
 }

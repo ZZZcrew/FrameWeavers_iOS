@@ -3,8 +3,8 @@ import SwiftUI
 /// 处理视图 - 遵循MVVM架构，只负责UI展示
 struct ProcessingView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(VideoUploadViewModel.self) private var viewModel
-    @State private var galleryViewModel = ProcessingGalleryViewModel()
+    @ObservedObject var viewModel: VideoUploadViewModel
+    @StateObject private var galleryViewModel = ProcessingGalleryViewModel()
     @State private var frames: [String: CGRect] = [:]
     @Namespace private var galleryNamespace
     
@@ -195,7 +195,6 @@ struct ProcessingView_Previews: PreviewProvider {
         let viewModel = VideoUploadViewModel()
         viewModel.uploadStatus = .processing
         viewModel.uploadProgress = 0.5
-        return ProcessingView()
-            .environment(viewModel)
+        return ProcessingView(viewModel: viewModel)
     }
 }
