@@ -1,13 +1,9 @@
 import SwiftUI
 
-/// 示例流程视图 - 复用现有的SelectStyleView和ProcessingView
+/// 示例流程视图 - 复用真实模式的组件
 struct SampleFlowView: View {
     @Environment(\.dismiss) private var dismiss
     let comicResult: ComicResult
-
-    @State private var currentStep: FlowStep = .styleSelection
-    @State private var navigateToProcessing = false
-    @State private var navigateToResults = false
     @StateObject private var mockViewModel: MockVideoUploadViewModel
 
     init(comicResult: ComicResult) {
@@ -15,54 +11,51 @@ struct SampleFlowView: View {
         self._mockViewModel = StateObject(wrappedValue: MockVideoUploadViewModel(comicResult: comicResult))
     }
 
-    enum FlowStep {
-        case styleSelection
-        case processing
-        case results
-    }
-
     var body: some View {
         NavigationStack {
-            Group {
-                switch currentStep {
-                case .styleSelection:
-                    SelectStyleView(viewModel: mockViewModel)
-                        .onAppear {
-                            // 设置一些模拟视频数据
-                            mockViewModel.selectVideos([
-                                URL(string: "file:///mock/sample1.mp4")!,
-                                URL(string: "file:///mock/sample2.mp4")!
-                            ])
-                        }
-                        .onChange(of: mockViewModel.uploadStatus) { _, newStatus in
-                            if newStatus == .uploading || newStatus == .processing {
-                                withAnimation {
-                                    currentStep = .processing
-                                }
-                            }
-                        }
-                case .processing:
-                    ProcessingView(viewModel: mockViewModel)
-                        .onAppear {
-                            mockViewModel.startMockProcessing()
-                        }
-                        .onChange(of: mockViewModel.uploadStatus) { _, newStatus in
-                            if newStatus == .completed {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                    withAnimation {
-                                        currentStep = .results
-                                    }
-                                }
-                            }
-                        }
-                case .results:
-                    OpenResultsView(comicResult: comicResult)
-                }
-            }
+            SampleSelectStyleView(viewModel: mockViewModel, comicResult: comicResult)
         }
         .navigationBarBackButtonHidden(true)
     }
+}
 
+/// 示例专用的风格选择视图 - 使用通用组件
+struct SampleSelectStyleView: View {
+    @ObservedObject var viewModel: MockVideoUploadViewModel
+    let comicResult: ComicResult
+
+    var body: some View {
+        StyleSelectionView(
+            viewModel: viewModel,
+            nextView: AnyView(SampleProcessingView(viewModel: viewModel, comicResult: comicResult))
+        )
+    }
+}
+
+/// 示例专用的处理视图
+struct SampleProcessingView: View {
+    @ObservedObject var viewModel: MockVideoUploadViewModel
+    let comicResult: ComicResult
+    @State private var navigateToResults = false
+
+    var body: some View {
+        ProcessingView(viewModel: viewModel)
+            .onAppear {
+                // 开始模拟处理
+                viewModel.startMockProcessing()
+            }
+            .onChange(of: viewModel.uploadStatus) { _, newStatus in
+                if newStatus == .completed {
+                    // 延迟一秒后导航到结果页面
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        navigateToResults = true
+                    }
+                }
+            }
+            .navigationDestination(isPresented: $navigateToResults) {
+                OpenResultsView(comicResult: comicResult)
+            }
+    }
 }
 
 // MARK: - Mock ViewModel
@@ -73,11 +66,19 @@ class MockVideoUploadViewModel: VideoUploadViewModel {
     init(comicResult: ComicResult? = nil) {
         self.targetComicResult = comicResult
         super.init()
-        // 设置一些模拟视频
+        // 设置一些模拟视频，但不自动触发状态变化
         self.selectedVideos = [
             URL(string: "file:///mock/sample1.mp4")!,
             URL(string: "file:///mock/sample2.mp4")!
         ]
+        // 重置状态，确保从pending开始
+        self.uploadStatus = .pending
+    }
+
+    // 重写selectVideos方法，避免自动触发导航
+    override func selectVideos(_ urls: [URL]) {
+        selectedVideos = urls
+        // 不调用super.selectVideos()，避免自动设置shouldNavigateToStyleSelection
     }
 
     // 重写uploadVideo方法，避免真实的HTTP请求

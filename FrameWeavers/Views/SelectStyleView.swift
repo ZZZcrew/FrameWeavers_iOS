@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// 选择故事风格视图 - 遵循MVVM架构，只负责UI展示
-struct SelectStyleView: View {
+/// 通用的风格选择视图组件
+struct StyleSelectionView<ViewModel: VideoUploadViewModel>: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject var viewModel: VideoUploadViewModel
-    @StateObject private var galleryViewModel = ProcessingGalleryViewModel()
-    
+    @ObservedObject var viewModel: ViewModel
+    let nextView: AnyView
+
     // 定义故事风格
     private let storyStyles = [
         ("文艺哲学", "文 艺\n哲 学"),
@@ -13,9 +13,13 @@ struct SelectStyleView: View {
         ("悬念反转", "悬 念\n反 转"),
         ("生活散文", "生 活\n散 文")
     ]
-    
+
+    init(viewModel: ViewModel, nextView: AnyView) {
+        self.viewModel = viewModel
+        self.nextView = nextView
+    }
+
     var body: some View {
-        NavigationStack {
             ZStack {
                 Image("背景单色")
                     .resizable()
@@ -77,10 +81,10 @@ struct SelectStyleView: View {
                     .padding(.horizontal)
                     .padding(.bottom, 100)
 
-                    // 开始生成按钮
-                    Button(action: {
-                        _ = viewModel.startGeneration()
-                    }) {
+                    // 开始生成按钮 - 使用NavigationLink
+                    NavigationLink {
+                        nextView
+                    } label: {
                         ZStack {
                             Image("button1")
                                 .resizable()
@@ -111,9 +115,6 @@ struct SelectStyleView: View {
                     //     .foregroundColor(.gray)
                 }
             }
-            .navigationDestination(isPresented: $viewModel.shouldNavigateToProcessing) {
-                ProcessingView(viewModel: viewModel)
-            }
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -125,13 +126,60 @@ struct SelectStyleView: View {
                     }
                 }
             }
-        }
         .onAppear {
             print("SelectStyleView: 已选择 \(viewModel.selectedVideos.count) 个视频")
             print("SelectStyleView: 初始状态 \(viewModel.uploadStatus.rawValue)")
         }
     }
 }
+
+/// 真实上传模式的风格选择视图
+struct RealSelectStyleView: View {
+    @ObservedObject var viewModel: VideoUploadViewModel
+
+    var body: some View {
+        StyleSelectionView(
+            viewModel: viewModel,
+            nextView: AnyView(RealProcessingView(viewModel: viewModel))
+        )
+    }
+}
+
+/// 真实上传模式专用的处理视图
+struct RealProcessingView: View {
+    @ObservedObject var viewModel: VideoUploadViewModel
+    @State private var navigateToResults = false
+
+    var body: some View {
+        ProcessingView(viewModel: viewModel)
+            .onAppear {
+                // 开始真实的上传和处理流程
+                if viewModel.uploadStatus == .pending {
+                    _ = viewModel.startGeneration()
+                }
+            }
+            .onChange(of: viewModel.uploadStatus) { _, newStatus in
+                if newStatus == .completed {
+                    // 延迟一秒后导航到结果页面
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        navigateToResults = true
+                    }
+                }
+            }
+            .navigationDestination(isPresented: $navigateToResults) {
+                if let comicResult = viewModel.comicResult {
+                    OpenResultsView(comicResult: comicResult)
+                } else {
+                    // 错误处理视图
+                    Text("生成失败，请重试")
+                        .foregroundColor(.red)
+                }
+            }
+    }
+}
+
+// MARK: - 保持向后兼容的别名
+typealias SelectStyleView = RealSelectStyleView
 
 // MARK: - SwiftUI Preview
 struct SelectStyleView_Previews: PreviewProvider {
@@ -141,6 +189,6 @@ struct SelectStyleView_Previews: PreviewProvider {
             URL(string: "file:///mock/video1.mp4")!,
             URL(string: "file:///mock/video2.mp4")!
         ])
-        return SelectStyleView(viewModel: viewModel)
+        return RealSelectStyleView(viewModel: viewModel)
     }
 }

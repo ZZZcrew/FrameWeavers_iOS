@@ -18,7 +18,7 @@ class VideoUploadViewModel: ObservableObject {
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
     @Published var shouldNavigateToStyleSelection = false // 导航状态
     @Published var selectedStyle: String = "" // 选择的故事风格
-    @Published var shouldNavigateToProcessing = false // 导航到处理页面
+    // 移除 shouldNavigateToProcessing，改用NavigationLink
 
     private var cancellables = Set<AnyCancellable>()
     private var uploadTask: URLSessionUploadTask?
@@ -153,9 +153,6 @@ class VideoUploadViewModel: ObservableObject {
         uploadStatus = .pending
         uploadProgress = 0
         errorMessage = nil
-
-        // 触发导航到处理页面
-        shouldNavigateToProcessing = true
 
         // 触发上传和处理流程
         uploadVideo()
