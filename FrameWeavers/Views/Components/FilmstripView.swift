@@ -25,8 +25,6 @@ struct FilmstripView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            let singleLoopWidth = CGFloat(imageNames.count) * 130.0
-
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(loopedImageNames.indices, id: \.self) { index in
