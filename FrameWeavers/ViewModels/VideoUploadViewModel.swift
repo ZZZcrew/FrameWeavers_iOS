@@ -77,24 +77,48 @@ class VideoUploadViewModel: ObservableObject {
         }
     }
 
-    /// 处理PhotosPicker选择的视频项目
+    /// 处理PhotosPicker选择的视频项目（优化版本）
     /// - Parameter items: PhotosPicker选择的项目数组
     /// - Returns: 处理完成的视频URL数组
     func processSelectedItems(_ items: [PickerItem]) async -> [URL] {
         var videoURLs: [URL] = []
 
-        for item in items {
+        // 更新处理状态
+        await MainActor.run {
+            self.uploadStatus = .processing
+            self.errorMessage = "正在处理选中的视频..."
+        }
+
+        for (index, item) in items.enumerated() {
             do {
-                if let data = try await item.loadTransferable(type: Data.self),
-                   let url = saveVideoData(data) {
+                // 更新进度提示
+                await MainActor.run {
+                    self.errorMessage = "正在处理第 \(index + 1)/\(items.count) 个视频..."
+                }
+
+                // 优化：使用URL方式而不是Data方式，避免全量内存加载
+                if let url = try await item.loadTransferable(type: URL.self) {
+                    // 直接使用系统提供的临时URL，无需重新保存
                     videoURLs.append(url)
+                    print("✅ 视频处理成功: \(url.lastPathComponent)")
+                } else if let data = try await item.loadTransferable(type: Data.self),
+                          let savedUrl = saveVideoData(data) {
+                    // 备用方案：如果URL方式失败，使用Data方式
+                    videoURLs.append(savedUrl)
+                    print("✅ 视频保存成功（备用方案）: \(savedUrl.lastPathComponent)")
                 }
             } catch {
                 print("❌ 处理视频项目失败: \(error)")
                 await MainActor.run {
-                    self.errorMessage = "处理视频失败: \(error.localizedDescription)"
+                    self.errorMessage = "处理第 \(index + 1) 个视频失败: \(error.localizedDescription)"
                 }
             }
+        }
+
+        // 清除处理状态提示
+        await MainActor.run {
+            self.errorMessage = nil
+            self.uploadStatus = .pending
         }
 
         return videoURLs
@@ -154,30 +178,57 @@ class VideoUploadViewModel: ObservableObject {
             return
         }
 
-        // 验证每个视频
-        for (index, url) in selectedVideos.enumerated() {
-            let asset = AVAsset(url: url)
+        // 异步验证所有视频，提高性能
+        Task {
+            await MainActor.run {
+                self.errorMessage = "正在验证视频..."
+                self.uploadStatus = .processing
+            }
 
-            // 使用新的 iOS 16+ API 获取时长
-            Task {
-                do {
-                    let duration = try await asset.load(.duration)
-                    let durationSeconds = CMTimeGetSeconds(duration)
+            var hasError = false
+            var errorMsg = ""
 
-                    await MainActor.run {
-                        if durationSeconds > 300 { // 5分钟
-                            self.errorMessage = "视频\(index + 1)时长超过5分钟"
-                            self.uploadStatus = .failed
-                        } else {
-                            self.errorMessage = nil
-                            self.uploadStatus = .pending
+            // 并发验证所有视频以提高性能
+            await withTaskGroup(of: (Int, Result<Double, Error>).self) { group in
+                for (index, url) in selectedVideos.enumerated() {
+                    group.addTask {
+                        let asset = AVAsset(url: url)
+                        do {
+                            // 使用更高效的方式获取时长
+                            let duration = try await asset.load(.duration)
+                            let durationSeconds = CMTimeGetSeconds(duration)
+                            return (index, .success(durationSeconds))
+                        } catch {
+                            return (index, .failure(error))
                         }
                     }
-                } catch {
-                    await MainActor.run {
-                        self.errorMessage = "无法获取视频\(index + 1)的时长信息"
-                        self.uploadStatus = .failed
+                }
+
+                // 收集所有结果
+                for await (index, result) in group {
+                    switch result {
+                    case .success(let durationSeconds):
+                        if durationSeconds > 300 { // 5分钟
+                            hasError = true
+                            errorMsg = "视频\(index + 1)时长超过5分钟（\(Int(durationSeconds))秒）"
+                            break
+                        }
+                    case .failure(_):
+                        hasError = true
+                        errorMsg = "无法获取视频\(index + 1)的时长信息"
+                        break
                     }
+                }
+            }
+
+            await MainActor.run {
+                if hasError {
+                    self.errorMessage = errorMsg
+                    self.uploadStatus = .failed
+                } else {
+                    self.errorMessage = nil
+                    self.uploadStatus = .pending
+                    print("✅ 所有视频验证通过")
                 }
             }
         }
