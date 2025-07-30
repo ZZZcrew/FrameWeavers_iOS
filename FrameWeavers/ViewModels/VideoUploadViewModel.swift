@@ -16,6 +16,9 @@ class VideoUploadViewModel: ObservableObject {
     @Published var comicResult: ComicResult?
     @Published var isShowingPicker = false
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
+    @Published var shouldNavigateToStyleSelection = false // 导航状态
+    @Published var selectedStyle: String = "" // 选择的故事风格
+    @Published var shouldNavigateToProcessing = false // 导航到处理页面
 
     private var cancellables = Set<AnyCancellable>()
     private var uploadTask: URLSessionUploadTask?
@@ -38,6 +41,10 @@ class VideoUploadViewModel: ObservableObject {
     func selectVideos(_ urls: [URL]) {
         selectedVideos = urls  // 多视频选择
         validateVideos()
+        // 选择视频后自动触发导航
+        if !urls.isEmpty {
+            shouldNavigateToStyleSelection = true
+        }
     }
 
     func addVideo(_ url: URL) {
@@ -93,11 +100,16 @@ class VideoUploadViewModel: ObservableObject {
         return videoURLs
     }
 
+    /// 选择故事风格
+    /// - Parameter style: 故事风格
+    func selectStyle(_ style: String) {
+        selectedStyle = style
+    }
+
     /// 开始生成连环画
-    /// - Parameter style: 选择的故事风格
     /// - Returns: 是否成功开始生成
-    func startGeneration(with style: String) -> Bool {
-        guard !style.isEmpty else {
+    func startGeneration() -> Bool {
+        guard !selectedStyle.isEmpty else {
             print("❌ 故事风格不能为空")
             return false
         }
@@ -109,7 +121,7 @@ class VideoUploadViewModel: ObservableObject {
         }
 
         print("✅ 开始生成连环画")
-        print("📊 故事风格: \(style)")
+        print("📊 故事风格: \(selectedStyle)")
         print("📊 当前状态: \(uploadStatus.rawValue)")
         print("📊 视频数量: \(selectedVideos.count)")
 
@@ -118,10 +130,21 @@ class VideoUploadViewModel: ObservableObject {
         uploadProgress = 0
         errorMessage = nil
 
+        // 触发导航到处理页面
+        shouldNavigateToProcessing = true
+
         // 触发上传和处理流程
         uploadVideo()
 
         return true
+    }
+
+    /// 兼容性方法，保持向后兼容
+    /// - Parameter style: 选择的故事风格
+    /// - Returns: 是否成功开始生成
+    func startGeneration(with style: String) -> Bool {
+        selectStyle(style)
+        return startGeneration()
     }
 
     private func validateVideos() {
