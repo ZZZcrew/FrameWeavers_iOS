@@ -185,11 +185,14 @@ class VideoUploadViewModel: ObservableObject {
                 self.uploadStatus = .processing
             }
 
-            var hasError = false
-            var errorMsg = ""
+            // 使用actor-isolated的结果结构体来避免并发访问问题
+            struct ValidationResult {
+                let hasError: Bool
+                let errorMessage: String?
+            }
 
             // 并发验证所有视频以提高性能
-            await withTaskGroup(of: (Int, Result<Double, Error>).self) { group in
+            let validationResult = await withTaskGroup(of: (Int, Result<Double, Error>).self) { group in
                 for (index, url) in selectedVideos.enumerated() {
                     group.addTask {
                         let asset = AVAsset(url: url)
@@ -205,6 +208,9 @@ class VideoUploadViewModel: ObservableObject {
                 }
 
                 // 收集所有结果
+                var hasError = false
+                var errorMsg = ""
+
                 for await (index, result) in group {
                     switch result {
                     case .success(let durationSeconds):
@@ -219,11 +225,13 @@ class VideoUploadViewModel: ObservableObject {
                         break
                     }
                 }
+
+                return ValidationResult(hasError: hasError, errorMessage: hasError ? errorMsg : nil)
             }
 
             await MainActor.run {
-                if hasError {
-                    self.errorMessage = errorMsg
+                if validationResult.hasError {
+                    self.errorMessage = validationResult.errorMessage
                     self.uploadStatus = .failed
                 } else {
                     self.errorMessage = nil
