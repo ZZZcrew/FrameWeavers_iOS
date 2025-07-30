@@ -3,42 +3,48 @@
 ```mermaid
 graph TD
 
-A[主页面 ContentView] --> B[视频上传 VideoUploadView]
-A --> C[示例画册 SampleAlbumsView]
-
-subgraph "真实上传模式"
-    B --> D[欢迎页面 WelcomeView]
-    D --> E[风格选择 RealSelectStyleView]
-    E --> F[处理页面 RealProcessingView]
-    F --> G[结果页面 OpenResultsView]
-end
-
-subgraph "示例模式"
-    C --> H[示例流程 SampleFlowView]
-    H --> I[风格选择 SampleSelectStyleView]
-    I --> J[处理页面 SampleProcessingView]
-    J --> K[结果页面 OpenResultsView]
-end
-
-subgraph "通用组件"
-    L[StyleSelectionView<br/>通用风格选择组件]
-    M[ProcessingView<br/>通用处理视图]
-    N[OpenResultsView<br/>通用结果视图]
-end
-
-E -.-> L
-I -.-> L
-F -.-> M
-J -.-> M
-G -.-> N
-K -.-> N
-
-style A fill:#e1f5fe
-style B fill:#f3e5f5
-style C fill:#f3e5f5
-style L fill:#e8f5e8
-style M fill:#e8f5e8
-style N fill:#e8f5e8
-
+    A[ContentView] --> B[VideoUploadView<br/>NavigationStack根节点]
+    A --> C[SampleAlbumsView<br/>NavigationStack根节点]
+    
+    subgraph "真实上传模式 - 单一NavigationStack"
+        B --> D[WelcomeView]
+        D --> E[RealSelectStyleView<br/>使用StyleSelectionView]
+        E --> F[RealProcessingView<br/>使用ProcessingView]
+        F --> G[OpenResultsView]
+        G --> H[ComicResultView]
+    end
+    
+    subgraph "示例模式 - 单一NavigationStack"
+        C --> I[SampleFlowView<br/>NavigationStack根节点]
+        I --> J[SampleSelectStyleView<br/>使用StyleSelectionView]
+        J --> K[SampleProcessingView<br/>使用ProcessingView]
+        K --> L[OpenResultsView]
+        L --> M[ComicResultView]
+    end
+    
+    subgraph "通用组件 - 无NavigationStack"
+        N[StyleSelectionView<br/>通用风格选择]
+        O[ProcessingView<br/>通用处理视图]
+        P[OpenResultsView<br/>通用结果视图]
+        Q[ComicResultView<br/>通用阅读视图]
+    end
+    
+    E -.-> N
+    J -.-> N
+    F -.-> O
+    K -.-> O
+    G -.-> P
+    L -.-> P
+    H -.-> Q
+    M -.-> Q
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style C fill:#f3e5f5
+    style I fill:#f3e5f5
+    style N fill:#e8f5e8
+    style O fill:#e8f5e8
+    style P fill:#e8f5e8
+    style Q fill:#e8f5e8
 ```
 
