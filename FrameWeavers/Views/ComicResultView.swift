@@ -359,21 +359,20 @@ struct ComicPanelView: View {
         }
     }
 
-    // 竖屏布局
+    // 竖屏布局 - 图片宽度占满屏幕，高度自适应
     private var portraitLayout: some View {
         VStack(spacing: 0) {
-            // 上方图片区域 - 占据50%高度
-            VStack {
-                AsyncImageView(imageUrl: panel.imageUrl)
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.clear)
-                    .cornerRadius(12)
-                    .padding(20)
-            }
-            .frame(height: geometry.size.height * 0.5)
+            // 上方图片区域 - 宽度占满，高度根据图片比例自适应，但不超过70%屏幕高度
+            AsyncImageView(imageUrl: panel.imageUrl)
+                .aspectRatio(contentMode: .fit)
+                .frame(maxWidth: .infinity)
+                .frame(maxHeight: geometry.size.height * 0.7) // 最大不超过70%高度
+                .background(Color.clear)
+                .cornerRadius(12)
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
 
-            // 下方文本区域 - 占据50%高度
+            // 下方文本区域 - 占据剩余空间，最小30%高度
             VStack(spacing: 0) {
                 textContent
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -386,29 +385,26 @@ struct ComicPanelView: View {
                     .background(Color.clear)
                     .padding(.bottom, 20)
             }
-            .frame(height: geometry.size.height * 0.5)
+            .frame(minHeight: geometry.size.height * 0.3) // 最小30%高度保证文本可读
         }
         .padding(.horizontal, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // 横屏布局
+    // 横屏布局 - 图片高度占满屏幕，宽度自适应
     private var landscapeLayout: some View {
-        HStack(spacing: 10) {
-            // 左侧图片区域 - 占据45%宽度，确保在安全区域内
-            VStack {
-                AsyncImageView(imageUrl: panel.imageUrl)
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.clear)
-                    .cornerRadius(8)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 20)
-            }
-            .frame(width: geometry.size.width * 0.45)
-            .frame(maxHeight: geometry.size.height * 0.8) // 限制高度，留出安全区域
+        HStack(spacing: 0) {
+            // 左侧图片区域 - 高度占满，宽度根据图片比例自适应，但不超过60%屏幕宽度
+            AsyncImageView(imageUrl: panel.imageUrl)
+                .aspectRatio(contentMode: .fit)
+                .frame(maxHeight: .infinity)
+                .frame(maxWidth: geometry.size.width * 0.6) // 最大不超过60%宽度
+                .background(Color.clear)
+                .cornerRadius(8)
+                .padding(.leading, 20)
+                .padding(.vertical, 20)
 
-            // 右侧文本区域 - 占据45%宽度
+            // 右侧文本区域 - 占据剩余空间，最小35%宽度
             VStack(spacing: 0) {
                 // 文本内容区域
                 ScrollView {
@@ -430,8 +426,8 @@ struct ComicPanelView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 16)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 20)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .background(Color.clear)
@@ -443,12 +439,12 @@ struct ComicPanelView: View {
                     .foregroundColor(Color(hex: "#2F2617"))
                     .padding(.vertical, 8)
             }
-            .frame(width: geometry.size.width * 0.45)
-            .frame(maxHeight: geometry.size.height * 0.8) // 限制高度
+            .frame(minWidth: geometry.size.width * 0.35) // 最小35%宽度保证文本可读
+            .frame(maxHeight: .infinity)
+            .padding(.trailing, 20)
+            .padding(.vertical, 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, 20)
-        .padding(.vertical, 10)
     }
 
     // 文本内容组件
