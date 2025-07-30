@@ -1,15 +1,19 @@
 import SwiftUI
+import Combine
 
 /// 连环画结果视图模型
 /// 负责管理连环画阅读的业务逻辑和状态
-class ComicResultViewModel: ObservableObject {
+@Observable
+class ComicResultViewModel {
     // MARK: - Published Properties
-    @Published var currentPage: Int = 0
-    @Published var isNavigationVisible: Bool = true
-    @Published var readingProgress: Double = 0.0
-    
-    // MARK: - Private Properties
-    private let comicResult: ComicResult
+    var currentPage: Int = 0
+    var isNavigationVisible: Bool = true
+    var readingProgress: Double = 0.0
+    var isAnimating: Bool = false
+
+    // MARK: - Properties
+    let comicResult: ComicResult
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Computed Properties
     
@@ -44,10 +48,15 @@ class ComicResultViewModel: ObservableObject {
     }
     
     // MARK: - Initialization
-    
+
     init(comicResult: ComicResult) {
         self.comicResult = comicResult
         updateReadingProgress()
+        setupNotificationObservers()
+    }
+
+    deinit {
+        cancellables.removeAll()
     }
     
     // MARK: - Public Methods
@@ -107,12 +116,26 @@ class ComicResultViewModel: ObservableObject {
     
     // MARK: - Private Methods
 
+    private func setupNotificationObservers() {
+        NotificationCenter.default.publisher(for: .comicPageNext)
+            .sink { [weak self] _ in
+                self?.nextPage()
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .comicPagePrevious)
+            .sink { [weak self] _ in
+                self?.previousPage()
+            }
+            .store(in: &cancellables)
+    }
+
     private func updateReadingProgress() {
         guard totalPages > 0 else {
             readingProgress = 0.0
             return
         }
-        
+
         readingProgress = Double(currentPage + 1) / Double(totalPages)
     }
 }
@@ -124,6 +147,12 @@ extension ComicResultViewModel {
         case comic(ComicPanel)
         case questions([String])
     }
+}
+
+// MARK: - Notification Extensions
+extension Notification.Name {
+    static let comicPageNext = Notification.Name("comicPageNext")
+    static let comicPagePrevious = Notification.Name("comicPagePrevious")
 }
 
 // MARK: - Preview Support
