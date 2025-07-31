@@ -7,38 +7,11 @@ class ProcessingGalleryViewModel: ObservableObject {
     @Published var mainImageName: String = "Image1"
     @Published var flyingImageInfo: FlyingImageInfo?
     @Published var hideSourceImageId: String?
-    @Published var currentScrollIndex: Int = 0 {
-        didSet {
-            updateScrollOffset()
-        }
-    }
     @Published var stackedImages: [String] = [] // 已堆叠的图片列表
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
     @Published var isUsingBaseFrames: Bool = false // 是否使用基础帧
-    @Published var scrollOffset: CGFloat = 0 // 滚动偏移量
 
-    let imageNames = ["Image1", "Image2", "Image3", "Image4", "Image1", "Image2", "Image3", "Image4"]
-
-    // 胶片帧的尺寸常量
-    private let frameWidth: CGFloat = 120
-    private let frameSpacing: CGFloat = 10
-
-    var loopedImageNames: [String] {
-        if isUsingBaseFrames && !baseFrames.isEmpty {
-            let frameIds = baseFrames.map { $0.id.uuidString }
-            return frameIds + frameIds + frameIds
-        } else {
-            return imageNames + imageNames + imageNames
-        }
-    }
-
-    var currentImageNames: [String] {
-        if isUsingBaseFrames && !baseFrames.isEmpty {
-            return baseFrames.map { $0.id.uuidString }
-        } else {
-            return imageNames
-        }
-    }
+    let imageNames = ["Image1", "Image2", "Image3", "Image4"]
 
     /// 基础帧数据映射，用于组件访问
     var baseFrameDataMap: [String: BaseFrameData] {
@@ -71,34 +44,7 @@ class ProcessingGalleryViewModel: ObservableObject {
         return baseFrames.first { $0.id.uuidString == id }
     }
 
-    /// 更新滚动偏移量
-    private func updateScrollOffset() {
-        let itemWidth = frameWidth + frameSpacing
-        let totalItems = currentImageNames.count
 
-        // 确保索引在有效范围内
-        guard totalItems > 0 else { return }
-
-        // 计算当前索引在原始数组中的位置（处理循环）
-        let normalizedIndex = currentScrollIndex % totalItems
-
-        // 计算偏移量，使用平滑的动画
-        let targetOffset = CGFloat(normalizedIndex) * itemWidth
-
-        withAnimation(.easeInOut(duration: 0.8)) {
-            scrollOffset = targetOffset
-        }
-
-        // 当滚动到一定程度时重置，实现无缝循环
-        if currentScrollIndex >= totalItems * 2 {
-            // 延迟重置，避免动画冲突
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                self.currentScrollIndex = self.currentScrollIndex % totalItems
-                // 立即设置偏移量，不使用动画
-                self.scrollOffset = CGFloat(self.currentScrollIndex) * itemWidth
-            }
-        }
-    }
     
     /// 触发一次图片跳跃动画
     func triggerJumpAnimation(from frames: [String: CGRect]) {
@@ -150,17 +96,4 @@ class ProcessingGalleryViewModel: ObservableObject {
     }
 }
 
-// MARK: - VideoUploadViewModel Extension
 
-extension VideoUploadViewModel {
-    /// 使用项目中现有的图片资源
-    var mockImageNames: [String] {
-        return ["Image1", "Image2", "Image3", "Image4", "Image1", "Image2", "Image3", "Image4"]
-    }
-    
-    /// 为了无缝滚动，复制数组
-    var loopedImageNames: [String] {
-        let images = mockImageNames
-        return images + images + images
-    }
-}

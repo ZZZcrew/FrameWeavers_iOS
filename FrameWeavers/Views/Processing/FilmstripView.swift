@@ -1,138 +1,83 @@
 import SwiftUI
 
-/// 胶片条视图组件 - 纯UI组件，遵循单一职责原则
+/// 简化的胶片传送带视图 - 实现无限水平滚动
 struct FilmstripView: View {
     let imageNames: [String]
-    let loopedImageNames: [String]
-    let hideSourceImageId: String?
-    let baseFrames: [String: BaseFrameData]
-    let namespace: Namespace.ID
-    let scrollOffset: CGFloat
+    @State private var scrollOffset: CGFloat = 0
 
-    init(imageNames: [String],
-         loopedImageNames: [String],
-         hideSourceImageId: String? = nil,
-         baseFrames: [String: BaseFrameData] = [:],
-         namespace: Namespace.ID,
-         scrollOffset: CGFloat = 0) {
-        self.imageNames = imageNames
-        self.loopedImageNames = loopedImageNames
-        self.hideSourceImageId = hideSourceImageId
-        self.baseFrames = baseFrames
-        self.namespace = namespace
-        self.scrollOffset = scrollOffset
-    }
-    
+    // 传送带参数
+    private let frameWidth: CGFloat = 120
+    private let frameHeight: CGFloat = 80
+    private let frameSpacing: CGFloat = 10
+    private let scrollSpeed: Double = 30 // 每秒移动30像素
+
     var body: some View {
         GeometryReader { geometry in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(loopedImageNames.indices, id: \.self) { index in
-                        let imageName = loopedImageNames[index]
-                        let baseFrame = baseFrames[imageName]
-                        FilmstripFrameView(
-                            imageName: imageName,
-                            isHidden: hideSourceImageId == imageName,
-                            namespace: namespace,
-                            isSource: false, // 显式设置为 false
-                            baseFrame: baseFrame
-                        )
-                        .id(index)
-                        .background(
-                            GeometryReader { frameGeometry in
-                                Color.clear
-                                    .preference(key: FramePreferenceKey.self, value: [
-                                        imageName: frameGeometry.frame(in: .global)
-                                    ])
-                            }
-                        )
+            ZStack {
+                // 胶片背景
+                Color.black.opacity(0.8)
+
+                // 胶片齿孔
+                sprocketHoles
+
+                // 滚动的图片传送带
+                HStack(spacing: frameSpacing) {
+                    // 重复图片以实现无限滚动
+                    ForEach(0..<50) { index in // 足够多的图片确保无限滚动
+                        let imageIndex = index % imageNames.count
+                        let imageName = imageNames[imageIndex]
+
+                        Image(imageName)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: frameWidth, height: frameHeight)
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
                     }
                 }
-                .padding(.horizontal)
-                .offset(x: -scrollOffset)
+                .offset(x: scrollOffset)
+                .onAppear {
+                    startScrolling()
+                }
             }
-            .frame(height: 100)
-            .background(Color.black.opacity(0.8))
-            .overlay(sprocketHoles)
         }
         .frame(height: 100)
+        .clipped()
     }
-    
+
+    /// 启动传送带滚动动画
+    private func startScrolling() {
+        let itemWidth = frameWidth + frameSpacing
+        let totalWidth = itemWidth * CGFloat(imageNames.count)
+
+        withAnimation(.linear(duration: Double(totalWidth / scrollSpeed)).repeatForever(autoreverses: false)) {
+            scrollOffset = -totalWidth
+        }
+    }
+
     /// 胶片齿孔装饰
-    var sprocketHoles: some View {
+    private var sprocketHoles: some View {
         VStack {
-            HStack(spacing: 12) { 
-                ForEach(0..<20) { _ in 
-                    Rectangle().frame(width: 4, height: 4) 
-                } 
+            // 上排齿孔
+            HStack(spacing: 12) {
+                ForEach(0..<30) { _ in
+                    Rectangle()
+                        .frame(width: 4, height: 4)
+                        .foregroundColor(.white.opacity(0.3))
+                }
             }
+
             Spacer()
-            HStack(spacing: 12) { 
-                ForEach(0..<20) { _ in 
-                    Rectangle().frame(width: 4, height: 4) 
-                } 
+
+            // 下排齿孔
+            HStack(spacing: 12) {
+                ForEach(0..<30) { _ in
+                    Rectangle()
+                        .frame(width: 4, height: 4)
+                        .foregroundColor(.white.opacity(0.3))
+                }
             }
         }
-        .foregroundColor(.white.opacity(0.3))
         .padding(.vertical, 6)
     }
 }
 
-/// 胶片帧视图组件
-struct FilmstripFrameView: View {
-    let imageName: String
-    let isHidden: Bool
-    let namespace: Namespace.ID
-    let isSource: Bool
-    let baseFrame: BaseFrameData?
-
-    init(imageName: String, isHidden: Bool, namespace: Namespace.ID, isSource: Bool, baseFrame: BaseFrameData? = nil) {
-        self.imageName = imageName
-        self.isHidden = isHidden
-        self.namespace = namespace
-        self.isSource = isSource
-        self.baseFrame = baseFrame
-    }
-
-    var body: some View {
-        ZStack {
-            if !isHidden {
-                if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
-                    AsyncImage(url: url) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .overlay(
-                                ProgressView()
-                                    .scaleEffect(0.5)
-                            )
-                    }
-                    .matchedGeometryEffect(id: imageName, in: namespace, isSource: isSource)
-                } else if baseFrame == nil {
-                    // 当没有基础帧数据时，显示空白而不是本地图片
-                    Rectangle()
-                        .fill(Color.clear)
-                        .matchedGeometryEffect(id: imageName, in: namespace, isSource: isSource)
-                } else {
-                    // 有基础帧数据但URL无效时显示错误状态
-                    Rectangle()
-                        .fill(Color.red.opacity(0.3))
-                        .overlay(
-                            Text("文件不存在")
-                                .font(.caption)
-                                .foregroundColor(.white)
-                        )
-                        .matchedGeometryEffect(id: imageName, in: namespace, isSource: isSource)
-                }
-            } else {
-                Rectangle().fill(.clear)
-            }
-        }
-        .frame(width: 120, height: 80)
-        .clipShape(RoundedRectangle(cornerRadius: 4))
-        .opacity(isHidden ? 0 : 1)
-    }
-}
