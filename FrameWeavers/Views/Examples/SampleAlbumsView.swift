@@ -45,7 +45,7 @@ struct SampleAlbumsView: View {
             id: "sample-002",
             title: "小猫的冒险之旅",
             description: "一只勇敢小猫的奇妙探险",
-            coverImage: "封面",
+            coverImage: "2-第1页",
             comicResult: ComicResult(
                 comicId: "sample-002",
                 deviceId: "sample-device",
