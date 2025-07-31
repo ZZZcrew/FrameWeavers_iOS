@@ -59,7 +59,10 @@ extension ProcessingView {
                 baseFrames: galleryViewModel.baseFrameDataMap
             )
 
-            FilmstripView(imageNames: galleryViewModel.imageNames)
+            FilmstripView(
+                imageNames: galleryViewModel.imageNames,
+                baseFrames: galleryViewModel.baseFrames
+            )
 
             // 统一的进度条显示，在所有等待状态下都显示
             ProcessingLoadingView(progress: viewModel.uploadProgress, status: viewModel.uploadStatus)
