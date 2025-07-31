@@ -17,9 +17,6 @@ struct FilmstripView: View {
                 // 胶片背景
                 Color.black.opacity(0.8)
 
-                // 胶片齿孔
-                sprocketHoles
-
                 // 滚动的图片传送带
                 HStack(spacing: frameSpacing) {
                     // 重复图片以实现无限滚动
@@ -52,32 +49,6 @@ struct FilmstripView: View {
         withAnimation(.linear(duration: Double(totalWidth / scrollSpeed)).repeatForever(autoreverses: false)) {
             scrollOffset = -totalWidth
         }
-    }
-
-    /// 胶片齿孔装饰
-    private var sprocketHoles: some View {
-        VStack {
-            // 上排齿孔
-            HStack(spacing: 12) {
-                ForEach(0..<30) { _ in
-                    Rectangle()
-                        .frame(width: 4, height: 4)
-                        .foregroundColor(.white.opacity(0.3))
-                }
-            }
-
-            Spacer()
-
-            // 下排齿孔
-            HStack(spacing: 12) {
-                ForEach(0..<30) { _ in
-                    Rectangle()
-                        .frame(width: 4, height: 4)
-                        .foregroundColor(.white.opacity(0.3))
-                }
-            }
-        }
-        .padding(.vertical, 6)
     }
 }
 
