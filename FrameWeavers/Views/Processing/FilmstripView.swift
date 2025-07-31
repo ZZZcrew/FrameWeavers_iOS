@@ -2,17 +2,14 @@ import SwiftUI
 
 /// 胶片传送带视图 - 纯UI组件，遵循MVVM架构
 struct FilmstripView: View {
-    let displayImages: [DisplayImageData]
     let baseFrames: [BaseFrameData]  // 直接使用基础帧数据
     let isExampleMode: Bool
     let config: FilmstripConfiguration
     @State private var scrollOffset: CGFloat = 0
 
-    init(displayImages: [DisplayImageData] = [],
-         baseFrames: [BaseFrameData] = [],
+    init(baseFrames: [BaseFrameData] = [],
          isExampleMode: Bool = false,
          config: FilmstripConfiguration = .default) {
-        self.displayImages = displayImages
         self.baseFrames = baseFrames
         self.isExampleMode = isExampleMode
         self.config = config
@@ -39,8 +36,8 @@ struct FilmstripView: View {
                 )
             }
         } else {
-            // 等待状态：使用传入的displayImages或显示占位符
-            return displayImages.isEmpty ? createLoadingPlaceholders() : displayImages
+            // 等待状态：显示加载占位符
+            return createLoadingPlaceholders()
         }
     }
 
