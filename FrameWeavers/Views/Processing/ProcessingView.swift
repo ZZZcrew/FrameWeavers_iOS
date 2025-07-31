@@ -22,6 +22,18 @@ struct ProcessingView: View {
 
         .onAppear {
             handleViewAppear()
+            // 检查是否为示例模式
+            if let mockViewModel = viewModel as? MockVideoUploadViewModel, mockViewModel.isExampleMode {
+                print("🎭 检测到示例模式，设置 galleryViewModel 为示例模式")
+                galleryViewModel.setExampleMode(true)
+            } else {
+                // 立即检查是否已有基础帧数据
+                print("🔍 ProcessingView onAppear: 检查现有基础帧数据，数量: \(viewModel.baseFrames.count)")
+                if !viewModel.baseFrames.isEmpty {
+                    print("🎯 发现现有基础帧数据，立即设置到 galleryViewModel")
+                    galleryViewModel.setBaseFrames(viewModel.baseFrames)
+                }
+            }
         }
         .onChange(of: viewModel.uploadStatus) { _, newStatus in
             handleStatusChange(newStatus)

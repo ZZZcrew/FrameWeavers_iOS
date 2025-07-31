@@ -11,6 +11,7 @@ class ProcessingGalleryViewModel: ObservableObject {
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
     @Published var isUsingBaseFrames: Bool = false // 是否使用基础帧
     @Published var filmstripDisplayImages: [DisplayImageData] = [] // 响应式胶片显示数据
+    @Published var isExampleMode: Bool = false // 是否为示例模式
 
     let imageNames = ["Image1", "Image2", "Image3", "Image4"]
     private var cancellables = Set<AnyCancellable>() // Combine订阅管理
@@ -36,12 +37,22 @@ class ProcessingGalleryViewModel: ObservableObject {
 
     /// 设置响应式数据流 - 符合Combine最佳实践
     private func setupReactiveDataFlow() {
-        // 响应baseFrames变化，自动更新filmstripDisplayImages
-        $baseFrames
-            .map { [weak self] frames -> [DisplayImageData] in
+        // 响应baseFrames和isExampleMode变化，自动更新filmstripDisplayImages
+        Publishers.CombineLatest($baseFrames, $isExampleMode)
+            .map { [weak self] frames, isExample -> [DisplayImageData] in
                 guard let self = self else { return [] }
 
-                if !frames.isEmpty {
+                if isExample {
+                    // 示例模式：始终使用本地图片
+                    print("🎭 使用示例模式：本地图片数据")
+                    return self.imageNames.map { name in
+                        DisplayImageData(
+                            id: name,
+                            imageSource: .local(name: name),
+                            fallbackName: name
+                        )
+                    }
+                } else if !frames.isEmpty {
                     // 真实模式：使用后端基础帧数据，不显示本地死数据
                     print("🎬 使用真实模式：后端基础帧数据，数量: \(frames.count)")
                     return frames.map { frame in
@@ -52,15 +63,9 @@ class ProcessingGalleryViewModel: ObservableObject {
                         )
                     }
                 } else {
-                    // 示例模式：只在没有后端数据时使用本地图片
-                    print("🎭 使用示例模式：本地图片数据")
-                    return self.imageNames.map { name in
-                        DisplayImageData(
-                            id: name,
-                            imageSource: .local(name: name),
-                            fallbackName: name
-                        )
-                    }
+                    // 等待数据状态：显示空数组或加载状态
+                    print("⏳ 等待数据中...")
+                    return []
                 }
             }
             .assign(to: &$filmstripDisplayImages)
@@ -71,12 +76,24 @@ class ProcessingGalleryViewModel: ObservableObject {
         print("🎨 ProcessingGalleryViewModel: 设置基础帧数据, 数量: \(frames.count)")
         baseFrames = frames
         isUsingBaseFrames = !frames.isEmpty
+        isExampleMode = false  // 有真实数据时，退出示例模式
         if let firstFrame = frames.first {
             mainImageName = firstFrame.id.uuidString
             print("🖼️ 设置主图片为: \(mainImageName)")
             print("🔗 第一个基础帧URL: \(firstFrame.thumbnailURL?.absoluteString ?? "nil")")
         }
         print("✅ isUsingBaseFrames: \(isUsingBaseFrames)")
+    }
+
+    /// 设置为示例模式
+    func setExampleMode(_ isExample: Bool) {
+        print("🎭 ProcessingGalleryViewModel: 设置示例模式: \(isExample)")
+        isExampleMode = isExample
+        if isExample {
+            // 示例模式下重置为第一个本地图片
+            mainImageName = imageNames.first ?? ""
+            isUsingBaseFrames = false
+        }
     }
 
     /// 获取基础帧数据
