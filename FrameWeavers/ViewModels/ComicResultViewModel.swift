@@ -96,6 +96,15 @@ class ComicResultViewModel {
         }
     }
     
+    /// 更新阅读进度（公开方法）
+    func updateReadingProgress() {
+        guard totalPages > 0 else {
+            readingProgress = 0.0
+            return
+        }
+        readingProgress = Double(currentPage + 1) / Double(totalPages)
+    }
+
     /// 处理页面点击事件
     /// - Parameter location: 点击位置
     /// - Parameter viewWidth: 视图宽度
@@ -130,14 +139,7 @@ class ComicResultViewModel {
             .store(in: &cancellables)
     }
 
-    private func updateReadingProgress() {
-        guard totalPages > 0 else {
-            readingProgress = 0.0
-            return
-        }
 
-        readingProgress = Double(currentPage + 1) / Double(totalPages)
-    }
 }
 
 // MARK: - Supporting Types

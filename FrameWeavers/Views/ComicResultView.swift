@@ -19,39 +19,35 @@ struct ComicResultView: View {
                     .scaledToFill()
 
                 VStack(spacing: 0) {
-                    // 连环画内容区域 - 使用 TabView 实现翻页
-                    TabView(selection: Binding(
-                        get: { viewModel.currentPage },
-                        set: { viewModel.currentPage = $0 }
-                    )) {
-                        ForEach(0..<viewModel.totalPages, id: \.self) { pageIndex in
-                            Group {
-                                if pageIndex < viewModel.comicResult.panels.count {
-                                    // 漫画页面
-                                    ComicPanelView(
-                                        panel: viewModel.comicResult.panels[pageIndex],
-                                        geometry: geometry,
-                                        pageIndex: pageIndex,
-                                        totalPages: viewModel.totalPages
-                                    )
-                                } else {
-                                    // 互动问题页面
-                                    QuestionsView(
-                                        questions: viewModel.comicResult.finalQuestions,
-                                        geometry: geometry,
-                                        pageIndex: pageIndex,
-                                        totalPages: viewModel.totalPages
-                                    )
-                                }
+                    // 连环画内容区域 - 使用书页翻动效果
+                    PageCurlView(
+                        pages: viewModel.totalPages,
+                        currentPage: Binding(
+                            get: { viewModel.currentPage },
+                            set: { newPage in
+                                viewModel.currentPage = newPage
+                                viewModel.updateReadingProgress()
                             }
-                            .tag(pageIndex)
-                            .onTapGesture(coordinateSpace: .local) { location in
-                                viewModel.handlePageTap(at: location, viewWidth: geometry.size.width)
-                            }
+                        )
+                    ) { pageIndex in
+                        if pageIndex < viewModel.comicResult.panels.count {
+                            // 漫画页面
+                            ComicPanelView(
+                                panel: viewModel.comicResult.panels[pageIndex],
+                                geometry: geometry,
+                                pageIndex: pageIndex,
+                                totalPages: viewModel.totalPages
+                            )
+                        } else {
+                            // 互动问题页面
+                            QuestionsView(
+                                questions: viewModel.comicResult.finalQuestions,
+                                geometry: geometry,
+                                pageIndex: pageIndex,
+                                totalPages: viewModel.totalPages
+                            )
                         }
                     }
-                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                    .animation(.easeInOut(duration: 0.3), value: viewModel.currentPage)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
