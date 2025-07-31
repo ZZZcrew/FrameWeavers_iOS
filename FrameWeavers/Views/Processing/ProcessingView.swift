@@ -81,9 +81,6 @@ extension ProcessingView {
 
     /// 处理视图出现事件
     private func handleViewAppear() {
-        // 设置为真实上传模式
-        galleryViewModel.setRealUploadMode()
-
         if viewModel.uploadStatus == .pending {
             viewModel.uploadVideo()
         }

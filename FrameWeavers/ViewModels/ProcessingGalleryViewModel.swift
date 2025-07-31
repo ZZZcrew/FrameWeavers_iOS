@@ -11,7 +11,6 @@ class ProcessingGalleryViewModel: ObservableObject {
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
     @Published var isUsingBaseFrames: Bool = false // 是否使用基础帧
     @Published var filmstripDisplayImages: [DisplayImageData] = [] // 响应式胶片显示数据
-    @Published var isRealUploadMode: Bool = false // 是否为真实上传模式
 
     let imageNames = ["Image1", "Image2", "Image3", "Image4"]
     private var cancellables = Set<AnyCancellable>() // Combine订阅管理
@@ -37,14 +36,13 @@ class ProcessingGalleryViewModel: ObservableObject {
 
     /// 设置响应式数据流 - 符合Combine最佳实践
     private func setupReactiveDataFlow() {
-        // 响应baseFrames和isRealUploadMode变化，自动更新filmstripDisplayImages
-        Publishers.CombineLatest($baseFrames, $isRealUploadMode)
-            .map { [weak self] frames, isRealMode -> [DisplayImageData] in
+        // 响应baseFrames变化，自动更新filmstripDisplayImages
+        $baseFrames
+            .map { [weak self] frames -> [DisplayImageData] in
                 guard let self = self else { return [] }
 
                 if !frames.isEmpty {
                     // 使用后端基础帧数据
-                    print("🎬 使用后端基础帧数据，数量: \(frames.count)")
                     return frames.map { frame in
                         DisplayImageData(
                             id: frame.id.uuidString,
@@ -52,13 +50,8 @@ class ProcessingGalleryViewModel: ObservableObject {
                             fallbackName: nil
                         )
                     }
-                } else if isRealMode {
-                    // 真实上传模式但还没有数据时，显示空数组（加载状态）
-                    print("🔄 真实上传模式，等待基础帧数据...")
-                    return []
                 } else {
-                    // 示例模式：使用本地图片
-                    print("🎭 示例模式，使用本地图片")
+                    // 使用本地图片
                     return self.imageNames.map { name in
                         DisplayImageData(
                             id: name,
@@ -69,12 +62,6 @@ class ProcessingGalleryViewModel: ObservableObject {
                 }
             }
             .assign(to: &$filmstripDisplayImages)
-    }
-
-    /// 设置为真实上传模式
-    func setRealUploadMode() {
-        print("🚀 ProcessingGalleryViewModel: 切换到真实上传模式")
-        isRealUploadMode = true
     }
 
     /// 设置基础帧数据
