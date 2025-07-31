@@ -11,7 +11,6 @@ struct ProcessingView: View {
     
     // 定时器
     let scrollTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
-    let jumpTimer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
     
     var body: some View {
         ZStack {
@@ -24,54 +23,19 @@ struct ProcessingView: View {
             }
             .padding(.vertical, 50)
 
-            // 飞行图片覆盖层
-            if let info = galleryViewModel.flyingImageInfo {
-                let baseFrame = galleryViewModel.getBaseFrame(for: info.id)
-                if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
-                    AsyncImage(url: url) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .overlay(ProgressView().scaleEffect(0.5))
-                    }
-                    .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .matchedGeometryEffect(id: info.id, in: galleryNamespace)
-                    .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
-                    .transition(.identity)
-                } else if baseFrame == nil {
-                    // 只有在没有基础帧数据时才显示本地图片
-                    Image(info.id)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .matchedGeometryEffect(id: info.id, in: galleryNamespace)
-                        .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
-                        .transition(.identity)
-                } else {
-                    // 有基础帧数据但URL无效时显示错误状态
-                    Rectangle()
-                        .fill(Color.orange.opacity(0.3))
-                        .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .matchedGeometryEffect(id: info.id, in: galleryNamespace)
-                        .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
-                        .transition(.identity)
-                }
-            }
+            // 飞行图片覆盖层 - 使用独立的飞跃动画组件
+            FlyingImageController(
+                galleryViewModel: galleryViewModel,
+                namespace: galleryNamespace,
+                frames: frames,
+                isAnimationEnabled: viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed && !viewModel.baseFrames.isEmpty
+            )
         }
         .onPreferenceChange(FramePreferenceKey.self) { value in
             self.frames.merge(value, uniquingKeysWith: { $1 })
         }
         .onReceive(scrollTimer) { _ in
             handleScrollTimer()
-        }
-        .onReceive(jumpTimer) { _ in
-            handleJumpTimer()
         }
         .onAppear {
             handleViewAppear()
@@ -150,15 +114,7 @@ extension ProcessingView {
         }
     }
 
-    /// 处理跳跃动画定时器事件
-    private func handleJumpTimer() {
-        // 只有在有基础帧数据时才播放跳跃动画
-        if viewModel.uploadStatus != .completed && viewModel.uploadStatus != .failed && !viewModel.baseFrames.isEmpty {
-            withAnimation(.easeInOut(duration: 1.2)) {
-                galleryViewModel.triggerJumpAnimation(from: frames)
-            }
-        }
-    }
+
 
     /// 处理视图出现事件
     private func handleViewAppear() {
