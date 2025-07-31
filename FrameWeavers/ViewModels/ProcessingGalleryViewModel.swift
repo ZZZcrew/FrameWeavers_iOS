@@ -42,16 +42,18 @@ class ProcessingGalleryViewModel: ObservableObject {
                 guard let self = self else { return [] }
 
                 if !frames.isEmpty {
-                    // 使用后端基础帧数据
+                    // 真实模式：使用后端基础帧数据，不显示本地死数据
+                    print("🎬 使用真实模式：后端基础帧数据，数量: \(frames.count)")
                     return frames.map { frame in
                         DisplayImageData(
                             id: frame.id.uuidString,
                             imageSource: .remote(url: frame.thumbnailURL),
-                            fallbackName: nil
+                            fallbackName: nil  // 真实模式下不使用fallback
                         )
                     }
                 } else {
-                    // 使用本地图片
+                    // 示例模式：只在没有后端数据时使用本地图片
+                    print("🎭 使用示例模式：本地图片数据")
                     return self.imageNames.map { name in
                         DisplayImageData(
                             id: name,

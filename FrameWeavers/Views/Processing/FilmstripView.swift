@@ -36,6 +36,10 @@ struct FilmstripView: View {
                 .onAppear {
                     startScrolling()
                 }
+                .onChange(of: displayImages) { _, _ in
+                    // 当显示图片数据变化时，重新启动滚动动画
+                    restartScrolling()
+                }
             }
         }
         .frame(height: 100)
@@ -49,8 +53,27 @@ struct FilmstripView: View {
         let itemWidth = config.frameWidth + config.frameSpacing
         let totalWidth = itemWidth * CGFloat(displayImages.count)
 
-        withAnimation(.linear(duration: Double(totalWidth / config.scrollSpeed)).repeatForever(autoreverses: false)) {
-            scrollOffset = -totalWidth
+        // 重置滚动偏移量，确保从正确位置开始
+        scrollOffset = 0
+
+        // 延迟启动动画，确保视图已完全渲染
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation(.linear(duration: Double(totalWidth / config.scrollSpeed)).repeatForever(autoreverses: false)) {
+                scrollOffset = -totalWidth
+            }
+        }
+    }
+
+    /// 重启滚动动画 - 当数据变化时调用
+    private func restartScrolling() {
+        // 停止当前动画
+        withAnimation(.linear(duration: 0)) {
+            scrollOffset = 0
+        }
+
+        // 重新启动滚动
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            startScrolling()
         }
     }
 }
@@ -88,12 +111,20 @@ struct FilmFrameView: View {
     @ViewBuilder
     private func remoteImageView(url: URL?) -> some View {
         if let url = url {
-            AsyncImage(url: url) { image in
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } placeholder: {
-                loadingPlaceholder
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                case .failure(_):
+                    // 真实模式下加载失败时显示错误占位符，不使用fallback
+                    errorPlaceholder
+                case .empty:
+                    loadingPlaceholder
+                @unknown default:
+                    loadingPlaceholder
+                }
             }
         } else {
             errorPlaceholder
@@ -113,7 +144,17 @@ struct FilmFrameView: View {
     /// 错误占位符
     @ViewBuilder
     private var errorPlaceholder: some View {
-        if let fallbackName = displayImage.fallbackName {
+        // 真实模式下不使用fallback，只显示错误提示
+        if displayImage.imageSource.isRemote {
+            Rectangle()
+                .fill(Color.red.opacity(0.3))
+                .overlay(
+                    Text("加载失败")
+                        .font(.caption)
+                        .foregroundColor(.white)
+                )
+        } else if let fallbackName = displayImage.fallbackName {
+            // 示例模式下可以使用fallback
             Image(fallbackName)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
