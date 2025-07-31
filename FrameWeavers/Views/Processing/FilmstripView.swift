@@ -17,11 +17,27 @@ struct FilmstripView: View {
                 // 胶片背景
                 Color.black.opacity(0.8)
 
-                // 滚动的图片传送带
-                HStack(spacing: config.frameSpacing) {
-                    // 重复图片以实现无限滚动
-                    ForEach(0..<config.repeatCount, id: \.self) { index in
-                        if !displayImages.isEmpty {
+                // 滚动的图片传送带或加载状态
+                if displayImages.isEmpty {
+                    // 加载状态
+                    HStack(spacing: config.frameSpacing) {
+                        ForEach(0..<8, id: \.self) { _ in
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: config.frameWidth, height: config.frameHeight)
+                                .clipShape(RoundedRectangle(cornerRadius: 4))
+                                .overlay(
+                                    ProgressView()
+                                        .scaleEffect(0.5)
+                                )
+                        }
+                    }
+                    .padding(.horizontal)
+                } else {
+                    // 正常滚动的图片传送带
+                    HStack(spacing: config.frameSpacing) {
+                        // 重复图片以实现无限滚动
+                        ForEach(0..<config.repeatCount, id: \.self) { index in
                             let imageIndex = index % displayImages.count
                             let displayImage = displayImages[imageIndex]
 
@@ -31,11 +47,16 @@ struct FilmstripView: View {
                             )
                         }
                     }
+                    .offset(x: scrollOffset)
+                    .onAppear {
+                        startScrolling()
+                    }
+                    .onChange(of: displayImages) { _, _ in
+                        // 当displayImages变化时重新启动滚动
+                        restartScrolling()
+                    }
                 }
-                .offset(x: scrollOffset)
-                .onAppear {
-                    startScrolling()
-                }
+
             }
         }
         .frame(height: 100)
@@ -45,7 +66,24 @@ struct FilmstripView: View {
     /// 启动传送带滚动动画
     private func startScrolling() {
         guard !displayImages.isEmpty else { return }
+        performScrollAnimation()
+    }
 
+    /// 重新启动滚动动画
+    private func restartScrolling() {
+        guard !displayImages.isEmpty else { return }
+
+        // 重置偏移量
+        scrollOffset = 0
+
+        // 延迟一帧后启动新动画，确保UI更新完成
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.performScrollAnimation()
+        }
+    }
+
+    /// 执行滚动动画
+    private func performScrollAnimation() {
         let itemWidth = config.frameWidth + config.frameSpacing
         let totalWidth = itemWidth * CGFloat(displayImages.count)
 
