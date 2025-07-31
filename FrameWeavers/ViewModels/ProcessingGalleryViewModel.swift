@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 import Foundation
 
 /// 处理画廊的视图模型
@@ -9,9 +10,11 @@ class ProcessingGalleryViewModel: ObservableObject {
     @Published var stackedImages: [String] = [] // 已堆叠的图片列表
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
     @Published var isUsingBaseFrames: Bool = false // 是否使用基础帧
+    @Published var filmstripDisplayImages: [DisplayImageData] = [] // 保留兼容性，但不再使用
     @Published var isExampleMode: Bool = false // 是否为示例模式
 
     let imageNames = ["Image1", "Image2", "Image3", "Image4"]
+    private var cancellables = Set<AnyCancellable>() // Combine订阅管理
 
     /// 基础帧数据映射，用于组件访问
     var baseFrameDataMap: [String: BaseFrameData] {
@@ -29,7 +32,10 @@ class ProcessingGalleryViewModel: ObservableObject {
 
     init() {
         mainImageName = imageNames.first ?? ""
+        // 不再需要复杂的响应式数据流，FilmstripView 直接使用 baseFrames
     }
+
+    // 移除了复杂的响应式数据流，FilmstripView 现在直接使用 baseFrames 数据
 
     /// 设置基础帧数据
     func setBaseFrames(_ frames: [BaseFrameData]) {
@@ -61,7 +67,10 @@ class ProcessingGalleryViewModel: ObservableObject {
         return baseFrames.first { $0.id.uuidString == id }
     }
 
+    // 移除了 createLoadingPlaceholders 方法，现在由 FilmstripView 内部处理
 
+
+    
     /// 触发一次图片跳跃动画
     func triggerJumpAnimation(from frames: [String: CGRect]) {
         guard let centerImageId = findCenterImageId(from: frames),
@@ -111,3 +120,5 @@ class ProcessingGalleryViewModel: ObservableObject {
         return closestImageId
     }
 }
+
+
