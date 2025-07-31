@@ -116,8 +116,8 @@ struct FlyingImageController: View {
 }
 
 #Preview {
-    @Namespace var previewNamespace
-    @State var mockFlyingInfo = FlyingImageInfo(
+    @Previewable @Namespace var previewNamespace
+    @Previewable @State var mockFlyingInfo = FlyingImageInfo(
         id: "Image1",
         sourceFrame: CGRect(x: 100, y: 100, width: 120, height: 80)
     )
