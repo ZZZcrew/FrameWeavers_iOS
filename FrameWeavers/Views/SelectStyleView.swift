@@ -141,8 +141,6 @@ struct RealSelectStyleView: View {
 /// 真实上传模式专用的处理视图
 struct RealProcessingView: View {
     @ObservedObject var viewModel: VideoUploadViewModel
-    @State private var navigateToResults = false
-    @State private var hasNavigated = false  // 防止重复导航
 
     var body: some View {
         ProcessingView(viewModel: viewModel)
@@ -150,27 +148,6 @@ struct RealProcessingView: View {
                 // 开始真实的上传和处理流程
                 if viewModel.uploadStatus == .pending {
                     _ = viewModel.startGeneration()
-                }
-                // 重置导航状态
-                hasNavigated = false
-                navigateToResults = false
-            }
-            .onChange(of: viewModel.uploadStatus) { _, newStatus in
-                if newStatus == .completed && !hasNavigated {
-                    hasNavigated = true  // 标记已处理，防止重复
-                    // 延迟一秒后导航到结果页面
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                        navigateToResults = true
-                    }
-                }
-            }
-            .navigationDestination(isPresented: $navigateToResults) {
-                if let comicResult = viewModel.comicResult {
-                    OpenResultsView(comicResult: comicResult)
-                } else {
-                    // 错误处理视图
-                    Text("生成失败，请重试")
-                        .foregroundColor(.red)
                 }
             }
     }

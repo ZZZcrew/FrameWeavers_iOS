@@ -7,6 +7,7 @@ struct ProcessingView: View {
     @StateObject private var galleryViewModel = ProcessingGalleryViewModel()
     @State private var frames: [String: CGRect] = [:]
     @Namespace private var galleryNamespace
+    @State private var navigateToResults = false // 添加导航状态
     
     // 定时器
     let scrollTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
@@ -80,6 +81,16 @@ struct ProcessingView: View {
         }
         .onChange(of: viewModel.baseFrames) { _, newFrames in
             handleBaseFramesChange(newFrames)
+        }
+        // 添加导航逻辑
+        .navigationDestination(isPresented: $navigateToResults) {
+            if let comicResult = viewModel.comicResult {
+                OpenResultsView(comicResult: comicResult)
+            } else {
+                // 错误处理视图
+                Text("生成失败，请重试")
+                    .foregroundColor(.red)
+            }
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
@@ -159,8 +170,12 @@ extension ProcessingView {
     /// 处理状态变化
     /// - Parameter newStatus: 新的上传状态
     private func handleStatusChange(_ newStatus: UploadStatus) {
-        // 状态变化的处理逻辑已经移到ViewModel中
-        // 这里只保留必要的UI响应
+        // 当状态变为完成时，触发导航
+        if newStatus == .completed {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                self.navigateToResults = true
+            }
+        }
     }
 
     /// 处理基础帧数据变化
