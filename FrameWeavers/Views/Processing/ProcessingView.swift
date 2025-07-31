@@ -60,8 +60,8 @@ extension ProcessingView {
             )
 
             FilmstripView(
-                imageNames: galleryViewModel.imageNames,
-                baseFrames: galleryViewModel.baseFrames
+                displayImages: galleryViewModel.filmstripDisplayImages,
+                config: galleryViewModel.filmstripConfig
             )
 
             // 统一的进度条显示，在所有等待状态下都显示

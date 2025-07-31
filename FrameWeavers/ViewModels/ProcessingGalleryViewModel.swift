@@ -22,6 +22,34 @@ class ProcessingGalleryViewModel: ObservableObject {
         return map
     }
 
+    /// 胶片传送带显示图片数据 - 业务逻辑处理
+    var filmstripDisplayImages: [DisplayImageData] {
+        if !baseFrames.isEmpty {
+            // 使用后端基础帧数据
+            return baseFrames.map { frame in
+                DisplayImageData(
+                    id: frame.id.uuidString,
+                    imageSource: .remote(url: frame.thumbnailURL),
+                    fallbackName: nil
+                )
+            }
+        } else {
+            // 使用本地图片
+            return imageNames.map { name in
+                DisplayImageData(
+                    id: name,
+                    imageSource: .local(name: name),
+                    fallbackName: name
+                )
+            }
+        }
+    }
+
+    /// 胶片传送带配置
+    var filmstripConfig: FilmstripConfiguration {
+        return .default
+    }
+
     init() {
         mainImageName = imageNames.first ?? ""
     }
