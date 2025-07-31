@@ -450,6 +450,15 @@ class VideoUploadViewModel: ObservableObject {
                     Task {
                         await extractBaseFrames()
                     }
+                } else if status == "processing" || status == "uploaded" {
+                    // 视频正在处理中，可以尝试提前提取基础帧
+                    uploadStatus = .processing
+                    // 如果还没有基础帧数据，尝试提取
+                    if baseFrames.isEmpty {
+                        Task {
+                            await tryEarlyBaseFrameExtraction()
+                        }
+                    }
                 } else if status == "error" || status == "cancelled" {
                     uploadStatus = .failed
                     errorMessage = message
@@ -473,6 +482,43 @@ class VideoUploadViewModel: ObservableObject {
     }
 
     // MARK: - 基础帧提取
+
+    /// 尝试提前提取基础帧（在视频还在处理时）
+    private func tryEarlyBaseFrameExtraction() async {
+        guard let taskId = currentTaskId else { return }
+
+        print("🚀 尝试提前提取基础帧, taskId: \(taskId)")
+
+        do {
+            // 尝试提取基础帧，如果后端还没准备好会返回错误，我们忽略错误继续等待
+            let response = try await baseFrameService.extractBaseFrames(taskId: taskId, interval: 1.0)
+
+            if response.success && !response.results.isEmpty {
+                print("🎉 提前获取到基础帧数据！")
+
+                // 转换响应数据为BaseFrameData
+                let frames = response.results.flatMap { result in
+                    print("🎞️ 视频: \(result.videoName), 基础帧数量: \(result.baseFramesCount)")
+                    return result.baseFramesPaths.enumerated().map { index, path in
+                        BaseFrameData(
+                            framePath: path,
+                            frameIndex: index,
+                            timestamp: Double(index) * 1.0
+                        )
+                    }
+                }
+
+                await MainActor.run {
+                    self.baseFrames = frames
+                    print("✅ 提前设置基础帧数据成功，数量: \(frames.count)")
+                }
+            }
+        } catch {
+            // 提前提取失败是正常的，不需要报错，继续等待正常流程
+            print("ℹ️ 提前提取基础帧失败（正常情况）: \(error.localizedDescription)")
+        }
+    }
+
     private func extractBaseFrames() async {
         guard let taskId = currentTaskId else {
             print("❌ 基础帧提取失败: 缺少任务ID")
@@ -480,6 +526,13 @@ class VideoUploadViewModel: ObservableObject {
                 self.uploadStatus = .failed
                 self.errorMessage = "缺少任务ID"
             }
+            return
+        }
+
+        // 如果已经有基础帧数据，跳过提取直接进入下一步
+        if !baseFrames.isEmpty {
+            print("ℹ️ 基础帧数据已存在，跳过提取步骤")
+            await generateCompleteComic()
             return
         }
 

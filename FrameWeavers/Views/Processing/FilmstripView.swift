@@ -3,12 +3,56 @@ import SwiftUI
 /// 胶片传送带视图 - 纯UI组件，遵循MVVM架构
 struct FilmstripView: View {
     let displayImages: [DisplayImageData]
+    let baseFrames: [BaseFrameData]  // 直接使用基础帧数据
+    let isExampleMode: Bool
     let config: FilmstripConfiguration
     @State private var scrollOffset: CGFloat = 0
 
-    init(displayImages: [DisplayImageData], config: FilmstripConfiguration = .default) {
+    init(displayImages: [DisplayImageData] = [],
+         baseFrames: [BaseFrameData] = [],
+         isExampleMode: Bool = false,
+         config: FilmstripConfiguration = .default) {
         self.displayImages = displayImages
+        self.baseFrames = baseFrames
+        self.isExampleMode = isExampleMode
         self.config = config
+    }
+
+    /// 计算实际显示的图片数据
+    private var actualDisplayImages: [DisplayImageData] {
+        if isExampleMode {
+            // 示例模式：使用本地图片
+            return ["Image1", "Image2", "Image3", "Image4"].map { name in
+                DisplayImageData(
+                    id: name,
+                    imageSource: .local(name: name),
+                    fallbackName: name
+                )
+            }
+        } else if !baseFrames.isEmpty {
+            // 真实模式：使用基础帧数据
+            return baseFrames.map { frame in
+                DisplayImageData(
+                    id: frame.id.uuidString,
+                    imageSource: .remote(url: frame.thumbnailURL),
+                    fallbackName: nil
+                )
+            }
+        } else {
+            // 等待状态：使用传入的displayImages或显示占位符
+            return displayImages.isEmpty ? createLoadingPlaceholders() : displayImages
+        }
+    }
+
+    /// 创建加载占位符
+    private func createLoadingPlaceholders() -> [DisplayImageData] {
+        return (0..<4).map { index in
+            DisplayImageData(
+                id: "loading_placeholder_\(index)",
+                imageSource: .local(name: "Image\(index + 1)"),
+                fallbackName: "Image\(index + 1)"
+            )
+        }
     }
 
     var body: some View {
@@ -21,9 +65,10 @@ struct FilmstripView: View {
                 HStack(spacing: config.frameSpacing) {
                     // 重复图片以实现无限滚动
                     ForEach(0..<config.repeatCount, id: \.self) { index in
-                        if !displayImages.isEmpty {
-                            let imageIndex = index % displayImages.count
-                            let displayImage = displayImages[imageIndex]
+                        let currentImages = actualDisplayImages
+                        if !currentImages.isEmpty {
+                            let imageIndex = index % currentImages.count
+                            let displayImage = currentImages[imageIndex]
 
                             FilmFrameView(
                                 displayImage: displayImage,
@@ -36,8 +81,12 @@ struct FilmstripView: View {
                 .onAppear {
                     startScrolling()
                 }
-                .onChange(of: displayImages) { _, _ in
-                    // 当显示图片数据变化时，重新启动滚动动画
+                .onChange(of: baseFrames) { _, _ in
+                    // 当基础帧数据变化时，重新启动滚动动画
+                    restartScrolling()
+                }
+                .onChange(of: isExampleMode) { _, _ in
+                    // 当模式变化时，重新启动滚动动画
                     restartScrolling()
                 }
             }
@@ -48,10 +97,11 @@ struct FilmstripView: View {
 
     /// 启动传送带滚动动画
     private func startScrolling() {
-        guard !displayImages.isEmpty else { return }
+        let currentImages = actualDisplayImages
+        guard !currentImages.isEmpty else { return }
 
         let itemWidth = config.frameWidth + config.frameSpacing
-        let totalWidth = itemWidth * CGFloat(displayImages.count)
+        let totalWidth = itemWidth * CGFloat(currentImages.count)
 
         // 重置滚动偏移量，确保从正确位置开始
         scrollOffset = 0

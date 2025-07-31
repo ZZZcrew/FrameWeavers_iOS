@@ -10,7 +10,7 @@ class ProcessingGalleryViewModel: ObservableObject {
     @Published var stackedImages: [String] = [] // 已堆叠的图片列表
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
     @Published var isUsingBaseFrames: Bool = false // 是否使用基础帧
-    @Published var filmstripDisplayImages: [DisplayImageData] = [] // 响应式胶片显示数据
+    @Published var filmstripDisplayImages: [DisplayImageData] = [] // 保留兼容性，但不再使用
     @Published var isExampleMode: Bool = false // 是否为示例模式
 
     let imageNames = ["Image1", "Image2", "Image3", "Image4"]
@@ -32,44 +32,10 @@ class ProcessingGalleryViewModel: ObservableObject {
 
     init() {
         mainImageName = imageNames.first ?? ""
-        setupReactiveDataFlow()
+        // 不再需要复杂的响应式数据流，FilmstripView 直接使用 baseFrames
     }
 
-    /// 设置响应式数据流 - 符合Combine最佳实践
-    private func setupReactiveDataFlow() {
-        // 响应baseFrames和isExampleMode变化，自动更新filmstripDisplayImages
-        Publishers.CombineLatest($baseFrames, $isExampleMode)
-            .map { [weak self] frames, isExample -> [DisplayImageData] in
-                guard let self = self else { return [] }
-
-                if isExample {
-                    // 示例模式：始终使用本地图片
-                    print("🎭 使用示例模式：本地图片数据")
-                    return self.imageNames.map { name in
-                        DisplayImageData(
-                            id: name,
-                            imageSource: .local(name: name),
-                            fallbackName: name
-                        )
-                    }
-                } else if !frames.isEmpty {
-                    // 真实模式：使用后端基础帧数据，不显示本地死数据
-                    print("🎬 使用真实模式：后端基础帧数据，数量: \(frames.count)")
-                    return frames.map { frame in
-                        DisplayImageData(
-                            id: frame.id.uuidString,
-                            imageSource: .remote(url: frame.thumbnailURL),
-                            fallbackName: nil  // 真实模式下不使用fallback
-                        )
-                    }
-                } else {
-                    // 等待数据状态：显示空数组或加载状态
-                    print("⏳ 等待数据中...")
-                    return []
-                }
-            }
-            .assign(to: &$filmstripDisplayImages)
-    }
+    // 移除了复杂的响应式数据流，FilmstripView 现在直接使用 baseFrames 数据
 
     /// 设置基础帧数据
     func setBaseFrames(_ frames: [BaseFrameData]) {
@@ -100,6 +66,8 @@ class ProcessingGalleryViewModel: ObservableObject {
     func getBaseFrame(for id: String) -> BaseFrameData? {
         return baseFrames.first { $0.id.uuidString == id }
     }
+
+    // 移除了 createLoadingPlaceholders 方法，现在由 FilmstripView 内部处理
 
 
     

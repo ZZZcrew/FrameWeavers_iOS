@@ -73,6 +73,8 @@ extension ProcessingView {
 
             FilmstripView(
                 displayImages: galleryViewModel.filmstripDisplayImages,
+                baseFrames: galleryViewModel.baseFrames,
+                isExampleMode: galleryViewModel.isExampleMode,
                 config: galleryViewModel.filmstripConfig
             )
 
