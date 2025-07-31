@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 处理加载视图组件
+/// 处理加载视图组件，统一的进度条显示
 struct ProcessingLoadingView: View {
     let progress: Double
     let status: UploadStatus
