@@ -17,9 +17,6 @@ struct SampleFlowView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: $mockViewModel.shouldNavigateToResults) {
-            OpenResultsView(comicResult: comicResult)
-        }
         // .navigationBarBackButtonHidden(false)
         // .toolbarBackground(Color.clear, for: .navigationBar)
     }
@@ -42,6 +39,7 @@ struct SampleSelectStyleView: View {
 struct SampleProcessingView: View {
     @ObservedObject var viewModel: MockVideoUploadViewModel
     let comicResult: ComicResult
+    @State private var navigateToResults = false
     @State private var hasNavigated = false  // 防止重复导航
 
     var body: some View {
@@ -51,28 +49,19 @@ struct SampleProcessingView: View {
                 viewModel.startMockProcessing()
                 // 重置导航状态
                 hasNavigated = false
-                viewModel.shouldNavigateToResults = false
+                navigateToResults = false
             }
             .onChange(of: viewModel.uploadStatus) { _, newStatus in
-                print("🔄 SampleProcessingView: 状态变化 -> \(newStatus)")
-                print("🔄 SampleProcessingView: comicResult 是否存在: \(viewModel.comicResult != nil)")
-                print("🔄 SampleProcessingView: hasNavigated: \(hasNavigated)")
-
                 if newStatus == .completed && !hasNavigated {
-                    print("✅ SampleProcessingView: 准备导航到结果页面")
                     hasNavigated = true  // 标记已处理，防止重复
                     // 延迟一秒后导航到结果页面
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                        print("🚀 SampleProcessingView: 开始导航")
-                        print("🚀 SampleProcessingView: 设置 shouldNavigateToResults = true")
-                        viewModel.shouldNavigateToResults = true
-                        print("🚀 SampleProcessingView: shouldNavigateToResults 已设置为: \(viewModel.shouldNavigateToResults)")
+                        navigateToResults = true
                     }
-                } else if newStatus == .completed && hasNavigated {
-                    print("⚠️ SampleProcessingView: 已经导航过了，跳过")
-                } else if newStatus == .failed {
-                    print("❌ SampleProcessingView: 处理失败，不导航")
                 }
+            }
+            .navigationDestination(isPresented: $navigateToResults) {
+                OpenResultsView(comicResult: comicResult)
             }
     }
 }
@@ -82,8 +71,8 @@ class MockVideoUploadViewModel: VideoUploadViewModel {
     private let targetComicResult: ComicResult?
     private var mockTimer: Timer?
 
-    override init() {
-        self.targetComicResult = nil
+    init(comicResult: ComicResult? = nil) {
+        self.targetComicResult = comicResult
         super.init()
         // 设置一些模拟视频，但不自动触发状态变化
         self.selectedVideos = [
@@ -92,11 +81,6 @@ class MockVideoUploadViewModel: VideoUploadViewModel {
         ]
         // 重置状态，确保从pending开始
         self.uploadStatus = .pending
-    }
-
-    init(comicResult: ComicResult) {
-        self.targetComicResult = comicResult
-        super.init()
     }
 
     // 重写selectVideos方法，避免自动触发导航

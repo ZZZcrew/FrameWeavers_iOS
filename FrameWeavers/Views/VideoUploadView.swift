@@ -22,14 +22,6 @@ struct VideoUploadView: View {
             .navigationDestination(isPresented: $viewModel.shouldNavigateToStyleSelection) {
                 SelectStyleView(viewModel: viewModel)
             }
-            .navigationDestination(isPresented: $viewModel.shouldNavigateToResults) {
-                if let comicResult = viewModel.comicResult {
-                    OpenResultsView(comicResult: comicResult)
-                } else {
-                    Text("生成失败，请重试")
-                        .foregroundColor(.red)
-                }
-            }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
         }
