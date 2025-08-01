@@ -29,6 +29,7 @@ struct SampleAlbumsView: View {
                                     )
                                     .listRowBackground(Color.clear)
                                     .listRowSeparator(.hidden)
+                                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                                 }
                                 .onDelete(perform: viewModel.deleteHistoryAlbums)
                             } header: {
@@ -62,14 +63,13 @@ struct SampleAlbumsView: View {
                                 )
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                             }
                         } header: {
                             HStack {
                                 Text("示例画册")
                                     .font(.custom("WSQuanXing", size: 20))
                                     .foregroundColor(Color(hex: "#855C23"))
-
-                                Spacer()
                             }
                             .padding(.horizontal, 4)
                             .textCase(nil)
@@ -123,7 +123,7 @@ struct AlbumRowView: View {
     }
 
     private var albumRowContent: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             // 封面图片
             Group {
                 if isRemoteImage {
@@ -131,7 +131,7 @@ struct AlbumRowView: View {
                         AsyncImage(url: URL(string: coverImage)) { image in
                             image
                                 .resizable()
-                                .aspectRatio(contentMode: .fit)
+                                .aspectRatio(contentMode: .fill)
                         } placeholder: {
                             Image(systemName: "photo")
                                 .foregroundColor(.gray)
@@ -143,35 +143,30 @@ struct AlbumRowView: View {
                 } else {
                     Image(coverImage)
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .aspectRatio(contentMode: .fill)
                 }
             }
-            .frame(width: 80, height: 100)
+            .frame(width: 60, height: 80)
             .background(Color.gray.opacity(0.1))
             .cornerRadius(8)
-            .shadow(radius: 4)
+            .clipped()
 
             // 画册信息
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.custom("WSQuanXing", size: 18))
+                    .font(.custom("WSQuanXing", size: 16))
                     .foregroundColor(Color(hex: "#2F2617"))
-                    .lineLimit(2)
+                    .lineLimit(1)
 
                 Text(description)
                     .font(.custom("STKaiti", size: 14))
                     .foregroundColor(Color(hex: "#855C23"))
                     .opacity(0.8)
                     .lineLimit(2)
-
-                Spacer()
             }
-
-            Spacer()
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Color.white.opacity(0.9))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .padding(.vertical, 2)
     }
 }
 
