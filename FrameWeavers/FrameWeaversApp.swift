@@ -3,6 +3,8 @@ import SwiftData
 
 @main
 struct FrameWeaversApp: App {
+    @StateObject private var networkService = NetworkPermissionService()
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
@@ -20,6 +22,11 @@ struct FrameWeaversApp: App {
         WindowGroup {
             VideoUploadView()
                 .tint(Color(hex: "#2F2617"))
+                .environmentObject(networkService)
+                .task {
+                    // 应用启动时主动检查网络权限
+                    await networkService.checkNetworkPermission()
+                }
         }
         .modelContainer(sharedModelContainer)
     }
