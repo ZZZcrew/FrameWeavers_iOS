@@ -25,8 +25,12 @@ struct SampleAlbumsView: View {
                         if viewModel.hasHistory {
                             Section {
                                 ForEach(viewModel.historyAlbums) { historyAlbum in
-                                    HistoryAlbumRowView(
-                                        historyAlbum: historyAlbum,
+                                    AlbumRowView(
+                                        title: historyAlbum.title,
+                                        description: historyAlbum.originalVideoTitle,
+                                        comicResult: historyAlbum.toComicResult(),
+                                        coverImage: historyAlbum.thumbnailImageName ?? "",
+                                        isRemoteImage: true,
                                         onDelete: { viewModel.deleteHistoryAlbum(historyAlbum) }
                                     )
                                     .listRowBackground(Color.clear)
@@ -54,9 +58,16 @@ struct SampleAlbumsView: View {
                         // 示例画册部分
                         Section {
                             ForEach(viewModel.sampleAlbums) { album in
-                                SampleAlbumRowView(album: album)
-                                    .listRowBackground(Color.clear)
-                                    .listRowSeparator(.hidden)
+                                AlbumRowView(
+                                    title: album.title,
+                                    description: album.description,
+                                    comicResult: album.comicResult,
+                                    coverImage: album.coverImage,
+                                    isRemoteImage: false,
+                                    onDelete: nil
+                                )
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
                             }
                         } header: {
                             HStack {
@@ -172,40 +183,7 @@ struct AlbumRowView: View {
     }
 }
 
-// MARK: - 历史画册行视图
 
-struct HistoryAlbumRowView: View {
-    let historyAlbum: HistoryAlbum
-    let onDelete: () -> Void
-
-    var body: some View {
-        AlbumRowView(
-            title: historyAlbum.title,
-            description: historyAlbum.originalVideoTitle, // 使用视频标题作为描述
-            comicResult: historyAlbum.toComicResult(),
-            coverImage: historyAlbum.thumbnailImageName ?? "",
-            isRemoteImage: true,
-            onDelete: onDelete
-        )
-    }
-}
-
-// MARK: - 示例画册行视图
-
-struct SampleAlbumRowView: View {
-    let album: SampleAlbum
-
-    var body: some View {
-        AlbumRowView(
-            title: album.title,
-            description: album.description,
-            comicResult: album.comicResult,
-            coverImage: album.coverImage,
-            isRemoteImage: false,
-            onDelete: nil
-        )
-    }
-}
 
 #Preview {
     SampleAlbumsView()
