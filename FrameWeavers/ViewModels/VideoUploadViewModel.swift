@@ -33,7 +33,7 @@ class VideoUploadViewModel: ObservableObject {
     private var historyService: HistoryService? // 历史记录服务
 
     // MARK: - 视频选择ViewModel（依赖注入）
-    @Published var videoSelectionViewModel = VideoSelectionViewModel()
+    var videoSelectionViewModel = VideoSelectionViewModel()
 
     // MARK: - 初始化和配置
 
