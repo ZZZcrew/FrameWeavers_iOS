@@ -91,20 +91,6 @@ class SampleAlbumsViewModel: ObservableObject {
                     "什么让你感到最温暖？"
                 ]
             )
-        ),
-        SampleAlbum(
-            id: "sample-003",
-            title: "城市夜景",
-            description: "繁华都市的璀璨夜晚",
-            coverImage: "封面",
-            comicResult: nil
-        ),
-        SampleAlbum(
-            id: "sample-004",
-            title: "海边日落",
-            description: "宁静海滩的美丽黄昏",
-            coverImage: "封面",
-            comicResult: nil
         )
     ]
     
