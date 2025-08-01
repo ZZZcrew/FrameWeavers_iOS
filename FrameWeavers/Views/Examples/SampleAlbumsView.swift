@@ -93,44 +93,53 @@ struct SampleAlbumsView: View {
     }
 }
 
-// MARK: - 历史画册行视图
+// MARK: - 画册行视图
 
-struct HistoryAlbumRowView: View {
-    let historyAlbum: HistoryAlbum
-    let onDelete: () -> Void
+struct AlbumRowView: View {
+    let title: String
+    let description: String
+    let comicResult: ComicResult?
+    let coverImage: String
+    let isRemoteImage: Bool
+    let onDelete: (() -> Void)?
 
     var body: some View {
-        if let comicResult = historyAlbum.toComicResult() {
-            // 有内容的历史画册 - 可以点击
+        if let comicResult = comicResult {
+            // 有内容的画册 - 可以点击
             NavigationLink {
                 SampleFlowView(comicResult: comicResult)
             } label: {
-                historyAlbumRowContent
+                albumRowContent
             }
         } else {
-            // 数据损坏的画册 - 不可点击
-            historyAlbumRowContent
+            // 无内容的画册 - 不可点击
+            albumRowContent
                 .opacity(0.6)
         }
     }
 
-    private var historyAlbumRowContent: some View {
+    private var albumRowContent: some View {
         HStack(spacing: 16) {
-            // 封面图片或占位符
+            // 封面图片
             Group {
-                if let thumbnailImageName = historyAlbum.thumbnailImageName,
-                   !thumbnailImageName.isEmpty {
-                    AsyncImage(url: URL(string: thumbnailImageName)) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                    } placeholder: {
+                if isRemoteImage {
+                    if !coverImage.isEmpty {
+                        AsyncImage(url: URL(string: coverImage)) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                        } placeholder: {
+                            Image(systemName: "photo")
+                                .foregroundColor(.gray)
+                        }
+                    } else {
                         Image(systemName: "photo")
                             .foregroundColor(.gray)
                     }
                 } else {
-                    Image(systemName: "photo")
-                        .foregroundColor(.gray)
+                    Image(coverImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
                 }
             }
             .frame(width: 80, height: 100)
@@ -140,40 +149,44 @@ struct HistoryAlbumRowView: View {
 
             // 画册信息
             VStack(alignment: .leading, spacing: 8) {
-                Text(historyAlbum.title)
+                Text(title)
                     .font(.custom("WSQuanXing", size: 18))
                     .foregroundColor(Color(hex: "#2F2617"))
                     .lineLimit(2)
 
-                Text("\(historyAlbum.panelCount)页 · \(DateFormatter.shortDate.string(from: historyAlbum.creationDate))")
+                Text(description)
                     .font(.custom("STKaiti", size: 14))
                     .foregroundColor(Color(hex: "#855C23"))
                     .opacity(0.8)
-
-                Text("来自: \(historyAlbum.originalVideoTitle)")
-                    .font(.custom("STKaiti", size: 12))
-                    .foregroundColor(Color(hex: "#2F2617"))
-                    .opacity(0.6)
-                    .lineLimit(1)
+                    .lineLimit(2)
 
                 Spacer()
             }
 
             Spacer()
-
-            // 删除按钮
-            Button(action: onDelete) {
-                Image(systemName: "trash")
-                    .foregroundColor(.red)
-                    .font(.system(size: 16))
-            }
-            .buttonStyle(PlainButtonStyle())
         }
         .padding(16)
         .background(Color.white.opacity(0.9))
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
-        // .padding(.horizontal, 8)
+    }
+}
+
+// MARK: - 历史画册行视图
+
+struct HistoryAlbumRowView: View {
+    let historyAlbum: HistoryAlbum
+    let onDelete: () -> Void
+
+    var body: some View {
+        AlbumRowView(
+            title: historyAlbum.title,
+            description: historyAlbum.originalVideoTitle, // 使用视频标题作为描述
+            comicResult: historyAlbum.toComicResult(),
+            coverImage: historyAlbum.thumbnailImageName ?? "",
+            isRemoteImage: true,
+            onDelete: onDelete
+        )
     }
 }
 
@@ -183,64 +196,14 @@ struct SampleAlbumRowView: View {
     let album: SampleAlbum
 
     var body: some View {
-        if let comicResult = album.comicResult {
-            // 有内容的画册 - 可以点击
-            NavigationLink {
-                SampleFlowView(comicResult: comicResult)
-            } label: {
-                albumRowContent
-            }
-        } else {
-            // 空白画册 - 不可点击
-            albumRowContent
-                .opacity(0.6)
-        }
-    }
-
-    private var albumRowContent: some View {
-        HStack(spacing: 16) {
-            // 封面图片
-            Image(album.coverImage)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 80, height: 100)
-                .cornerRadius(8)
-                .shadow(radius: 4)
-
-            // 画册信息
-            VStack(alignment: .leading, spacing: 8) {
-                Text(album.title)
-                    .font(.custom("WSQuanXing", size: 18))
-                    .foregroundColor(Color(hex: "#2F2617"))
-                    .lineLimit(2)
-
-                Text(album.description)
-                    .font(.custom("STKaiti", size: 14))
-                    .foregroundColor(Color(hex: "#855C23"))
-                    .opacity(0.8)
-                    .lineLimit(2)
-
-                Spacer()
-
-                if album.comicResult != nil {
-                    Text("点击阅读")
-                        .font(.custom("STKaiti", size: 12))
-                        .foregroundColor(Color(hex: "#2F2617"))
-                        .opacity(0.6)
-                } else {
-                    Text("敬请期待")
-                        .font(.custom("STKaiti", size: 12))
-                        .foregroundColor(Color.gray)
-                }
-            }
-
-            Spacer()
-        }
-        .padding(16)
-        .background(Color.white.opacity(0.9))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
-        // .padding(.horizontal, 8)
+        AlbumRowView(
+            title: album.title,
+            description: album.description,
+            comicResult: album.comicResult,
+            coverImage: album.coverImage,
+            isRemoteImage: false,
+            onDelete: nil
+        )
     }
 }
 
