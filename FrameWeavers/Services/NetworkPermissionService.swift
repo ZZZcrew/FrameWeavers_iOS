@@ -79,26 +79,9 @@ class NetworkPermissionService: ObservableObject {
     // MARK: - 检查网络权限（主动发起网络请求）
     func checkNetworkPermission() async -> Bool {
         print("🌐 NetworkPermissionService: 开始检查网络权限")
-        
-        // 创建一个简单的网络请求来触发权限弹窗
-        guard let url = URL(string: "https://www.apple.com") else {
-            print("❌ NetworkPermissionService: 无效的测试URL")
-            return false
-        }
-        
-        do {
-            let (_, response) = try await URLSession.shared.data(from: url)
-            if let httpResponse = response as? HTTPURLResponse {
-                let hasPermission = httpResponse.statusCode == 200
-                print("✅ NetworkPermissionService: 网络权限检查完成 - 有权限: \(hasPermission)")
-                return hasPermission
-            }
-        } catch {
-            print("❌ NetworkPermissionService: 网络权限检查失败: \(error.localizedDescription)")
-            return false
-        }
-        
-        return false
+
+        // 直接使用应用的API地址来触发权限弹窗，避免多余请求
+        return await checkAPIConnectivity()
     }
     
     // MARK: - 检查API连接性

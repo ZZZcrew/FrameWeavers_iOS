@@ -34,9 +34,6 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>需要访问相册来选择视频文件进行连环画生成</string>
-	<key>NSCameraUsageDescription</key>
-	<string>需要访问相机来录制视频进行连环画生成</string>
+
 </dict>
 </plist>
