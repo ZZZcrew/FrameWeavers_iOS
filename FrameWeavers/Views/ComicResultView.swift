@@ -13,20 +13,20 @@ struct ComicResultView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            ZStack {
+            VStack(spacing: 0) {
+                // 3D翻页内容区域
+                ComicPageViewController(
+                    comicResult: comicResult,
+                    currentPage: $viewModel.currentPage,
+                    geometry: geometry
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .background {
                 Image("背景单色")
                     .resizable()
                     .scaledToFill()
-
-                VStack(spacing: 0) {
-                    // 3D翻页内容区域
-                    ComicPageViewController(
-                        comicResult: comicResult,
-                        currentPage: $viewModel.currentPage,
-                        geometry: geometry
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
+                    .ignoresSafeArea()
             }
         }
         .ignoresSafeArea()
