@@ -2,13 +2,13 @@ import XCTest
 import SwiftData
 @testable import FrameWeavers
 
-/// HistoryManagementService 单元测试
-/// 测试历史记录管理服务的各项功能
-final class HistoryManagementServiceTests: XCTestCase {
-    
+/// HistoryService 单元测试
+/// 测试历史记录服务的各项功能
+final class HistoryServiceTests: XCTestCase {
+
     // MARK: - 测试属性
-    
-    var historyManagementService: HistoryManagementService!
+
+    var historyService: HistoryService!
     var modelContainer: ModelContainer!
     var modelContext: ModelContext!
     
@@ -25,11 +25,11 @@ final class HistoryManagementServiceTests: XCTestCase {
         modelContext = ModelContext(modelContainer)
         
         // 创建测试服务
-        historyManagementService = HistoryManagementService(modelContext: modelContext)
+        historyService = HistoryService(modelContext: modelContext)
     }
     
     override func tearDownWithError() throws {
-        historyManagementService = nil
+        historyService = nil
         modelContext = nil
         modelContainer = nil
         try super.tearDownWithError()
@@ -64,33 +64,33 @@ final class HistoryManagementServiceTests: XCTestCase {
         let expectation = XCTestExpectation(description: "保存完成")
         
         // When
-        historyManagementService.saveComicToHistory(comicResult) { success in
+        historyService.saveComicToHistory(comicResult) { success in
             // Then
             XCTAssertTrue(success, "保存应该成功")
             expectation.fulfill()
         }
-        
+
         wait(for: [expectation], timeout: 5.0)
-        
+
         // 验证保存结果
-        let savedAlbums = try historyManagementService.getAllHistoryAlbums()
+        let savedAlbums = try historyService.fetchAllHistoryAlbums()
         XCTAssertEqual(savedAlbums.count, 1, "应该有一个保存的画册")
         XCTAssertEqual(savedAlbums.first?.id, comicResult.comicId, "保存的画册ID应该匹配")
     }
-    
+
     /// 测试保存连环画到历史记录（异步方法）
     func testSaveComicToHistoryAsync() async throws {
         // Given
         let comicResult = createTestComicResult()
-        
+
         // When
-        let success = await historyManagementService.saveComicToHistory(comicResult)
+        let success = await historyService.saveComicToHistory(comicResult)
         
         // Then
         XCTAssertTrue(success, "保存应该成功")
         
         // 验证保存结果
-        let savedAlbums = try historyManagementService.getAllHistoryAlbums()
+        let savedAlbums = try historyService.fetchAllHistoryAlbums()
         XCTAssertEqual(savedAlbums.count, 1, "应该有一个保存的画册")
         XCTAssertEqual(savedAlbums.first?.title, comicResult.title, "保存的画册标题应该匹配")
     }
@@ -103,15 +103,15 @@ final class HistoryManagementServiceTests: XCTestCase {
         let comicResult2 = createTestComicResult(id: comicId)
         
         // When
-        let success1 = await historyManagementService.saveComicToHistory(comicResult1)
-        let success2 = await historyManagementService.saveComicToHistory(comicResult2)
+        let success1 = await historyService.saveComicToHistory(comicResult1)
+        let success2 = await historyService.saveComicToHistory(comicResult2)
         
         // Then
         XCTAssertTrue(success1, "第一次保存应该成功")
         XCTAssertFalse(success2, "第二次保存相同ID应该失败")
         
         // 验证只有一个画册被保存
-        let savedAlbums = try historyManagementService.getAllHistoryAlbums()
+        let savedAlbums = try historyService.fetchAllHistoryAlbums()
         XCTAssertEqual(savedAlbums.count, 1, "应该只有一个画册")
     }
     
@@ -123,11 +123,11 @@ final class HistoryManagementServiceTests: XCTestCase {
         let comic1 = createTestComicResult(id: "comic-1")
         let comic2 = createTestComicResult(id: "comic-2")
         
-        _ = await historyManagementService.saveComicToHistory(comic1)
-        _ = await historyManagementService.saveComicToHistory(comic2)
+        _ = await historyService.saveComicToHistory(comic1)
+        _ = await historyService.saveComicToHistory(comic2)
         
         // When
-        let albums = try historyManagementService.getAllHistoryAlbums()
+        let albums = try historyService.fetchAllHistoryAlbums()
         
         // Then
         XCTAssertEqual(albums.count, 2, "应该有两个历史记录")
@@ -141,13 +141,13 @@ final class HistoryManagementServiceTests: XCTestCase {
         // Given - 创建5个测试画册
         for i in 1...5 {
             let comic = createTestComicResult(id: "comic-\(i)")
-            _ = await historyManagementService.saveComicToHistory(comic)
+            _ = await historyService.saveComicToHistory(comic)
             // 添加小延迟确保创建时间不同
             try await Task.sleep(nanoseconds: 10_000_000) // 10ms
         }
         
         // When
-        let recentAlbums = try historyManagementService.getRecentHistoryAlbums(limit: 3)
+        let recentAlbums = try historyService.fetchRecentHistoryAlbums(limit: 3)
         
         // Then
         XCTAssertEqual(recentAlbums.count, 3, "应该返回3个最近的记录")
@@ -164,11 +164,11 @@ final class HistoryManagementServiceTests: XCTestCase {
         // Given
         let comicId = "specific-comic-id"
         let comic = createTestComicResult(id: comicId)
-        _ = await historyManagementService.saveComicToHistory(comic)
+        _ = await historyService.saveComicToHistory(comic)
         
         // When
-        let foundAlbum = try historyManagementService.getHistoryAlbum(by: comicId)
-        let notFoundAlbum = try historyManagementService.getHistoryAlbum(by: "non-existent-id")
+        let foundAlbum = try historyService.fetchHistoryAlbum(by: comicId)
+        let notFoundAlbum = try historyService.fetchHistoryAlbum(by: "non-existent-id")
         
         // Then
         XCTAssertNotNil(foundAlbum, "应该找到指定ID的画册")
@@ -182,20 +182,20 @@ final class HistoryManagementServiceTests: XCTestCase {
     func testDeleteHistoryAlbum() async throws {
         // Given
         let comic = createTestComicResult()
-        _ = await historyManagementService.saveComicToHistory(comic)
+        _ = await historyService.saveComicToHistory(comic)
         
-        let savedAlbums = try historyManagementService.getAllHistoryAlbums()
+        let savedAlbums = try historyService.fetchAllHistoryAlbums()
         XCTAssertEqual(savedAlbums.count, 1, "应该有一个保存的画册")
         
         let albumToDelete = savedAlbums.first!
         
         // When
-        let deleteSuccess = historyManagementService.deleteHistoryAlbum(albumToDelete)
+        let deleteSuccess = historyService.deleteHistoryAlbum(albumToDelete)
         
         // Then
         XCTAssertTrue(deleteSuccess, "删除应该成功")
         
-        let remainingAlbums = try historyManagementService.getAllHistoryAlbums()
+        let remainingAlbums = try historyService.fetchAllHistoryAlbums()
         XCTAssertEqual(remainingAlbums.count, 0, "删除后应该没有画册")
     }
     
@@ -204,17 +204,17 @@ final class HistoryManagementServiceTests: XCTestCase {
         // Given
         let comicId = "delete-test-id"
         let comic = createTestComicResult(id: comicId)
-        _ = await historyManagementService.saveComicToHistory(comic)
+        _ = await historyService.saveComicToHistory(comic)
         
         // When
-        let deleteSuccess = historyManagementService.deleteHistoryAlbum(by: comicId)
-        let deleteNonExistent = historyManagementService.deleteHistoryAlbum(by: "non-existent-id")
+        let deleteSuccess = historyService.deleteHistoryAlbum(by: comicId)
+        let deleteNonExistent = historyService.deleteHistoryAlbum(by: "non-existent-id")
         
         // Then
         XCTAssertTrue(deleteSuccess, "删除存在的画册应该成功")
         XCTAssertFalse(deleteNonExistent, "删除不存在的画册应该失败")
         
-        let remainingAlbums = try historyManagementService.getAllHistoryAlbums()
+        let remainingAlbums = try historyService.fetchAllHistoryAlbums()
         XCTAssertEqual(remainingAlbums.count, 0, "删除后应该没有画册")
     }
     
@@ -223,19 +223,19 @@ final class HistoryManagementServiceTests: XCTestCase {
         // Given - 创建多个测试画册
         for i in 1...3 {
             let comic = createTestComicResult(id: "comic-\(i)")
-            _ = await historyManagementService.saveComicToHistory(comic)
+            _ = await historyService.saveComicToHistory(comic)
         }
         
-        let initialCount = try historyManagementService.getAllHistoryAlbums().count
+        let initialCount = try historyService.fetchAllHistoryAlbums().count
         XCTAssertEqual(initialCount, 3, "应该有3个画册")
         
         // When
-        let clearSuccess = historyManagementService.clearAllHistory()
+        let clearSuccess = historyService.clearAllHistory()
         
         // Then
         XCTAssertTrue(clearSuccess, "清空应该成功")
         
-        let finalCount = try historyManagementService.getAllHistoryAlbums().count
+        let finalCount = try historyService.fetchAllHistoryAlbums().count
         XCTAssertEqual(finalCount, 0, "清空后应该没有画册")
     }
     
@@ -244,16 +244,16 @@ final class HistoryManagementServiceTests: XCTestCase {
     /// 测试获取历史记录总数
     func testGetHistoryCount() async throws {
         // Given
-        XCTAssertEqual(historyManagementService.getHistoryCount(), 0, "初始应该没有记录")
+        XCTAssertEqual(historyService.getHistoryCount(), 0, "初始应该没有记录")
         
         // When - 添加一些记录
         for i in 1...3 {
             let comic = createTestComicResult(id: "comic-\(i)")
-            _ = await historyManagementService.saveComicToHistory(comic)
+            _ = await historyService.saveComicToHistory(comic)
         }
         
         // Then
-        XCTAssertEqual(historyManagementService.getHistoryCount(), 3, "应该有3个记录")
+        XCTAssertEqual(historyService.getHistoryCount(), 3, "应该有3个记录")
     }
     
     // MARK: - 业务逻辑测试
@@ -265,20 +265,20 @@ final class HistoryManagementServiceTests: XCTestCase {
         let comic = createTestComicResult(id: comicId)
         
         // When & Then - 保存前不存在
-        XCTAssertFalse(historyManagementService.isComicAlreadyExists(comicId), "保存前应该不存在")
+        XCTAssertFalse(historyService.isComicAlreadyExists(comicId), "保存前应该不存在")
         
         // 保存后存在
-        _ = await historyManagementService.saveComicToHistory(comic)
-        XCTAssertTrue(historyManagementService.isComicAlreadyExists(comicId), "保存后应该存在")
+        _ = await historyService.saveComicToHistory(comic)
+        XCTAssertTrue(historyService.isComicAlreadyExists(comicId), "保存后应该存在")
         
         // 不存在的ID
-        XCTAssertFalse(historyManagementService.isComicAlreadyExists("non-existent-id"), "不存在的ID应该返回false")
+        XCTAssertFalse(historyService.isComicAlreadyExists("non-existent-id"), "不存在的ID应该返回false")
     }
     
     /// 测试获取历史记录摘要
     func testGetHistorySummary() async throws {
         // Given - 空状态
-        var summary = historyManagementService.getHistorySummary()
+        var summary = historyService.getHistorySummary()
         XCTAssertEqual(summary.totalCount, 0, "初始总数应该为0")
         XCTAssertFalse(summary.hasHistory, "初始应该没有历史记录")
         XCTAssertNil(summary.lastCreationDate, "初始应该没有最后创建时间")
@@ -287,12 +287,12 @@ final class HistoryManagementServiceTests: XCTestCase {
         // When - 添加一些记录
         for i in 1...3 {
             let comic = createTestComicResult(id: "comic-\(i)")
-            _ = await historyManagementService.saveComicToHistory(comic)
+            _ = await historyService.saveComicToHistory(comic)
             try await Task.sleep(nanoseconds: 10_000_000) // 10ms延迟确保时间不同
         }
         
         // Then
-        summary = historyManagementService.getHistorySummary()
+        summary = historyService.getHistorySummary()
         XCTAssertEqual(summary.totalCount, 3, "总数应该为3")
         XCTAssertTrue(summary.hasHistory, "应该有历史记录")
         XCTAssertNotNil(summary.lastCreationDate, "应该有最后创建时间")
