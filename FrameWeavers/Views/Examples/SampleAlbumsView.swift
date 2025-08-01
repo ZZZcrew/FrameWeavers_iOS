@@ -20,11 +20,6 @@ struct SampleAlbumsView: View {
                         .foregroundColor(Color(hex: "#855C23"))
                         .padding(.top, 20)
 
-                    Text("体验连环画的魅力")
-                        .font(.custom("STKaiti", size: 16))
-                        .foregroundColor(Color(hex: "#2F2617"))
-                        .opacity(0.8)
-
                     List {
                         // 历史记录部分
                         if viewModel.hasHistory {
@@ -70,17 +65,12 @@ struct SampleAlbumsView: View {
                                     .foregroundColor(Color(hex: "#855C23"))
 
                                 Spacer()
-
-                                Text("体验版")
-                                    .font(.custom("STKaiti", size: 14))
-                                    .foregroundColor(Color(hex: "#2F2617"))
-                                    .opacity(0.6)
                             }
                             .padding(.horizontal, 4)
                             .textCase(nil)
                         }
                     }
-                    .listStyle(PlainListStyle())
+                    // .listStyle(PlainListStyle())
                     .scrollContentBackground(.hidden)
                 }
             }
