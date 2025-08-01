@@ -307,29 +307,4 @@ class ComicGenerationCoordinator {
     }
 }
 
-// MARK: - Comic Generation Status
-enum ComicGenerationStatus {
-    case idle
-    case extractingBaseFrames
-    case generatingComic
-    case completed
-    case failed
-    case cancelled
-    
-    var description: String {
-        switch self {
-        case .idle:
-            return "待开始"
-        case .extractingBaseFrames:
-            return "提取基础帧中"
-        case .generatingComic:
-            return "生成连环画中"
-        case .completed:
-            return "已完成"
-        case .failed:
-            return "失败"
-        case .cancelled:
-            return "已取消"
-        }
-    }
-}
+

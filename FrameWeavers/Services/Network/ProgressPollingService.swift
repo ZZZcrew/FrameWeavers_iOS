@@ -17,15 +17,7 @@ class ProgressPollingService {
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Progress Polling Result
-    struct ProgressResult {
-        let status: String
-        let progress: Int
-        let message: String
-        let stage: String?
-        let shouldContinue: Bool
-        let shouldExtractFrames: Bool
-        let shouldTryEarlyExtraction: Bool
-    }
+    // ProgressResult 已移动到 Models/Core/ProgressModel.swift
     
     // MARK: - Comic Generation Progress Result
     struct ComicProgressResult {
