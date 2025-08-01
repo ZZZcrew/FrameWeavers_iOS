@@ -15,11 +15,6 @@ struct SampleAlbumsView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 20) {
-                    Text("画册库")
-                        .font(.custom("WSQuanXing", size: 28))
-                        .foregroundColor(Color(hex: "#855C23"))
-                        .padding(.top, 20)
-
                     List {
                         // 历史记录部分
                         if viewModel.hasHistory {
@@ -85,7 +80,7 @@ struct SampleAlbumsView: View {
                     .scrollContentBackground(.hidden)
                 }
             }
-            .navigationTitle("")
+            .navigationTitle("画册库")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -122,6 +117,7 @@ struct AlbumRowView: View {
             } label: {
                 albumRowContent
             }
+            .buttonStyle(PlainButtonStyle())
         } else {
             // 无内容的画册 - 不可点击
             albumRowContent
@@ -176,14 +172,11 @@ struct AlbumRowView: View {
 
             Spacer()
         }
-        .padding(16)
         .background(Color.white.opacity(0.9))
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
 }
-
-
 
 #Preview {
     SampleAlbumsView()
