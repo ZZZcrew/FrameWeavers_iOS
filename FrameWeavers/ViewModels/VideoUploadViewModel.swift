@@ -24,7 +24,7 @@ class VideoUploadViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var currentTaskId: String?  // 当前任务ID
     private var currentVideoPath: String?  // 当前视频路径
-    private var historyService: HistoryService? // 历史记录服务
+    private var historyManagementService: HistoryManagementService? // 历史记录管理服务
 
     // MARK: - 视频选择ViewModel（依赖注入）
     var videoSelectionViewModel = VideoSelectionViewModel()
@@ -40,10 +40,10 @@ class VideoUploadViewModel: ObservableObject {
 
     // MARK: - 初始化和配置
 
-    /// 设置历史记录服务
+    /// 设置历史记录管理服务
     /// - Parameter modelContext: SwiftData模型上下文
     func setHistoryService(modelContext: ModelContext) {
-        self.historyService = HistoryService(modelContext: modelContext)
+        self.historyManagementService = HistoryManagementService(modelContext: modelContext)
     }
 
     // MARK: - 兼容性属性和方法
@@ -288,7 +288,7 @@ class VideoUploadViewModel: ObservableObject {
                     self?.uploadProgress = 1.0
 
                     // 保存到历史记录
-                    self?.saveToHistory(comicResult)
+                    self?.saveComicToHistory(comicResult)
 
                     print("✅ 连环画生成完成！")
                 }
@@ -382,19 +382,33 @@ class VideoUploadViewModel: ObservableObject {
 
     // MARK: - 历史记录管理
 
-    /// 保存画册到历史记录
-    /// - Parameter comicResult: 要保存的画册结果
-    private func saveToHistory(_ comicResult: ComicResult) {
-        guard let historyService = historyService else {
-            print("⚠️ 历史记录服务未初始化，无法保存历史记录")
+    /// 保存连环画到历史记录
+    /// - Parameter comicResult: 要保存的连环画结果
+    private func saveComicToHistory(_ comicResult: ComicResult) {
+        guard let historyManagementService = historyManagementService else {
+            print("⚠️ 历史记录管理服务未初始化，无法保存历史记录")
             return
         }
 
-        let success = historyService.saveToHistory(comicResult)
-        if success {
-            print("✅ 画册已成功保存到历史记录: \(comicResult.title)")
-        } else {
-            print("❌ 保存画册到历史记录失败")
+        // 异步保存，避免阻塞主线程
+        historyManagementService.saveComicToHistory(comicResult) { success in
+            // 回调已经在主线程执行，无需额外调度
+            if !success {
+                print("❌ 保存连环画到历史记录失败")
+            }
         }
+    }
+
+    /// 获取历史记录摘要
+    /// - Returns: 历史记录摘要信息
+    func getHistorySummary() -> HistorySummary? {
+        return historyManagementService?.getHistorySummary()
+    }
+
+    /// 检查连环画是否已存在
+    /// - Parameter comicId: 连环画ID
+    /// - Returns: 是否已存在
+    func isComicAlreadyExists(_ comicId: String) -> Bool {
+        return historyManagementService?.isComicAlreadyExists(comicId) ?? false
     }
 }

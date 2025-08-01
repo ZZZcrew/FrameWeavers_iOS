@@ -10,7 +10,7 @@ class SampleAlbumsViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
-    private var historyService: HistoryService?
+    private var historyManagementService: HistoryManagementService?
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - 示例画册数据
@@ -108,10 +108,10 @@ class SampleAlbumsViewModel: ObservableObject {
     
     // MARK: - 初始化
     
-    /// 设置历史记录服务
+    /// 设置历史记录管理服务
     /// - Parameter modelContext: SwiftData模型上下文
     func setHistoryService(modelContext: ModelContext) {
-        self.historyService = HistoryService(modelContext: modelContext)
+        self.historyManagementService = HistoryManagementService(modelContext: modelContext)
         loadHistoryAlbums()
     }
     
@@ -119,13 +119,13 @@ class SampleAlbumsViewModel: ObservableObject {
     
     /// 加载历史记录
     func loadHistoryAlbums() {
-        guard let historyService = historyService else { return }
-        
+        guard let historyManagementService = historyManagementService else { return }
+
         isLoading = true
         errorMessage = nil
-        
+
         do {
-            let albums = try historyService.fetchAllHistoryAlbums()
+            let albums = try historyManagementService.getAllHistoryAlbums()
             DispatchQueue.main.async {
                 self.historyAlbums = albums
                 self.isLoading = false
@@ -141,9 +141,9 @@ class SampleAlbumsViewModel: ObservableObject {
     /// 删除历史画册
     /// - Parameter historyAlbum: 要删除的历史画册
     func deleteHistoryAlbum(_ historyAlbum: HistoryAlbum) {
-        guard let historyService = historyService else { return }
-        
-        let success = historyService.deleteHistoryAlbum(historyAlbum)
+        guard let historyManagementService = historyManagementService else { return }
+
+        let success = historyManagementService.deleteHistoryAlbum(historyAlbum)
         if success {
             // 从本地数组中移除
             historyAlbums.removeAll { $0.id == historyAlbum.id }
@@ -156,12 +156,12 @@ class SampleAlbumsViewModel: ObservableObject {
     /// 批量删除历史画册
     /// - Parameter offsets: 要删除的索引集合
     func deleteHistoryAlbums(at offsets: IndexSet) {
-        guard let historyService = historyService else { return }
-        
+        guard let historyManagementService = historyManagementService else { return }
+
         let albumsToDelete = offsets.map { historyAlbums[$0] }
-        
+
         for album in albumsToDelete {
-            let success = historyService.deleteHistoryAlbum(album)
+            let success = historyManagementService.deleteHistoryAlbum(album)
             if success {
                 historyAlbums.removeAll { $0.id == album.id }
                 print("✅ 已删除历史画册: \(album.title)")
@@ -171,9 +171,9 @@ class SampleAlbumsViewModel: ObservableObject {
     
     /// 清空所有历史记录
     func clearAllHistory() {
-        guard let historyService = historyService else { return }
-        
-        let success = historyService.clearAllHistory()
+        guard let historyManagementService = historyManagementService else { return }
+
+        let success = historyManagementService.clearAllHistory()
         if success {
             historyAlbums.removeAll()
             print("✅ 已清空所有历史记录")
