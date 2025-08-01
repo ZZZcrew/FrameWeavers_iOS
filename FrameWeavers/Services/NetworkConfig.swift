@@ -1,5 +1,4 @@
 import Foundation
-import UIKit
 
 // MARK: - 网络配置
 struct NetworkConfig {
@@ -19,7 +18,6 @@ struct NetworkConfig {
         case taskCancel(taskId: String)  // 取消任务
         case completeComic          // 完整连环画生成
         case comicResult(taskId: String)  // 获取连环画结果
-        case extractBaseFrames(taskId: String, interval: Double)  // 提取基础帧
 
         var path: String {
             switch self {
@@ -33,17 +31,6 @@ struct NetworkConfig {
                 return "/api/process/complete-comic"
             case .comicResult(let taskId):
                 return "/api/comic/result/\(taskId)"
-            case .extractBaseFrames(let taskId, let interval):
-                return "/api/extract/base-frames?task_id=\(taskId)&interval=\(interval)"
-            }
-        }
-
-        var method: String {
-            switch self {
-            case .uploadVideos, .completeComic, .taskCancel:
-                return "POST"
-            case .taskStatus, .comicResult, .extractBaseFrames:
-                return "GET"
             }
         }
 
@@ -75,8 +62,6 @@ struct NetworkConfig {
     // 超时配置
     static let timeoutInterval: TimeInterval = 60.0
     static let uploadTimeoutInterval: TimeInterval = 300.0  // 5分钟上传超时
-    static let comicGenerationTimeout: TimeInterval = 3000.0  // 连环画生成超时
-    static let requestTimeout: TimeInterval = 30.0  // 普通请求超时
 }
 
 // MARK: - 网络错误
@@ -111,5 +96,3 @@ enum NetworkError: Error, LocalizedError {
         }
     }
 }
-
-

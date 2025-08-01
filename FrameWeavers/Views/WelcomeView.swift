@@ -98,7 +98,7 @@ struct WelcomeView: View {
         guard !items.isEmpty else { return }
 
         Task {
-            let videoURLs = await viewModel.processSelectedItems(items: items)
+            let videoURLs = await viewModel.processSelectedItems(items)
             await MainActor.run {
                 viewModel.selectVideos(videoURLs)
                 // 立即重置PhotosPicker的选择状态，这样按钮会变回"添加"
