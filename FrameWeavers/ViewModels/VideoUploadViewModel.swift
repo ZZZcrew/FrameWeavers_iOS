@@ -22,18 +22,18 @@ class VideoUploadViewModel: ObservableObject {
 
     // MARK: - 服务依赖
     private var cancellables = Set<AnyCancellable>()
-    private var uploadTask: URLSessionUploadTask?
     private var currentTaskId: String?  // 当前任务ID
     private var currentVideoPath: String?  // 当前视频路径
     private var progressTimer: Timer?   // 进度查询定时器
-    private var uploadStartTime: Date?  // 上传开始时间
-    private var uploadProgressTimer: Timer?  // 上传进度监控定时器
     private let baseFrameService = BaseFrameService() // 基础帧服务
     private let comicGenerationService = ComicGenerationService() // 连环画生成服务
     private var historyService: HistoryService? // 历史记录服务
 
     // MARK: - 视频选择ViewModel（依赖注入）
     var videoSelectionViewModel = VideoSelectionViewModel()
+
+    // MARK: - 视频上传服务（依赖注入）
+    private let videoUploadService = VideoUploadService()
 
     // MARK: - 初始化和配置
 
@@ -141,243 +141,54 @@ class VideoUploadViewModel: ObservableObject {
         uploadProgress = 0
         errorMessage = nil
 
-        uploadVideosReal(videoURLs: videoSelectionViewModel.selectedVideos)  // 仅使用真实上传模式
-    }
-
-    /// 根据文件大小计算动态超时时间
-    /// - Parameter videoURLs: 视频文件URL数组
-    /// - Returns: 计算出的超时时间（秒）
-    private func calculateDynamicTimeout(for videoURLs: [URL]) -> TimeInterval {
-        // 简化实现：直接使用基础超时，避免类型转换问题
-        let baseTimeout = NetworkConfig.uploadTimeoutInterval  // 300秒基础超时
-
-        // 检查是否有多个文件或大文件，如果有则使用更长超时
-        if videoURLs.count > 1 {
-            let extendedTimeout = baseTimeout * 2  // 多文件使用2倍超时
-            print("🔄 多文件检测，使用扩展超时: \(extendedTimeout)秒")
-            return extendedTimeout
-        } else {
-            print("🔄 单文件，使用基础超时: \(baseTimeout)秒")
-            return baseTimeout
-        }
-    }
-
-    /// 开始上传进度监控
-    /// - Parameter expectedDuration: 预期上传时长（秒）
-    private func startUploadProgressMonitoring(expectedDuration: TimeInterval) {
-        uploadStartTime = Date()
-
-        // 每10秒打印一次上传进度日志
-        uploadProgressTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
-            guard let self = self, let startTime = self.uploadStartTime else { return }
-
-            let elapsed = Date().timeIntervalSince(startTime)
-            let progress = min(elapsed / expectedDuration * 100, 95) // 最多显示95%，避免超过100%
-
-            print("📤 上传进行中... 已耗时: \(elapsed.formatted(.number.precision(.fractionLength(1))))秒 (预计进度: \(progress.formatted(.number.precision(.fractionLength(1))))%)")
-
-            // 如果超过预期时间的120%，给出警告
-            if elapsed > expectedDuration * 1.2 {
-                print("⚠️ 上传时间超过预期，可能遇到网络问题")
-            }
-        }
-    }
-
-    /// 停止上传进度监控
-    private func stopUploadProgressMonitoring() {
-        uploadProgressTimer?.invalidate()
-        uploadProgressTimer = nil
-
-        if let startTime = uploadStartTime {
-            let totalTime = Date().timeIntervalSince(startTime)
-            print("📊 上传总耗时: \(totalTime.formatted(.number.precision(.fractionLength(2))))秒")
-        }
-
-        uploadStartTime = nil
-    }
-
-    // MARK: - 真实HTTP上传（支持多视频）
-    private func uploadVideosReal(videoURLs: [URL]) {
-        let url = NetworkConfig.Endpoint.uploadVideos.url
-
-        // 计算动态超时时间
-        let dynamicTimeout = calculateDynamicTimeout(for: videoURLs)
-
-        // 创建multipart/form-data请求
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.timeoutInterval = dynamicTimeout  // 使用动态超时
-
-        let boundary = "Boundary-\(UUID().uuidString)"
-        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-
-        do {
-            let httpBody = try createMultipartBody(videoURLs: videoURLs, boundary: boundary)
-
-            let session = URLSession.shared
-            uploadTask = session.uploadTask(with: request, from: httpBody) { [weak self] data, response, error in
-                DispatchQueue.main.async {
-                    self?.stopUploadProgressMonitoring()  // 停止进度监控
-                    self?.handleRealUploadResponse(data: data, response: response, error: error)
-                }
-            }
-
-            print("🚀 开始上传视频，动态超时: \(dynamicTimeout)秒")
-            startUploadProgressMonitoring(expectedDuration: dynamicTimeout)  // 开始进度监控
-            uploadTask?.resume()
-
-        } catch {
-            errorMessage = "创建上传请求失败: \(error.localizedDescription)"
-            uploadStatus = .failed
-        }
-    }
-
-    private func createMultipartBody(videoURLs: [URL], boundary: String) throws -> Data {
-        var body = Data()
-
-        // 添加必需的device_id参数
-        let deviceId = DeviceIDGenerator.generateDeviceID()
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"device_id\"\r\n\r\n".data(using: .utf8)!)
-        body.append("\(deviceId)\r\n".data(using: .utf8)!)
-
-        // 添加视频文件
-        for videoURL in videoURLs {
-            body.append("--\(boundary)\r\n".data(using: .utf8)!)
-            body.append("Content-Disposition: form-data; name=\"videos\"; filename=\"\(videoURL.lastPathComponent)\"\r\n".data(using: .utf8)!)
-
-            // 根据文件扩展名设置正确的Content-Type
-            let mimeType = getMimeType(for: videoURL)
-            body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
-
-            let videoData = try Data(contentsOf: videoURL)
-            body.append(videoData)
-            body.append("\r\n".data(using: .utf8)!)
-        }
-
-        // 结束边界
-        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
-
-        return body
-    }
-
-    private func getMimeType(for url: URL) -> String {
-        let fileExtension = url.pathExtension.lowercased()
-        switch fileExtension {
-        case "mp4":
-            return "video/mp4"
-        case "mov":
-            return "video/quicktime"
-        case "avi":
-            return "video/x-msvideo"
-        case "mkv":
-            return "video/x-matroska"
-        case "wmv":
-            return "video/x-ms-wmv"
-        case "flv":
-            return "video/x-flv"
-        case "3gp":
-            return "video/3gpp"
-        default:
-            return "video/mp4"  // 默认
-        }
-    }
-
-    private func handleRealUploadResponse(data: Data?, response: URLResponse?, error: Error?) {
-        if let error = error {
-            let nsError = error as NSError
-            print("❌ 上传错误详情:")
-            print("   错误域: \(nsError.domain)")
-            print("   错误代码: \(nsError.code)")
-            print("   错误描述: \(error.localizedDescription)")
-
-            // 参考Python脚本的错误分类处理
-            if nsError.domain == NSURLErrorDomain {
-                switch nsError.code {
-                case NSURLErrorTimedOut:
-                    errorMessage = "上传超时 - 请检查网络连接或尝试压缩视频后重新上传"
-                    print("🔍 建议: 文件可能过大，建议压缩后重试")
-                case NSURLErrorNotConnectedToInternet:
-                    errorMessage = "网络连接不可用 - 请检查网络设置"
-                case NSURLErrorNetworkConnectionLost:
-                    errorMessage = "网络连接中断 - 请重新尝试上传"
-                case NSURLErrorCannotConnectToHost:
-                    errorMessage = "无法连接到服务器 - 请稍后重试"
-                case NSURLErrorCannotFindHost:
-                    errorMessage = "找不到服务器 - 请检查服务器地址"
-                case NSURLErrorDataLengthExceedsMaximum:
-                    errorMessage = "文件过大 - 请压缩视频后重试"
-                default:
-                    errorMessage = "网络错误 (\(nsError.code)): \(error.localizedDescription)"
-                }
-            } else {
-                errorMessage = "上传失败: \(error.localizedDescription)"
-            }
-
-            uploadStatus = .failed
-            return
-        }
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            errorMessage = "无效的服务器响应"
-            uploadStatus = .failed
-            return
-        }
-
-        guard let data = data else {
-            errorMessage = "没有收到响应数据"
-            uploadStatus = .failed
-            return
-        }
-
-        // 添加调试信息
-        print("HTTP状态码: \(httpResponse.statusCode)")
-        if let responseString = String(data: data, encoding: .utf8) {
-            print("服务器响应内容: \(responseString)")
-        }
-
-        if httpResponse.statusCode == 200 {
-            do {
-                let response = try JSONDecoder().decode(RealUploadResponse.self, from: data)
-                if response.success, let taskId = response.task_id {
-                    print("上传成功，任务ID: \(taskId)")
-                    print("上传文件数: \(response.uploaded_files ?? 0)")
-                    if let invalidFiles = response.invalid_files, !invalidFiles.isEmpty {
-                        print("无效文件: \(invalidFiles)")
+        // 使用VideoUploadService进行上传
+        videoUploadService.uploadVideos(videoSelectionViewModel.selectedVideos)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    switch completion {
+                    case .finished:
+                        break
+                    case .failure(let error):
+                        self?.uploadStatus = .failed
+                        self?.errorMessage = error.localizedDescription
+                        print("❌ 上传失败: \(error)")
                     }
+                },
+                receiveValue: { [weak self] result in
+                    if result.success, let taskId = result.taskId {
+                        print("✅ 上传成功，任务ID: \(taskId)")
+                        print("📊 上传文件数: \(result.uploadedFiles ?? 0)")
+                        if let invalidFiles = result.invalidFiles, !invalidFiles.isEmpty {
+                            print("⚠️ 无效文件: \(invalidFiles)")
+                        }
 
-                    // 保存视频路径
-                    if let videoPath = response.video_path {
-                        currentVideoPath = videoPath
-                        print("📹 保存视频路径: \(videoPath)")
+                        // 保存任务信息
+                        self?.currentTaskId = taskId
+                        self?.currentVideoPath = result.videoPath
+                        if let videoPath = result.videoPath {
+                            print("📹 保存视频路径: \(videoPath)")
+                        }
+
+                        // 更新状态并开始轮询
+                        self?.uploadStatus = .processing
+                        self?.startProgressPolling(taskId: taskId)
+                    } else {
+                        self?.uploadStatus = .failed
+                        self?.errorMessage = result.message
                     }
-
-                    currentTaskId = taskId
-                    uploadStatus = .processing
-                    startProgressPolling(taskId: taskId)  // 开始轮询进度
-                } else {
-                    errorMessage = response.message
-                    uploadStatus = .failed
                 }
-            } catch {
-                print("JSON解析错误详情: \(error)")
-                if let decodingError = error as? DecodingError {
-                    print("解码错误详情: \(decodingError)")
-                }
-                errorMessage = "解析响应失败: \(error.localizedDescription)"
-                uploadStatus = .failed
-            }
-        } else {
-            // 处理错误响应
-            do {
-                let errorResponse = try JSONDecoder().decode(RealUploadResponse.self, from: data)
-                errorMessage = errorResponse.message
-            } catch {
-                errorMessage = "服务器错误 (\(httpResponse.statusCode))"
-            }
-            uploadStatus = .failed
-        }
+            )
+            .store(in: &cancellables)
     }
+
+    // 网络上传相关功能已移至VideoUploadService
+
+    // HTTP上传功能已移至VideoUploadService
+
+    // MIME类型处理已移至VideoUploadService
+
+    // 上传响应处理已移至VideoUploadService
     
     // MARK: - 进度轮询
     private func startProgressPolling(taskId: String) {
@@ -795,16 +606,12 @@ class VideoUploadViewModel: ObservableObject {
     // 上传模式切换方法已删除
 
     func cancelUpload() {
-        // 取消上传任务
-        uploadTask?.cancel()
-        uploadTask = nil
+        // 取消上传服务
+        videoUploadService.cancelUpload()
 
         // 停止进度轮询
         progressTimer?.invalidate()
         progressTimer = nil
-
-        // 停止上传进度监控
-        stopUploadProgressMonitoring()
 
         // 如果有任务ID，尝试取消后端任务
         if let taskId = currentTaskId {
@@ -841,22 +648,20 @@ class VideoUploadViewModel: ObservableObject {
         // 重置视频选择ViewModel
         videoSelectionViewModel.clearAllVideos()
 
+        // 重置上传服务
+        videoUploadService.cancelUpload()
+
         uploadStatus = .pending
         uploadProgress = 0
         errorMessage = nil
         comicResult = nil
         cancellables.removeAll()
-        uploadTask?.cancel()
-        uploadTask = nil
         progressTimer?.invalidate()
         progressTimer = nil
         currentTaskId = nil
         currentVideoPath = nil  // 清理视频路径
         shouldNavigateToStyleSelection = false  // 重置导航状态
         selectedStyle = ""  // 重置选择的风格
-
-        // 停止上传进度监控
-        stopUploadProgressMonitoring()
     }
 
     /// 重置导航状态
