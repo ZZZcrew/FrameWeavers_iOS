@@ -14,8 +14,7 @@ struct SampleAlbumsView: View {
                     .scaledToFill()
                     .ignoresSafeArea()
 
-                VStack(spacing: 20) {
-                    List {
+                List {
                         // 历史记录部分
                         if viewModel.hasHistory {
                             Section {
@@ -75,11 +74,9 @@ struct SampleAlbumsView: View {
                             .padding(.horizontal, 4)
                             .textCase(nil)
                         }
-                    }
-                    // .listStyle(PlainListStyle())
-                    .scrollContentBackground(.hidden)
                 }
             }
+            .scrollContentBackground(.hidden)
             .navigationTitle("画册库")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
