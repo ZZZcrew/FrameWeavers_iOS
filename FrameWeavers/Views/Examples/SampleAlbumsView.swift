@@ -76,9 +76,16 @@ struct SampleAlbumsView: View {
                     .ignoresSafeArea()
             }
             .scrollContentBackground(.hidden)
-            .navigationTitle("画册库")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("画册库")
+                        .font(.custom("WSQuanXing", size: 20))
+                        .foregroundColor(Color(hex: "#855C23"))
+                        .fontWeight(.medium)
+                }
+
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("关闭") {
                         dismiss()
