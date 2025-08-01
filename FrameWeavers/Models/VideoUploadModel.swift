@@ -84,6 +84,66 @@ struct BaseFrameResult: Codable, Identifiable {
     }
 }
 
+// MARK: - 关键帧数据模型
+struct KeyFrameData: Identifiable, Hashable {
+    let id = UUID()
+    let framePath: String
+    let frameIndex: Int
+    let significance: Double?  // 重要性评分
+    let thumbnailURL: URL?
+
+    init(framePath: String, frameIndex: Int, significance: Double? = nil) {
+        self.framePath = framePath
+        self.frameIndex = frameIndex
+        self.significance = significance
+        // 构建完整的图片URL
+        if framePath.hasPrefix("http") {
+            self.thumbnailURL = URL(string: framePath)
+        } else {
+            // 如果是相对路径，需要拼接服务器地址
+            let baseURL = NetworkConfig.baseURL
+            let normalizedPath = framePath.replacingOccurrences(of: "\\", with: "/")
+            let fullURL = "\(baseURL)/\(normalizedPath)"
+            self.thumbnailURL = URL(string: fullURL)
+        }
+    }
+}
+
+// MARK: - 关键帧结果详情
+struct KeyFrameResult: Codable, Identifiable {
+    let id = UUID()
+    let videoName: String
+    let baseFramesCount: Int
+    let keyFramesCount: Int
+    let keyFramesPaths: [String]
+    let jsonFilePath: String
+    let outputDir: String
+
+    enum CodingKeys: String, CodingKey {
+        case videoName = "video_name"
+        case baseFramesCount = "base_frames_count"
+        case keyFramesCount = "key_frames_count"
+        case keyFramesPaths = "key_frames_paths"
+        case jsonFilePath = "json_file_path"
+        case outputDir = "output_dir"
+    }
+}
+
+// MARK: - 关键帧提取响应
+struct KeyFrameExtractionResponse: Codable {
+    let success: Bool
+    let message: String
+    let taskId: String
+    let results: [KeyFrameResult]
+
+    enum CodingKeys: String, CodingKey {
+        case success = "success"
+        case message = "message"
+        case taskId = "task_id"
+        case results = "results"
+    }
+}
+
 // MARK: - 基础帧服务
 class BaseFrameService {
     private let baseURL: String
@@ -272,7 +332,7 @@ struct CompleteComicRequest {
     init(taskId: String,
          videoPath: String,
          storyStyle: String = "温馨童话",  // 参考Python测试的默认值
-         targetFrames: Int = 12,  // 参考Python测试
+         targetFrames: Int = 8,  // 参考API文档默认值：目标关键帧数量
          frameInterval: Double = 2.0,  // 参考Python测试
          significanceWeight: Double = 0.7,  // 参考Python测试
          qualityWeight: Double = 0.3,  // 参考Python测试

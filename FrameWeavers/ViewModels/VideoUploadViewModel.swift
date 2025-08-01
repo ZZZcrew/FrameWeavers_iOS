@@ -16,6 +16,7 @@ class VideoUploadViewModel: ObservableObject {
     @Published var comicResult: ComicResult?
     @Published var isShowingPicker = false
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
+    @Published var keyFrames: [KeyFrameData] = [] // 关键帧数据
     @Published var shouldNavigateToStyleSelection = false // 导航状态
     @Published var selectedStyle: String = "" // 选择的故事风格
     // 移除 shouldNavigateToProcessing，改用NavigationLink
@@ -698,13 +699,20 @@ class VideoUploadViewModel: ObservableObject {
         print("🎬 开始生成完整连环画，任务ID: \(taskId)")
         print("📹 使用视频路径: \(videoPath)")
 
+        // 使用合理的默认关键帧数量，参考API文档默认值
+        // 注意：targetFrames是告诉AI我们希望选出多少个关键帧，不是基础帧数量
+        // 基础帧是从视频中按时间间隔提取的所有帧（可能几十帧）
+        // 关键帧是AI分析后选出的重要帧（通常8-12帧），最终成为连环画的页数
+        let targetFrames = 8  // API文档中的默认值，让AI从基础帧中选出8个关键帧
+        print("🎯 使用目标关键帧数: \(targetFrames) (基础帧数量: \(baseFrames.count))")
+
         do {
             // 创建请求参数，严格参考Python测试文件
             let request = CompleteComicRequest(
                 taskId: taskId,
                 videoPath: videoPath,  // 必须：使用后端返回的视频路径
                 storyStyle: "温馨童话",  // 必须：故事风格关键词
-                targetFrames: 5,  // 参考Python测试
+                targetFrames: targetFrames,  // 动态使用后端返回的帧数
                 frameInterval: 2.0,  // 参考Python测试
                 significanceWeight: 0.7,  // 参考Python测试
                 qualityWeight: 0.3,  // 参考Python测试
