@@ -22,7 +22,7 @@ struct FrameWeaversApp: App {
     var body: some Scene {
         WindowGroup {
             VideoUploadView()
-                .tint(Color(hex: "#2F2617"))
+                .tint(Color(hex: "#855C23"))
                 .environmentObject(networkService)
                 .task {
                     // 应用启动时主动检查网络权限
