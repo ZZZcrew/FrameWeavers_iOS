@@ -149,11 +149,22 @@ final class VideoSelectionViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.validationStatus, .pending)
         XCTAssertFalse(viewModel.isValid)
 
-        // 选择视频后，验证状态会改变（但由于是模拟URL，可能会失败）
+        // 选择视频后，验证状态会改变
         viewModel.selectVideo(testURL)
 
-        // 验证状态应该不再是pending
-        XCTAssertNotEqual(viewModel.validationStatus, .pending)
+        // 由于是模拟URL，验证会失败，但状态应该不再是pending
+        // 我们等待一小段时间让异步验证完成
+        let expectation = XCTestExpectation(description: "验证状态改变")
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            // 验证状态应该不再是pending（可能是invalid或validating）
+            if self.viewModel.validationStatus != .pending {
+                expectation.fulfill()
+            }
+        }
+
+        wait(for: [expectation], timeout: 1.0)
+        XCTAssertNotEqual(viewModel.validationStatus, .pending, "验证状态应该已经改变")
     }
 
     func testIsValidProperty() {
