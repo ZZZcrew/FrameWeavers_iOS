@@ -1,167 +1,186 @@
 import Foundation
 
-// MARK: - 完整连环画生成服务
 class ComicGenerationService {
-    private let baseURL: String
+    private let networkService: NetworkServiceProtocol
     
-    init(baseURL: String = NetworkConfig.baseURL) {
-        self.baseURL = baseURL
+    init(networkService: NetworkServiceProtocol = NetworkService()) {
+        self.networkService = networkService
     }
     
-    // MARK: - 启动完整连环画生成
-    func startCompleteComicGeneration(request: CompleteComicRequest) async throws -> CompleteComicResponse {
-        let endpoint = "/api/process/complete-comic"
-        let urlString = baseURL + endpoint
-        print("🌐 ComicGenerationService: 请求URL: \(urlString)")
+    func generateCompleteComic(request: CompleteComicRequest) async throws -> ComicGenerationResponse {
+        let endpoint = NetworkConfig.Endpoint.generateCompleteComic
+        var requestConfig = createComicGenRequest(endpoint: endpoint)
         
-        guard let url = URL(string: urlString) else {
-            print("❌ ComicGenerationService: 无效的URL: \(urlString)")
-            throw NSError(domain: "ComicGenerationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "无效的URL"])
+        let requestBody = try JSONEncoder().encode(request)
+        requestConfig.httpBody = requestBody
+        requestConfig.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let data = try await networkService.request(requestConfig)
+        let response = try JSONDecoder().decode(ComicGenerationResponse.self, from: data)
+        
+        guard response.success else {
+            throw ComicGenerationError.serverError(response.message ?? "Failed to start comic generation")
         }
         
-        let parameters = [
-            "task_id": request.taskId,
-            "video_path": request.videoPath,  // 必须：视频路径参数
-            "story_style": request.storyStyle,  // 必须：故事风格关键词
-            "target_frames": String(request.targetFrames),
-            "frame_interval": String(request.frameInterval),
-            "significance_weight": String(request.significanceWeight),
-            "quality_weight": String(request.qualityWeight),
-            "style_prompt": request.stylePrompt,
-            "image_size": request.imageSize,
-            "max_concurrent": String(request.maxConcurrent)
-        ]
-        print("📝 ComicGenerationService: 请求参数: \(parameters)")
-        
-        var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "POST"
-        urlRequest.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        
-        let bodyString = parameters.map { "\($0.key)=\($0.value)" }.joined(separator: "&")
-        urlRequest.httpBody = bodyString.data(using: .utf8)
-        print("📤 ComicGenerationService: 请求体: \(bodyString)")
-        
-        let (data, response) = try await URLSession.shared.data(for: urlRequest)
-        print("📥 ComicGenerationService: 收到响应")
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            print("❌ ComicGenerationService: 无效的HTTP响应")
-            throw NSError(domain: "ComicGenerationService", code: -2, userInfo: [NSLocalizedDescriptionKey: "无效的HTTP响应"])
-        }
-        
-        print("📊 ComicGenerationService: HTTP状态码: \(httpResponse.statusCode)")
-        
-        if let responseString = String(data: data, encoding: .utf8) {
-            print("📄 ComicGenerationService: 响应内容: \(responseString)")
-        }
-        
-        guard httpResponse.statusCode == 200 else {
-            let errorMessage = "HTTP错误: \(httpResponse.statusCode)"
-            print("❌ ComicGenerationService: \(errorMessage)")
-            throw NSError(domain: "ComicGenerationService", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMessage])
-        }
-        
-        do {
-            let decoder = JSONDecoder()
-            let response = try decoder.decode(CompleteComicResponse.self, from: data)
-            print("✅ ComicGenerationService: 解析响应成功")
-            return response
-        } catch {
-            print("❌ ComicGenerationService: 解析响应失败: \(error)")
-            throw NSError(domain: "ComicGenerationService", code: -3, userInfo: [NSLocalizedDescriptionKey: "解析响应失败: \(error.localizedDescription)"])
-        }
+        return response
     }
     
-    // MARK: - 获取连环画结果
-    func getComicResult(taskId: String) async throws -> ComicResultResponse {
-        let endpoint = "/api/comic/result/\(taskId)"
-        let urlString = baseURL + endpoint
-        print("🌐 ComicGenerationService: 获取结果URL: \(urlString)")
+    func fetchComicResult(taskId: String) async throws -> ComicResultResponse {
+        let endpoint = NetworkConfig.Endpoint.comicResult(taskId: taskId)
+        let request = createComicGenRequest(endpoint: endpoint)
         
-        guard let url = URL(string: urlString) else {
-            print("❌ ComicGenerationService: 无效的URL: \(urlString)")
-            throw NSError(domain: "ComicGenerationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "无效的URL"])
-        }
-        
-        var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "GET"
-        
-        let (data, response) = try await URLSession.shared.data(for: urlRequest)
-        print("📥 ComicGenerationService: 收到结果响应")
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            print("❌ ComicGenerationService: 无效的HTTP响应")
-            throw NSError(domain: "ComicGenerationService", code: -2, userInfo: [NSLocalizedDescriptionKey: "无效的HTTP响应"])
-        }
-        
-        print("📊 ComicGenerationService: HTTP状态码: \(httpResponse.statusCode)")
-        
-        if let responseString = String(data: data, encoding: .utf8) {
-            print("📄 ComicGenerationService: 结果响应内容: \(responseString)")
-        }
-        
-        guard httpResponse.statusCode == 200 else {
-            let errorMessage = "HTTP错误: \(httpResponse.statusCode)"
-            print("❌ ComicGenerationService: \(errorMessage)")
-            throw NSError(domain: "ComicGenerationService", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMessage])
-        }
-        
-        do {
-            let decoder = JSONDecoder()
-            let response = try decoder.decode(ComicResultResponse.self, from: data)
-            print("✅ ComicGenerationService: 解析结果响应成功")
-            return response
-        } catch {
-            print("❌ ComicGenerationService: 解析结果响应失败: \(error)")
-            throw NSError(domain: "ComicGenerationService", code: -3, userInfo: [NSLocalizedDescriptionKey: "解析结果响应失败: \(error.localizedDescription)"])
-        }
+        let data = try await networkService.request(request)
+        return try JSONDecoder().decode(ComicResultResponse.self, from: data)
     }
     
-    // MARK: - 将API响应转换为UI模型
     func convertToComicResult(from response: ComicResultResponse, taskId: String) -> ComicResult? {
-        guard let firstComic = response.results.successfulComics.first else {
-            print("❌ ComicGenerationService: 没有成功的连环画数据")
+        guard response.success else {
             return nil
         }
         
-        let comicData = firstComic.comicData
-        let storyInfo = comicData.storyInfo
-        
-        // 转换页面数据为ComicPanel
-        let panels = comicData.pages.map { page in
-            // 构建图片URL - 使用风格化后的图片
-            let imageUrl = buildImageUrl(from: page.styledFramePath)
-            
-            return ComicPanel(
-                panelNumber: page.pageIndex + 1,
-                imageUrl: imageUrl,
-                narration: page.storyText
+        let panels = response.data?.panels.map { panel in
+            ComicPanel(
+                panelNumber: panel.page,
+                imageUrl: panel.baseImage,
+                narration: panel.narration
             )
-        }
+        } ?? []
         
-        // 转换互动问题
-        let questions = comicData.interactiveQuestions.map { $0.question }
-        
-        return ComicResult(
+        return ComicPanelData(
             comicId: taskId,
             deviceId: DeviceIDGenerator.generateDeviceID(),
-            title: storyInfo.title,  // 使用故事标题
-            originalVideoTitle: storyInfo.videoName,  // 保留原始视频文件名
-            creationDate: storyInfo.creationTime,
+            title: response.data?.title ?? "未命名故事",
+            originalVideoTitle: response.data?.original_video_title ?? "",
+            creationDate: ISO8601DateFormatter().string(from: Date()),
             panelCount: panels.count,
             panels: panels,
-            finalQuestions: questions
+            finalQuestions: response.data?.questions ?? []
         )
     }
     
-    // MARK: - 构建图片URL
-    private func buildImageUrl(from path: String) -> String {
-        if path.hasPrefix("http") {
-            return path
-        } else {
-            // 如果是相对路径，需要拼接服务器地址
-            let normalizedPath = path.replacingOccurrences(of: "\\", with: "/")
-            return "\(baseURL)/\(normalizedPath)"
+    private func createComicGenRequest(endpoint: NetworkConfig.Endpoint) -> URLRequest {
+        var request = URLRequest(url: endpoint.url)
+        request.httpMethod = endpoint.method
+        request.timeoutInterval = NetworkConfig.comicGenerationTimeout
+        
+        return request
+    }
+}
+
+struct CompleteComicRequest: Codable {
+    let taskId: String
+    let videoPath: String
+    let storyStyle: String
+    let targetFrames: Int
+    let frameInterval: Double
+    let significanceWeight: Double
+    let qualityWeight: Double
+    let stylePrompt: String
+    let imageSize: String
+    let maxConcurrent: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case taskId = "task_id"
+        case videoPath = "video_path"
+        case storyStyle = "story_style"
+        case targetFrames, frameInterval, significanceWeight
+        case qualityWeight, stylePrompt, imageSize, maxConcurrent
+    }
+}
+
+struct ComicGenerationResponse: Codable {
+    let success: Bool
+    let message: String
+}
+
+struct ComicResultResponse: Codable {
+    let success: Bool
+    let message: String
+    let data: ComicData?
+}
+
+
+
+struct ComicPanelData: Codable {
+    let page: Int
+    let baseImage: String
+    let narration: String
+    
+    enum CodingKeys: String, CodingKey {
+        case page
+        case baseImage = "base_image"
+        case narration
+    }
+}
+
+final class ComicResultData: Codable {
+    let comicId: String
+    let deviceId: String
+    let title: String
+    let originalVideoTitle: String
+    let creationDate: String
+    let panelCount: Int
+    let panels: [ComicPanel]
+    let finalQuestions: [String]
+    
+    enum CodingKeys: String, CodingKey {
+        case comicId = "comic_id"
+        case deviceId = "device_id"
+        case title
+        case originalVideoTitle = "original_video_title"
+        case creationDate = "creation_date"
+        case panelCount = "panel_count"
+        case panels
+        case finalQuestions = "final_questions"
+    }
+    
+    init(comicId: String, deviceId: String, title: String, originalVideoTitle: String,
+         creationDate: String, panelCount: Int, panels: [ComicPanel], finalQuestions: [String]) {
+        self.comicId = comicId
+        self.deviceId = deviceId
+        self.title = title
+        self.originalVideoTitle = originalVideoTitle
+        self.creationDate = creationDate
+        self.panelCount = panelCount
+        self.panels = panels
+        self.finalQuestions = finalQuestions
+    }
+}
+
+struct ComicPanel: Codable, Identifiable {
+    let id = UUID()
+    let panelNumber: Int
+    let imageUrl: String
+    let narration: String
+    
+    enum CodingKeys: String, CodingKey {
+        case panelNumber = "panel_number"
+        case imageUrl = "image_url"
+        case narration
+    }
+}
+
+enum ComicGenerationError: Error, LocalizedError {
+    case networkError(String)
+    case serverError(String)
+    case decodingError(Error)
+    case invalidResponse
+    case noData
+    
+    var errorDescription: String? {
+        switch self {
+        case .networkError(let message):
+            return "网络错误: \(message)"
+        case .serverError(let message):
+            return "服务器错误: \(message)"
+        case .decodingError(let error):
+            return "解析错误: \(error.localizedDescription)"
+        case .invalidResponse:
+            return "无效的响应"
+        case .noData:
+            return "没有收到数据"
         }
     }
 }
+
+
