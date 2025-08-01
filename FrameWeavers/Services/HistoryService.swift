@@ -65,7 +65,7 @@ class HistoryService {
     /// - Parameter limit: 限制数量
     /// - Returns: 最近的历史画册列表
     func fetchRecentHistoryAlbums(limit: Int = 10) throws -> [HistoryAlbum] {
-        let descriptor = FetchDescriptor<HistoryAlbum>(
+        var descriptor = FetchDescriptor<HistoryAlbum>(
             sortBy: [SortDescriptor(\.creationDate, order: .reverse)]
         )
         descriptor.fetchLimit = limit
