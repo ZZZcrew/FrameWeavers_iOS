@@ -189,15 +189,19 @@ class VideoUploadViewModel: ObservableObject {
             }
 
             // 并发验证所有视频以提高性能
-            let validationResult = await withTaskGroup(of: (Int, Result<Double, Error>).self) { group in
+            let validationResult = await withTaskGroup(of: (Int, Result<(Double, Int64), Error>).self) { group in
                 for (index, url) in selectedVideos.enumerated() {
                     group.addTask {
                         let asset = AVAsset(url: url)
                         do {
-                            // 使用更高效的方式获取时长
+                            // 获取时长
                             let duration = try await asset.load(.duration)
                             let durationSeconds = CMTimeGetSeconds(duration)
-                            return (index, .success(durationSeconds))
+
+                            // 获取文件大小
+                            let fileSize = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
+
+                            return (index, .success((durationSeconds, Int64(fileSize))))
                         } catch {
                             return (index, .failure(error))
                         }
@@ -207,18 +211,24 @@ class VideoUploadViewModel: ObservableObject {
                 // 收集所有结果
                 var hasError = false
                 var errorMsg = ""
+                let maxFileSize: Int64 = 800 * 1024 * 1024 // 800MB限制，与服务器保持一致
 
                 for await (index, result) in group {
                     switch result {
-                    case .success(let durationSeconds):
+                    case .success(let (durationSeconds, fileSize)):
                         if durationSeconds > 300 { // 5分钟
                             hasError = true
                             errorMsg = "视频\(index + 1)时长超过5分钟（\(Int(durationSeconds))秒）"
                             break
+                        } else if fileSize > maxFileSize {
+                            let fileSizeMB = Double(fileSize) / (1024 * 1024)
+                            hasError = true
+                            errorMsg = "视频\(index + 1)文件过大（\(String(format: "%.1f", fileSizeMB))MB），请选择小于800MB的视频"
+                            break
                         }
                     case .failure(_):
                         hasError = true
-                        errorMsg = "无法获取视频\(index + 1)的时长信息"
+                        errorMsg = "无法获取视频\(index + 1)的信息"
                         break
                     }
                 }
