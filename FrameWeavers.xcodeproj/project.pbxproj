@@ -6,7 +6,18 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		D8A0732B2E3D0F050085F99E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D8AFFD8F2E3131AB008AED40 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D8AFFD962E3131AB008AED40;
+			remoteInfo = FrameWeavers;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		D8A073272E3D0F050085F99E /* FrameWeaversTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FrameWeaversTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8AFFD972E3131AB008AED40 /* FrameWeavers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FrameWeavers.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -21,6 +32,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		D8A073282E3D0F050085F99E /* FrameWeaversTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = FrameWeaversTests;
+			sourceTree = "<group>";
+		};
 		D8AFFD992E3131AB008AED40 /* FrameWeavers */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -32,6 +48,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		D8A073242E3D0F050085F99E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D8AFFD942E3131AB008AED40 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -46,6 +69,7 @@
 			isa = PBXGroup;
 			children = (
 				D8AFFD992E3131AB008AED40 /* FrameWeavers */,
+				D8A073282E3D0F050085F99E /* FrameWeaversTests */,
 				D8AFFD982E3131AB008AED40 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,6 +78,7 @@
 			isa = PBXGroup;
 			children = (
 				D8AFFD972E3131AB008AED40 /* FrameWeavers.app */,
+				D8A073272E3D0F050085F99E /* FrameWeaversTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,6 +86,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		D8A073262E3D0F050085F99E /* FrameWeaversTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D8A0732D2E3D0F050085F99E /* Build configuration list for PBXNativeTarget "FrameWeaversTests" */;
+			buildPhases = (
+				D8A073232E3D0F050085F99E /* Sources */,
+				D8A073242E3D0F050085F99E /* Frameworks */,
+				D8A073252E3D0F050085F99E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D8A0732C2E3D0F050085F99E /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D8A073282E3D0F050085F99E /* FrameWeaversTests */,
+			);
+			name = FrameWeaversTests;
+			packageProductDependencies = (
+			);
+			productName = FrameWeaversTests;
+			productReference = D8A073272E3D0F050085F99E /* FrameWeaversTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		D8AFFD962E3131AB008AED40 /* FrameWeavers */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D8AFFDA42E3131AC008AED40 /* Build configuration list for PBXNativeTarget "FrameWeavers" */;
@@ -93,6 +141,10 @@
 				LastSwiftUpdateCheck = 1630;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
+					D8A073262E3D0F050085F99E = {
+						CreatedOnToolsVersion = 16.3;
+						TestTargetID = D8AFFD962E3131AB008AED40;
+					};
 					D8AFFD962E3131AB008AED40 = {
 						CreatedOnToolsVersion = 16.3;
 					};
@@ -113,11 +165,19 @@
 			projectRoot = "";
 			targets = (
 				D8AFFD962E3131AB008AED40 /* FrameWeavers */,
+				D8A073262E3D0F050085F99E /* FrameWeaversTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		D8A073252E3D0F050085F99E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D8AFFD952E3131AB008AED40 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -128,6 +188,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		D8A073232E3D0F050085F99E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D8AFFD932E3131AB008AED40 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -137,7 +204,51 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		D8A0732C2E3D0F050085F99E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D8AFFD962E3131AB008AED40 /* FrameWeavers */;
+			targetProxy = D8A0732B2E3D0F050085F99E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		D8A0732E2E3D0F050085F99E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RDQHYSDFFG;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chiimagnus.FrameWeaversTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FrameWeavers.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FrameWeavers";
+			};
+			name = Debug;
+		};
+		D8A0732F2E3D0F050085F99E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RDQHYSDFFG;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chiimagnus.FrameWeaversTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FrameWeavers.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FrameWeavers";
+			};
+			name = Release;
+		};
 		D8AFFDA22E3131AC008AED40 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -324,6 +435,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		D8A0732D2E3D0F050085F99E /* Build configuration list for PBXNativeTarget "FrameWeaversTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D8A0732E2E3D0F050085F99E /* Debug */,
+				D8A0732F2E3D0F050085F99E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D8AFFD922E3131AB008AED40 /* Build configuration list for PBXProject "FrameWeavers" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
