@@ -4,6 +4,7 @@ import PhotosUI
 import AVFoundation
 import CoreMedia
 import Combine
+import SwiftData
 
 // 类型别名解决编译问题
 typealias PickerItem = PhotosUI.PhotosPickerItem
@@ -30,6 +31,15 @@ class VideoUploadViewModel: ObservableObject {
     private var uploadProgressTimer: Timer?  // 上传进度监控定时器
     private let baseFrameService = BaseFrameService() // 基础帧服务
     private let comicGenerationService = ComicGenerationService() // 连环画生成服务
+    private var historyService: HistoryService? // 历史记录服务
+
+    // MARK: - 初始化和配置
+
+    /// 设置历史记录服务
+    /// - Parameter modelContext: SwiftData模型上下文
+    func setHistoryService(modelContext: ModelContext) {
+        self.historyService = HistoryService(modelContext: modelContext)
+    }
 
     // 兼容性属性，返回第一个选中的视频
     var selectedVideo: URL? {
@@ -865,6 +875,9 @@ class VideoUploadViewModel: ObservableObject {
                     self.comicResult = comicResult
                     self.uploadStatus = .completed
                     self.uploadProgress = 1.0
+
+                    // 保存到历史记录
+                    self.saveToHistory(comicResult)
                 }
             } else {
                 print("❌ 连环画结果转换失败")
@@ -968,5 +981,23 @@ class VideoUploadViewModel: ObservableObject {
 
         // 停止上传进度监控
         stopUploadProgressMonitoring()
+    }
+
+    // MARK: - 历史记录管理
+
+    /// 保存画册到历史记录
+    /// - Parameter comicResult: 要保存的画册结果
+    private func saveToHistory(_ comicResult: ComicResult) {
+        guard let historyService = historyService else {
+            print("⚠️ 历史记录服务未初始化，无法保存历史记录")
+            return
+        }
+
+        let success = historyService.saveToHistory(comicResult)
+        if success {
+            print("✅ 画册已成功保存到历史记录: \(comicResult.title)")
+        } else {
+            print("❌ 保存画册到历史记录失败")
+        }
     }
 }

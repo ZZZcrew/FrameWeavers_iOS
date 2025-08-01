@@ -1,7 +1,12 @@
 import SwiftUI
+import SwiftData
 
 struct SampleAlbumsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \HistoryAlbum.creationDate, order: .reverse) private var historyAlbums: [HistoryAlbum]
+
+    @State private var historyService: HistoryService?
     
     // 示例画册数据
     private let sampleAlbums: [SampleAlbum] = [
@@ -140,23 +145,66 @@ struct SampleAlbumsView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 20) {
-                    Text("示例画册")
+                    Text("画册库")
                         .font(.custom("WSQuanXing", size: 28))
                         .foregroundColor(Color(hex: "#855C23"))
                         .padding(.top, 20)
-                    
+
                     Text("体验连环画的魅力")
                         .font(.custom("STKaiti", size: 16))
                         .foregroundColor(Color(hex: "#2F2617"))
                         .opacity(0.8)
-                    
+
                     ScrollView {
-                        LazyVStack(spacing: 16) {
-                            ForEach(sampleAlbums) { album in
-                                SampleAlbumRowView(album: album)
+                        LazyVStack(spacing: 20) {
+                            // 历史记录部分
+                            if !historyAlbums.isEmpty {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    HStack {
+                                        Text("我的画册")
+                                            .font(.custom("WSQuanXing", size: 20))
+                                            .foregroundColor(Color(hex: "#855C23"))
+
+                                        Spacer()
+
+                                        Text("\(historyAlbums.count)个")
+                                            .font(.custom("STKaiti", size: 14))
+                                            .foregroundColor(Color(hex: "#2F2617"))
+                                            .opacity(0.6)
+                                    }
+                                    .padding(.horizontal, 20)
+
+                                    ForEach(historyAlbums) { historyAlbum in
+                                        HistoryAlbumRowView(
+                                            historyAlbum: historyAlbum,
+                                            onDelete: { deleteHistoryAlbum(historyAlbum) }
+                                        )
+                                    }
+                                }
+                            }
+
+                            // 示例画册部分
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Text("示例画册")
+                                        .font(.custom("WSQuanXing", size: 20))
+                                        .foregroundColor(Color(hex: "#855C23"))
+
+                                    Spacer()
+
+                                    Text("体验版")
+                                        .font(.custom("STKaiti", size: 14))
+                                        .foregroundColor(Color(hex: "#2F2617"))
+                                        .opacity(0.6)
+                                }
+                                .padding(.horizontal, 20)
+
+                                ForEach(sampleAlbums) { album in
+                                    SampleAlbumRowView(album: album)
+                                }
                             }
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 0)
                     }
                 }
             }
@@ -172,6 +220,106 @@ struct SampleAlbumsView: View {
                 }
             }
         }
+        .onAppear {
+            // 初始化历史记录服务
+            historyService = HistoryService(modelContext: modelContext)
+        }
+    }
+
+    // MARK: - 历史记录管理
+
+    /// 删除历史画册
+    private func deleteHistoryAlbum(_ historyAlbum: HistoryAlbum) {
+        guard let historyService = historyService else { return }
+
+        let success = historyService.deleteHistoryAlbum(historyAlbum)
+        if success {
+            print("✅ 已删除历史画册: \(historyAlbum.title)")
+        }
+    }
+}
+
+// MARK: - 历史画册行视图
+
+struct HistoryAlbumRowView: View {
+    let historyAlbum: HistoryAlbum
+    let onDelete: () -> Void
+
+    var body: some View {
+        if let comicResult = historyAlbum.toComicResult() {
+            // 有内容的历史画册 - 可以点击
+            NavigationLink {
+                SampleFlowView(comicResult: comicResult)
+            } label: {
+                historyAlbumRowContent
+            }
+        } else {
+            // 数据损坏的画册 - 不可点击
+            historyAlbumRowContent
+                .opacity(0.6)
+        }
+    }
+
+    private var historyAlbumRowContent: some View {
+        HStack(spacing: 16) {
+            // 封面图片或占位符
+            Group {
+                if let thumbnailImageName = historyAlbum.thumbnailImageName,
+                   !thumbnailImageName.isEmpty {
+                    AsyncImage(url: URL(string: thumbnailImageName)) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    } placeholder: {
+                        Image(systemName: "photo")
+                            .foregroundColor(.gray)
+                    }
+                } else {
+                    Image(systemName: "photo")
+                        .foregroundColor(.gray)
+                }
+            }
+            .frame(width: 80, height: 100)
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(8)
+            .shadow(radius: 4)
+
+            // 画册信息
+            VStack(alignment: .leading, spacing: 8) {
+                Text(historyAlbum.title)
+                    .font(.custom("WSQuanXing", size: 18))
+                    .foregroundColor(Color(hex: "#2F2617"))
+                    .lineLimit(2)
+
+                Text("\(historyAlbum.panelCount)页 · \(DateFormatter.shortDate.string(from: historyAlbum.creationDate))")
+                    .font(.custom("STKaiti", size: 14))
+                    .foregroundColor(Color(hex: "#855C23"))
+                    .opacity(0.8)
+
+                Text("来自: \(historyAlbum.originalVideoTitle)")
+                    .font(.custom("STKaiti", size: 12))
+                    .foregroundColor(Color(hex: "#2F2617"))
+                    .opacity(0.6)
+                    .lineLimit(1)
+
+                Spacer()
+            }
+
+            Spacer()
+
+            // 删除按钮
+            Button(action: onDelete) {
+                Image(systemName: "trash")
+                    .foregroundColor(.red)
+                    .font(.system(size: 16))
+            }
+            .buttonStyle(PlainButtonStyle())
+        }
+        .padding(16)
+        .background(Color.white.opacity(0.9))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .padding(.horizontal, 20)
     }
 }
 

@@ -57,7 +57,7 @@ struct WelcomeView: View {
             Button(action: {
                 showingSampleAlbums = true
             }) {
-                Text("示例画册")
+                Text("画册库")
                     .font(.custom("STKaiti", size: 16))
                     .foregroundColor(Color(hex: "#855C23"))
                     .padding(.horizontal, 20)

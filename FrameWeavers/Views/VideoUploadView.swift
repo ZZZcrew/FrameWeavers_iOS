@@ -1,9 +1,11 @@
 import SwiftUI
 import PhotosUI
+import SwiftData
 
 /// 视频上传主视图 - 遵循MVVM架构，只负责UI展示
 struct VideoUploadView: View {
     @StateObject private var viewModel = VideoUploadViewModel()
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         NavigationStack {
@@ -24,6 +26,10 @@ struct VideoUploadView: View {
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+        }
+        .onAppear {
+            // 初始化历史记录服务
+            viewModel.setHistoryService(modelContext: modelContext)
         }
     }
 }
