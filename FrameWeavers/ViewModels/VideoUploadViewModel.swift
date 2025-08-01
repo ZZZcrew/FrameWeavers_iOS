@@ -24,8 +24,6 @@ class VideoUploadViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var currentTaskId: String?  // 当前任务ID
     private var currentVideoPath: String?  // 当前视频路径
-    private let baseFrameService = BaseFrameService() // 基础帧服务
-    private let comicGenerationService = ComicGenerationService() // 连环画生成服务
     private var historyService: HistoryService? // 历史记录服务
 
     // MARK: - 视频选择ViewModel（依赖注入）
@@ -36,6 +34,9 @@ class VideoUploadViewModel: ObservableObject {
 
     // MARK: - 进度轮询服务（依赖注入）
     private let progressPollingService = ProgressPollingService()
+
+    // MARK: - 连环画生成协调器（依赖注入）
+    private let comicGenerationCoordinator = ComicGenerationCoordinator()
 
     // MARK: - 初始化和配置
 
@@ -231,223 +232,78 @@ class VideoUploadViewModel: ObservableObject {
 
     /// 尝试提前提取基础帧（在视频还在处理时）
     private func tryEarlyBaseFrameExtraction() async {
-        guard let taskId = currentTaskId else { return }
+        guard let taskId = currentTaskId else {
+            print("❌ 没有有效的任务ID用于提前提取")
+            return
+        }
 
-        print("🚀 尝试提前提取基础帧, taskId: \(taskId)")
+        let frames = await comicGenerationCoordinator.tryEarlyBaseFrameExtraction(taskId: taskId)
 
-        do {
-            // 尝试提取基础帧，如果后端还没准备好会返回错误，我们忽略错误继续等待
-            let response = try await baseFrameService.extractBaseFrames(taskId: taskId, interval: 1.0)
-
-            if response.success && !response.results.isEmpty {
-                print("🎉 提前获取到基础帧数据！")
-
-                // 转换响应数据为BaseFrameData
-                let frames = response.results.flatMap { result in
-                    print("🎞️ 视频: \(result.videoName), 基础帧数量: \(result.baseFramesCount)")
-                    return result.baseFramesPaths.enumerated().map { index, path in
-                        BaseFrameData(
-                            framePath: path,
-                            frameIndex: index,
-                            timestamp: Double(index) * 1.0
-                        )
-                    }
-                }
-
-                await MainActor.run {
-                    self.baseFrames = frames
-                    print("✅ 提前设置基础帧数据成功，数量: \(frames.count)")
-                }
+        if !frames.isEmpty {
+            await MainActor.run {
+                self.baseFrames = frames
             }
-        } catch {
-            // 提前提取失败是正常的，不需要报错，继续等待正常流程
-            print("ℹ️ 提前提取基础帧失败（正常情况）: \(error.localizedDescription)")
         }
     }
 
     private func extractBaseFrames() async {
-        guard let taskId = currentTaskId else {
-            print("❌ 基础帧提取失败: 缺少任务ID")
+        guard let taskId = currentTaskId,
+              let videoPath = currentVideoPath else {
+            print("❌ 没有有效的任务ID或视频路径")
             await MainActor.run {
                 self.uploadStatus = .failed
-                self.errorMessage = "缺少任务ID"
+                self.errorMessage = "没有有效的任务ID或视频路径"
             }
             return
         }
 
-        // 如果已经有基础帧数据，跳过提取直接进入下一步
-        if !baseFrames.isEmpty {
-            print("ℹ️ 基础帧数据已存在，跳过提取步骤")
-            await generateCompleteComic()
-            return
-        }
+        print("🎬 开始完整连环画生成流程...")
 
-        print("🎬 开始提取基础帧, taskId: \(taskId)")
-
-        do {
-            let response = try await baseFrameService.extractBaseFrames(taskId: taskId, interval: 1.0)
-            print("✅ 基础帧提取API调用成功")
-            print("📊 响应数据: success=\(response.success), message=\(response.message)")
-            print("📁 结果数量: \(response.results.count)")
-
-            // 转换响应数据为BaseFrameData
-            let frames = response.results.flatMap { result in
-                print("🎞️ 视频: \(result.videoName), 基础帧数量: \(result.baseFramesCount)")
-                print("📸 基础帧路径: \(result.baseFramesPaths)")
-                return result.baseFramesPaths.enumerated().map { index, path in
-                    BaseFrameData(
-                        framePath: path,
-                        frameIndex: index,
-                        timestamp: Double(index) * 1.0
-                    )
-                }
-            }
-
-            print("🖼️ 转换后的基础帧数量: \(frames.count)")
-
-            await MainActor.run {
-                self.baseFrames = frames
-                print("✅ 基础帧数据已设置到ViewModel")
-            }
-
-            // 开始生成完整连环画
-            await generateCompleteComic()
-
-        } catch {
-            print("❌ 基础帧提取失败: \(error)")
-            await MainActor.run {
-                self.uploadStatus = .failed
-                self.errorMessage = "基础帧提取失败: \(error.localizedDescription)"
-            }
-        }
-    }
-
-    // MARK: - 生成完整连环画
-    private func generateCompleteComic() async {
-        guard let taskId = currentTaskId else {
-            print("❌ 没有有效的任务ID")
-            await MainActor.run {
-                self.uploadStatus = .failed
-                self.errorMessage = "没有有效的任务ID"
-            }
-            return
-        }
-
-        guard let videoPath = currentVideoPath else {
-            print("❌ 没有有效的视频路径")
-            await MainActor.run {
-                self.uploadStatus = .failed
-                self.errorMessage = "没有有效的视频路径"
-            }
-            return
-        }
-
-        print("🎬 开始生成完整连环画，任务ID: \(taskId)")
-        print("📹 使用视频路径: \(videoPath)")
-
-        // 使用合理的默认关键帧数量，参考API文档默认值
-        // 注意：targetFrames是告诉AI我们希望选出多少个关键帧，不是基础帧数量
-        // 基础帧是从视频中按时间间隔提取的所有帧（可能几十帧）
-        // 关键帧是AI分析后选出的重要帧（通常8-12帧），最终成为连环画的页数
-        let targetFrames = 8  // API文档中的默认值，让AI从基础帧中选出8个关键帧
-        print("🎯 使用目标关键帧数: \(targetFrames) (基础帧数量: \(baseFrames.count))")
-
-        do {
-            // 创建请求参数，严格参考Python测试文件
-            let request = CompleteComicRequest(
-                taskId: taskId,
-                videoPath: videoPath,  // 必须：使用后端返回的视频路径
-                storyStyle: "温馨童话",  // 必须：故事风格关键词
-                targetFrames: targetFrames,  // 动态使用后端返回的帧数
-                frameInterval: 2.0,  // 参考Python测试
-                significanceWeight: 0.7,  // 参考Python测试
-                qualityWeight: 0.3,  // 参考Python测试
-                stylePrompt: "Convert to Ink and brushwork style, Chinese style, Yellowed and old, Low saturation, Low brightness",  // 参考Python测试
-                imageSize: "1780x1024",  // 参考Python测试
-                maxConcurrent: 50
-            )
-
-            // 启动连环画生成
-            let response = try await comicGenerationService.startCompleteComicGeneration(request: request)
-            print("✅ 连环画生成已启动: \(response.message)")
-
-            await MainActor.run {
-                self.uploadStatus = .processing
-            }
-
-            // 开始轮询任务状态，等待完成
-            await pollComicGenerationStatus(taskId: taskId)
-
-        } catch {
-            print("❌ 连环画生成失败: \(error)")
-            await MainActor.run {
-                self.uploadStatus = .failed
-                self.errorMessage = "连环画生成失败: \(error.localizedDescription)"
-            }
-        }
-    }
-
-    // MARK: - 轮询连环画生成状态（使用ProgressPollingService）
-    private func pollComicGenerationStatus(taskId: String) async {
-        await progressPollingService.pollComicGenerationStatus(
+        // 创建生成配置
+        let config = ComicGenerationCoordinator.GenerationConfig(
             taskId: taskId,
-            onProgress: { [weak self] result in
-                // 更新进度
-                self?.uploadProgress = Double(result.progress) / 100.0
+            videoPath: videoPath,
+            storyStyle: selectedStyle.isEmpty ? "温馨童话" : selectedStyle
+        )
 
-                // 如果需要获取最终结果
-                if result.shouldFetchResult {
-                    Task {
-                        await self?.fetchComicResult(taskId: taskId)
-                    }
+        // 开始完整生成流程
+        await comicGenerationCoordinator.startCompleteGeneration(
+            config: config,
+            onBaseFramesExtracted: { [weak self] frames in
+                Task { @MainActor in
+                    self?.baseFrames = frames
+                    print("✅ 基础帧提取完成，数量: \(frames.count)")
                 }
             },
-            onCompleted: { [weak self] in
-                // 获取连环画结果
-                Task {
-                    await self?.fetchComicResult(taskId: taskId)
+            onProgressUpdate: { [weak self] progress, message in
+                Task { @MainActor in
+                    self?.uploadProgress = progress
+                    print("📈 进度更新: \(Int(progress * 100))% - \(message)")
+                }
+            },
+            onCompleted: { [weak self] comicResult in
+                Task { @MainActor in
+                    self?.comicResult = comicResult
+                    self?.uploadStatus = .completed
+                    self?.uploadProgress = 1.0
+
+                    // 保存到历史记录
+                    self?.saveToHistory(comicResult)
+
+                    print("✅ 连环画生成完成！")
                 }
             },
             onFailed: { [weak self] message in
-                self?.uploadStatus = .failed
-                self?.errorMessage = message
+                Task { @MainActor in
+                    self?.uploadStatus = .failed
+                    self?.errorMessage = message
+                    print("❌ 连环画生成失败: \(message)")
+                }
             }
         )
     }
 
-    // MARK: - 获取连环画结果
-    private func fetchComicResult(taskId: String) async {
-        do {
-            print("📖 获取连环画结果...")
-            let resultResponse = try await comicGenerationService.getComicResult(taskId: taskId)
 
-            if let comicResult = comicGenerationService.convertToComicResult(from: resultResponse, taskId: taskId) {
-                print("✅ 连环画结果转换成功，共\(comicResult.panels.count)页")
-
-                await MainActor.run {
-                    self.comicResult = comicResult
-                    self.uploadStatus = .completed
-                    self.uploadProgress = 1.0
-
-                    // 保存到历史记录
-                    self.saveToHistory(comicResult)
-                }
-            } else {
-                print("❌ 连环画结果转换失败")
-                await MainActor.run {
-                    self.uploadStatus = .failed
-                    self.errorMessage = "连环画结果转换失败"
-                }
-            }
-
-        } catch {
-            print("❌ 获取连环画结果失败: \(error)")
-            await MainActor.run {
-                self.uploadStatus = .failed
-                self.errorMessage = "获取连环画结果失败: \(error.localizedDescription)"
-            }
-        }
-    }
 
     private func createMockComicResult() -> ComicResult {
         let videoTitle = videoSelectionViewModel.selectedVideos.isEmpty ? "测试视频.mp4" : videoSelectionViewModel.selectedVideos.map { $0.lastPathComponent }.joined(separator: ", ")
@@ -503,6 +359,9 @@ class VideoUploadViewModel: ObservableObject {
 
         // 重置进度轮询服务
         progressPollingService.reset()
+
+        // 重置连环画生成协调器
+        comicGenerationCoordinator.reset()
 
         uploadStatus = .pending
         uploadProgress = 0
