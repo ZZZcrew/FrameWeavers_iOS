@@ -76,17 +76,17 @@ class MockVideoUploadViewModel: VideoUploadViewModel {
         self.targetComicResult = comicResult
         super.init()
         // 设置一些模拟视频，但不自动触发状态变化
-        self.selectedVideos = [
+        self.videoSelectionViewModel.selectVideos([
             URL(string: "file:///mock/sample1.mp4")!,
             URL(string: "file:///mock/sample2.mp4")!
-        ]
+        ])
         // 重置状态，确保从pending开始
         self.uploadStatus = .pending
     }
 
     // 重写selectVideos方法，避免自动触发导航
     override func selectVideos(_ urls: [URL]) {
-        selectedVideos = urls
+        videoSelectionViewModel.selectVideos(urls)
         // 不调用super.selectVideos()，避免自动设置shouldNavigateToStyleSelection
     }
 

@@ -10,18 +10,17 @@ import SwiftData
 typealias PickerItem = PhotosUI.PhotosPickerItem
 
 class VideoUploadViewModel: ObservableObject {
-    @Published var selectedVideos: [URL] = []  // 支持多视频
+    // MARK: - UI状态属性
     @Published var uploadStatus: UploadStatus = .pending
     @Published var uploadProgress: Double = 0
     @Published var errorMessage: String?
     @Published var comicResult: ComicResult?
-    @Published var isShowingPicker = false
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
     @Published var keyFrames: [KeyFrameData] = [] // 关键帧数据
     @Published var shouldNavigateToStyleSelection = false // 导航状态
     @Published var selectedStyle: String = "" // 选择的故事风格
-    // 移除 shouldNavigateToProcessing，改用NavigationLink
 
+    // MARK: - 服务依赖
     private var cancellables = Set<AnyCancellable>()
     private var uploadTask: URLSessionUploadTask?
     private var currentTaskId: String?  // 当前任务ID
@@ -33,6 +32,9 @@ class VideoUploadViewModel: ObservableObject {
     private let comicGenerationService = ComicGenerationService() // 连环画生成服务
     private var historyService: HistoryService? // 历史记录服务
 
+    // MARK: - 视频选择ViewModel（依赖注入）
+    @Published var videoSelectionViewModel = VideoSelectionViewModel()
+
     // MARK: - 初始化和配置
 
     /// 设置历史记录服务
@@ -41,100 +43,49 @@ class VideoUploadViewModel: ObservableObject {
         self.historyService = HistoryService(modelContext: modelContext)
     }
 
-    // 兼容性属性，返回第一个选中的视频
+    // MARK: - 兼容性属性和方法
+
+    /// 兼容性属性，返回第一个选中的视频
     var selectedVideo: URL? {
-        return selectedVideos.first
-    }
-    
-    func selectVideo(_ url: URL) {
-        selectedVideos = [url]  // 单视频选择
-        validateVideos()
+        return videoSelectionViewModel.selectedVideo
     }
 
+    /// 获取选择的视频列表
+    var selectedVideos: [URL] {
+        return videoSelectionViewModel.selectedVideos
+    }
+
+    /// 选择单个视频（委托给VideoSelectionViewModel）
+    func selectVideo(_ url: URL) {
+        videoSelectionViewModel.selectVideo(url)
+        // 选择视频后自动触发导航
+        if !videoSelectionViewModel.selectedVideos.isEmpty {
+            shouldNavigateToStyleSelection = true
+        }
+    }
+
+    /// 选择多个视频（委托给VideoSelectionViewModel）
     func selectVideos(_ urls: [URL]) {
-        selectedVideos = urls  // 多视频选择
-        validateVideos()
+        videoSelectionViewModel.selectVideos(urls)
         // 选择视频后自动触发导航
         if !urls.isEmpty {
             shouldNavigateToStyleSelection = true
         }
     }
 
+    /// 添加视频（委托给VideoSelectionViewModel）
     func addVideo(_ url: URL) {
-        selectedVideos.append(url)
-        validateVideos()
+        videoSelectionViewModel.addVideo(url)
     }
 
+    /// 移除视频（委托给VideoSelectionViewModel）
     func removeVideo(at index: Int) {
-        guard index < selectedVideos.count else { return }
-        selectedVideos.remove(at: index)
-        validateVideos()
+        videoSelectionViewModel.removeVideo(at: index)
     }
 
-    /// 保存视频数据到临时文件
-    /// - Parameter data: 视频数据
-    /// - Returns: 保存的文件URL，失败时返回nil
-    func saveVideoData(_ data: Data) -> URL? {
-        let tempDir = FileManager.default.temporaryDirectory
-        let fileName = "temp_video_\(UUID().uuidString).mp4"
-        let fileURL = tempDir.appendingPathComponent(fileName)
-
-        do {
-            try data.write(to: fileURL)
-            print("✅ 视频保存成功: \(fileURL.lastPathComponent)")
-            return fileURL
-        } catch {
-            print("❌ 保存视频失败: \(error)")
-            errorMessage = "保存视频失败: \(error.localizedDescription)"
-            return nil
-        }
-    }
-
-    /// 处理PhotosPicker选择的视频项目（优化版本）
-    /// - Parameter items: PhotosPicker选择的项目数组
-    /// - Returns: 处理完成的视频URL数组
+    /// 处理PhotosPicker选择的视频项目（委托给VideoSelectionViewModel）
     func processSelectedItems(_ items: [PickerItem]) async -> [URL] {
-        var videoURLs: [URL] = []
-
-        // 更新处理状态
-        await MainActor.run {
-            self.uploadStatus = .processing
-            self.errorMessage = "正在处理选中的视频..."
-        }
-
-        for (index, item) in items.enumerated() {
-            do {
-                // 更新进度提示
-                await MainActor.run {
-                    self.errorMessage = "正在处理第 \(index + 1)/\(items.count) 个视频..."
-                }
-
-                // 优化：使用URL方式而不是Data方式，避免全量内存加载
-                if let url = try await item.loadTransferable(type: URL.self) {
-                    // 直接使用系统提供的临时URL，无需重新保存
-                    videoURLs.append(url)
-                    print("✅ 视频处理成功: \(url.lastPathComponent)")
-                } else if let data = try await item.loadTransferable(type: Data.self),
-                          let savedUrl = saveVideoData(data) {
-                    // 备用方案：如果URL方式失败，使用Data方式
-                    videoURLs.append(savedUrl)
-                    print("✅ 视频保存成功（备用方案）: \(savedUrl.lastPathComponent)")
-                }
-            } catch {
-                print("❌ 处理视频项目失败: \(error)")
-                await MainActor.run {
-                    self.errorMessage = "处理第 \(index + 1) 个视频失败: \(error.localizedDescription)"
-                }
-            }
-        }
-
-        // 清除处理状态提示
-        await MainActor.run {
-            self.errorMessage = nil
-            self.uploadStatus = .pending
-        }
-
-        return videoURLs
+        return await videoSelectionViewModel.processSelectedItems(items)
     }
 
     /// 选择故事风格
@@ -151,7 +102,7 @@ class VideoUploadViewModel: ObservableObject {
             return false
         }
 
-        guard !selectedVideos.isEmpty else {
+        guard !videoSelectionViewModel.selectedVideos.isEmpty else {
             print("❌ 没有选择视频")
             errorMessage = "请先选择视频"
             return false
@@ -160,7 +111,7 @@ class VideoUploadViewModel: ObservableObject {
         print("✅ 开始生成连环画")
         print("📊 故事风格: \(selectedStyle)")
         print("📊 当前状态: \(uploadStatus.rawValue)")
-        print("📊 视频数量: \(selectedVideos.count)")
+        print("📊 视频数量: \(videoSelectionViewModel.selectedVideos.count)")
 
         // 重置状态
         uploadStatus = .pending
@@ -181,95 +132,16 @@ class VideoUploadViewModel: ObservableObject {
         return startGeneration()
     }
 
-    private func validateVideos() {
-        guard !selectedVideos.isEmpty else {
-            errorMessage = nil
-            uploadStatus = .pending
-            return
-        }
-
-        // 异步验证所有视频，提高性能
-        Task {
-            await MainActor.run {
-                self.errorMessage = "正在验证视频..."
-                self.uploadStatus = .processing
-            }
-
-            // 使用actor-isolated的结果结构体来避免并发访问问题
-            struct ValidationResult {
-                let hasError: Bool
-                let errorMessage: String?
-            }
-
-            // 并发验证所有视频以提高性能
-            let validationResult = await withTaskGroup(of: (Int, Result<(Double, Int64), Error>).self) { group in
-                for (index, url) in selectedVideos.enumerated() {
-                    group.addTask {
-                        let asset = AVAsset(url: url)
-                        do {
-                            // 获取时长
-                            let duration = try await asset.load(.duration)
-                            let durationSeconds = CMTimeGetSeconds(duration)
-
-                            // 获取文件大小
-                            let fileSize = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
-
-                            return (index, .success((durationSeconds, Int64(fileSize))))
-                        } catch {
-                            return (index, .failure(error))
-                        }
-                    }
-                }
-
-                // 收集所有结果
-                var hasError = false
-                var errorMsg = ""
-                let maxFileSize: Int64 = 800 * 1024 * 1024 // 800MB限制，与服务器保持一致
-
-                for await (index, result) in group {
-                    switch result {
-                    case .success(let (durationSeconds, fileSize)):
-                        if durationSeconds > 300 { // 5分钟
-                            hasError = true
-                            errorMsg = "视频\(index + 1)时长超过5分钟（\(Int(durationSeconds))秒）"
-                            break
-                        } else if fileSize > maxFileSize {
-                            let fileSizeMB = Double(fileSize) / (1024 * 1024)
-                            hasError = true
-                            errorMsg = "视频\(index + 1)文件过大（\(String(format: "%.1f", fileSizeMB))MB），请选择小于800MB的视频"
-                            break
-                        }
-                    case .failure(_):
-                        hasError = true
-                        errorMsg = "无法获取视频\(index + 1)的信息"
-                        break
-                    }
-                }
-
-                return ValidationResult(hasError: hasError, errorMessage: hasError ? errorMsg : nil)
-            }
-
-            await MainActor.run {
-                if validationResult.hasError {
-                    self.errorMessage = validationResult.errorMessage
-                    self.uploadStatus = .failed
-                } else {
-                    self.errorMessage = nil
-                    self.uploadStatus = .pending
-                    print("✅ 所有视频验证通过")
-                }
-            }
-        }
-    }
+    // 视频验证功能已移至VideoSelectionViewModel
     
     func uploadVideo() {
-        guard !selectedVideos.isEmpty else { return }
+        guard !videoSelectionViewModel.selectedVideos.isEmpty else { return }
 
         uploadStatus = .uploading
         uploadProgress = 0
         errorMessage = nil
 
-        uploadVideosReal(videoURLs: selectedVideos)  // 仅使用真实上传模式
+        uploadVideosReal(videoURLs: videoSelectionViewModel.selectedVideos)  // 仅使用真实上传模式
     }
 
     /// 根据文件大小计算动态超时时间
@@ -897,7 +769,7 @@ class VideoUploadViewModel: ObservableObject {
     }
 
     private func createMockComicResult() -> ComicResult {
-        let videoTitle = selectedVideos.isEmpty ? "测试视频.mp4" : selectedVideos.map { $0.lastPathComponent }.joined(separator: ", ")
+        let videoTitle = videoSelectionViewModel.selectedVideos.isEmpty ? "测试视频.mp4" : videoSelectionViewModel.selectedVideos.map { $0.lastPathComponent }.joined(separator: ", ")
 
         return ComicResult(
             comicId: "mock-comic-123",
@@ -966,7 +838,9 @@ class VideoUploadViewModel: ObservableObject {
     }
 
     func reset() {
-        selectedVideos = []
+        // 重置视频选择ViewModel
+        videoSelectionViewModel.clearAllVideos()
+
         uploadStatus = .pending
         uploadProgress = 0
         errorMessage = nil
