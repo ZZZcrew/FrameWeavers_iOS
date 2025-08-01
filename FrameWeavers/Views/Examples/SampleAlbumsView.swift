@@ -173,11 +173,11 @@ struct HistoryAlbumRowView: View {
         .background(Color.white.opacity(0.9))
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
-        .padding(.horizontal, 20)
+        // .padding(.horizontal, 8)
     }
 }
 
-// MARK: - 单个画册行视图
+// MARK: - 示例画册行视图
 
 struct SampleAlbumRowView: View {
     let album: SampleAlbum
@@ -235,19 +235,12 @@ struct SampleAlbumRowView: View {
             }
 
             Spacer()
-
-            // 箭头图标
-            if album.comicResult != nil {
-                Image(systemName: "chevron.right")
-                    .foregroundColor(Color(hex: "#855C23"))
-                    .font(.system(size: 14))
-            }
         }
         .padding(16)
         .background(Color.white.opacity(0.9))
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
-        .padding(.horizontal, 20)
+        // .padding(.horizontal, 8)
     }
 }
 
