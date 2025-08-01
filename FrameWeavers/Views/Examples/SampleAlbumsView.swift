@@ -8,73 +8,72 @@ struct SampleAlbumsView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
+            List {
+                // 历史记录部分
+                if viewModel.hasHistory {
+                    Section {
+                        ForEach(viewModel.historyAlbums) { historyAlbum in
+                            AlbumRowView(
+                                title: historyAlbum.title,
+                                description: historyAlbum.originalVideoTitle,
+                                comicResult: historyAlbum.toComicResult(),
+                                coverImage: historyAlbum.thumbnailImageName ?? "",
+                                isRemoteImage: true,
+                                onDelete: { viewModel.deleteHistoryAlbum(historyAlbum) }
+                            )
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        }
+                        .onDelete(perform: viewModel.deleteHistoryAlbums)
+                    } header: {
+                        HStack {
+                            Text("我的画册")
+                                .font(.custom("WSQuanXing", size: 20))
+                                .foregroundColor(Color(hex: "#855C23"))
+
+                            Spacer()
+
+                            Text("\(viewModel.historyCount)个")
+                                .font(.custom("STKaiti", size: 14))
+                                .foregroundColor(Color(hex: "#2F2617"))
+                                .opacity(0.6)
+                        }
+                        .padding(.horizontal, 4)
+                        .textCase(nil)
+                    }
+                }
+
+                // 示例画册部分
+                Section {
+                    ForEach(viewModel.sampleAlbums) { album in
+                        AlbumRowView(
+                            title: album.title,
+                            description: album.description,
+                            comicResult: album.comicResult,
+                            coverImage: album.coverImage,
+                            isRemoteImage: false,
+                            onDelete: nil
+                        )
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                    }
+                } header: {
+                    HStack {
+                        Text("示例画册")
+                            .font(.custom("WSQuanXing", size: 20))
+                            .foregroundColor(Color(hex: "#855C23"))
+                    }
+                    .padding(.horizontal, 4)
+                    .textCase(nil)
+                }
+            }
+            .background {
                 Image("背景单色")
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea()
-
-                List {
-                        // 历史记录部分
-                        if viewModel.hasHistory {
-                            Section {
-                                ForEach(viewModel.historyAlbums) { historyAlbum in
-                                    AlbumRowView(
-                                        title: historyAlbum.title,
-                                        description: historyAlbum.originalVideoTitle,
-                                        comicResult: historyAlbum.toComicResult(),
-                                        coverImage: historyAlbum.thumbnailImageName ?? "",
-                                        isRemoteImage: true,
-                                        onDelete: { viewModel.deleteHistoryAlbum(historyAlbum) }
-                                    )
-                                    .listRowBackground(Color.clear)
-                                    .listRowSeparator(.hidden)
-                                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                                }
-                                .onDelete(perform: viewModel.deleteHistoryAlbums)
-                            } header: {
-                                HStack {
-                                    Text("我的画册")
-                                        .font(.custom("WSQuanXing", size: 20))
-                                        .foregroundColor(Color(hex: "#855C23"))
-
-                                    Spacer()
-
-                                    Text("\(viewModel.historyCount)个")
-                                        .font(.custom("STKaiti", size: 14))
-                                        .foregroundColor(Color(hex: "#2F2617"))
-                                        .opacity(0.6)
-                                }
-                                .padding(.horizontal, 4)
-                                .textCase(nil)
-                            }
-                        }
-
-                        // 示例画册部分
-                        Section {
-                            ForEach(viewModel.sampleAlbums) { album in
-                                AlbumRowView(
-                                    title: album.title,
-                                    description: album.description,
-                                    comicResult: album.comicResult,
-                                    coverImage: album.coverImage,
-                                    isRemoteImage: false,
-                                    onDelete: nil
-                                )
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                            }
-                        } header: {
-                            HStack {
-                                Text("示例画册")
-                                    .font(.custom("WSQuanXing", size: 20))
-                                    .foregroundColor(Color(hex: "#855C23"))
-                            }
-                            .padding(.horizontal, 4)
-                            .textCase(nil)
-                        }
-                }
             }
             .scrollContentBackground(.hidden)
             .navigationTitle("画册库")
