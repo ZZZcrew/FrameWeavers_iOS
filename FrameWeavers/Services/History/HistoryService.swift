@@ -1,13 +1,14 @@
 import Foundation
 import SwiftData
+import Combine
 
 // MARK: - 历史记录管理服务
 
 /// 历史画册管理服务
-/// 负责历史画册的增删查改操作
+/// 负责历史画册的增删查改操作，包括同步和异步方法
 class HistoryService {
     private let modelContext: ModelContext
-    
+
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
     }
@@ -39,7 +40,48 @@ class HistoryService {
             return false
         }
     }
-    
+
+    /// 异步保存连环画结果到历史记录（带回调）
+    /// - Parameters:
+    ///   - comicResult: 要保存的连环画结果
+    ///   - completion: 完成回调，返回是否保存成功
+    func saveComicToHistory(
+        _ comicResult: ComicResult,
+        completion: @escaping (Bool) -> Void = { _ in }
+    ) {
+        // 在后台队列执行保存操作
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else {
+                DispatchQueue.main.async {
+                    completion(false)
+                }
+                return
+            }
+
+            let success = self.saveToHistory(comicResult)
+
+            DispatchQueue.main.async {
+                if success {
+                    print("✅ 连环画已成功保存到历史记录: \(comicResult.title)")
+                } else {
+                    print("❌ 保存连环画到历史记录失败")
+                }
+                completion(success)
+            }
+        }
+    }
+
+    /// 异步保存连环画结果到历史记录（async/await）
+    /// - Parameter comicResult: 要保存的连环画结果
+    /// - Returns: 是否保存成功
+    func saveComicToHistory(_ comicResult: ComicResult) async -> Bool {
+        return await withCheckedContinuation { continuation in
+            saveComicToHistory(comicResult) { success in
+                continuation.resume(returning: success)
+            }
+        }
+    }
+
     // MARK: - 查询历史记录
     
     /// 获取所有历史画册
@@ -136,4 +178,44 @@ class HistoryService {
             return 0
         }
     }
+
+    // MARK: - 业务逻辑方法
+
+    /// 检查是否已存在相同的连环画
+    /// - Parameter comicId: 连环画ID
+    /// - Returns: 是否已存在
+    func isComicAlreadyExists(_ comicId: String) -> Bool {
+        do {
+            let existingAlbum = try fetchHistoryAlbum(by: comicId)
+            return existingAlbum != nil
+        } catch {
+            print("❌ 检查连环画是否存在时出错: \(error)")
+            return false
+        }
+    }
+
+    /// 获取历史记录摘要信息
+    /// - Returns: 历史记录摘要
+    func getHistorySummary() -> HistorySummary? {
+        do {
+            let totalCount = getHistoryCount()
+            let recentAlbums = try fetchRecentHistoryAlbums(limit: 5)
+
+            return HistorySummary(
+                totalCount: totalCount,
+                recentAlbums: recentAlbums,
+                lastUpdateDate: recentAlbums.first?.creationDate
+            )
+        } catch {
+            print("❌ 获取历史记录摘要失败: \(error)")
+            return nil
+        }
+    }
+}
+
+// MARK: - 历史记录摘要数据结构
+struct HistorySummary {
+    let totalCount: Int
+    let recentAlbums: [HistoryAlbum]
+    let lastUpdateDate: Date?
 }
