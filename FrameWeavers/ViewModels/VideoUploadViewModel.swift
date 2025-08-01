@@ -978,9 +978,17 @@ class VideoUploadViewModel: ObservableObject {
         progressTimer = nil
         currentTaskId = nil
         currentVideoPath = nil  // 清理视频路径
+        shouldNavigateToStyleSelection = false  // 重置导航状态
+        selectedStyle = ""  // 重置选择的风格
 
         // 停止上传进度监控
         stopUploadProgressMonitoring()
+    }
+
+    /// 重置导航状态
+    func resetNavigationState() {
+        shouldNavigateToStyleSelection = false
+        selectedStyle = ""
     }
 
     // MARK: - 历史记录管理

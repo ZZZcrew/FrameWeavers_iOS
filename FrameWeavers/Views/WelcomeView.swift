@@ -94,10 +94,15 @@ struct WelcomeView: View {
     /// 处理视频选择
     /// - Parameter items: 选择的PhotosPicker项目
     private func handleVideoSelection(_ items: [PhotosPickerItem]) {
+        // 如果没有选择任何项目，直接返回
+        guard !items.isEmpty else { return }
+
         Task {
             let videoURLs = await viewModel.processSelectedItems(items)
             await MainActor.run {
                 viewModel.selectVideos(videoURLs)
+                // 立即重置PhotosPicker的选择状态，这样按钮会变回"添加"
+                selectedItems = []
             }
         }
     }
