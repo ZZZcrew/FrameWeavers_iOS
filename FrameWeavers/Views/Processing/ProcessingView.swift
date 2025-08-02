@@ -7,7 +7,14 @@ struct ProcessingView: View {
     @StateObject private var galleryViewModel = ProcessingGalleryViewModel()
     @Namespace private var galleryNamespace
     @State private var navigateToResults = false // 添加导航状态
-    
+
+    // 检测设备方向
+    private var isLandscape: Bool {
+        UIDevice.current.orientation.isLandscape ||
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.interfaceOrientation.isLandscape == true
+    }
     var body: some View {
         ZStack {
             // 背景图片
@@ -16,11 +23,15 @@ struct ProcessingView: View {
                 .scaledToFill()
                 .ignoresSafeArea()
 
-            VStack(spacing: 40) {
-                // 简化的胶片画廊视图
-                filmGalleryView
+            GeometryReader { geometry in
+                if isLandscape {
+                    // 横屏布局
+                    landscapeLayout(geometry)
+                } else {
+                    // 竖屏布局
+                    portraitLayout(geometry)
+                }
             }
-            .padding(.vertical, 50)
         }
 
         .onAppear {
@@ -58,38 +69,108 @@ struct ProcessingView: View {
         .navigationBarTitleDisplayMode(.inline)
         // .navigationBarBackButtonHidden(false)
         // .toolbarBackground(Color.clear, for: .navigationBar)
+        .onAppear {
+            // 支持所有方向
+            AppDelegate.orientationLock = .all
+        }
+    }
+}
+
+// MARK: - 布局扩展
+extension ProcessingView {
+    /// 横屏布局
+    @ViewBuilder
+    private func landscapeLayout(_ geometry: GeometryProxy) -> some View {
+        HStack(spacing: 20) {
+            // 左侧：胶片画廊区域 (65%)
+            VStack(spacing: 20) {
+                PhotoStackView(
+                    mainImageName: galleryViewModel.mainImageName,
+                    stackedImages: galleryViewModel.stackedImages,
+                    namespace: galleryNamespace,
+                    baseFrames: galleryViewModel.baseFrameDataMap
+                )
+                .frame(maxHeight: geometry.size.height * 0.5)
+
+                FilmstripView(
+                    displayImages: galleryViewModel.filmstripDisplayImages,
+                    baseFrames: galleryViewModel.baseFrames,
+                    isExampleMode: galleryViewModel.isExampleMode,
+                    config: galleryViewModel.filmstripConfig
+                )
+                .frame(maxHeight: geometry.size.height * 0.3)
+            }
+            .frame(width: geometry.size.width * 0.65)
+            .padding(.leading, 20)
+
+            // 右侧：进度显示区域 (30%)
+            VStack {
+                Spacer()
+
+                ProcessingLoadingView(
+                    progress: viewModel.uploadProgress,
+                    status: viewModel.uploadStatus
+                )
+
+                Spacer()
+            }
+            .frame(width: geometry.size.width * 0.30)
+            .padding(.trailing, 20)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.vertical, 20)
+    }
+
+    /// 竖屏布局
+    @ViewBuilder
+    private func portraitLayout(_ geometry: GeometryProxy) -> some View {
+        VStack(spacing: 0) {
+            // 顶部弹性空间
+            Spacer()
+                .frame(minHeight: 20)
+
+            // 胶片画廊区域
+            VStack(spacing: 30) {
+                PhotoStackView(
+                    mainImageName: galleryViewModel.mainImageName,
+                    stackedImages: galleryViewModel.stackedImages,
+                    namespace: galleryNamespace,
+                    baseFrames: galleryViewModel.baseFrameDataMap
+                )
+                .frame(maxHeight: geometry.size.height * 0.35)
+
+                FilmstripView(
+                    displayImages: galleryViewModel.filmstripDisplayImages,
+                    baseFrames: galleryViewModel.baseFrames,
+                    isExampleMode: galleryViewModel.isExampleMode,
+                    config: galleryViewModel.filmstripConfig
+                )
+                .frame(maxHeight: geometry.size.height * 0.2)
+            }
+            .padding(.horizontal, 20)
+
+            // 中间弹性空间
+            Spacer()
+                .frame(height: 40)
+
+            // 进度显示区域
+            ProcessingLoadingView(
+                progress: viewModel.uploadProgress,
+                status: viewModel.uploadStatus
+            )
+            .padding(.horizontal, 20)
+
+            // 底部弹性空间
+            Spacer()
+                .frame(minHeight: 40)
+        }
+        .padding(.vertical, 20)
     }
 }
 
 // MARK: - Subviews
 
 extension ProcessingView {
-    /// 简化的胶片画廊视图
-    private var filmGalleryView: some View {
-        VStack(spacing: 40) {
-            PhotoStackView(
-                mainImageName: galleryViewModel.mainImageName,
-                stackedImages: galleryViewModel.stackedImages,
-                namespace: galleryNamespace,
-                baseFrames: galleryViewModel.baseFrameDataMap
-            )
-
-            FilmstripView(
-                displayImages: galleryViewModel.filmstripDisplayImages,
-                baseFrames: galleryViewModel.baseFrames,
-                isExampleMode: galleryViewModel.isExampleMode,
-                config: galleryViewModel.filmstripConfig
-            )
-
-            // 统一的进度条显示，在所有等待状态下都显示
-            ProcessingLoadingView(progress: viewModel.uploadProgress, status: viewModel.uploadStatus)
-
-            Spacer()
-        }
-    }
-
-
-
     // MARK: - 事件处理方法
 
 
