@@ -8,13 +8,6 @@ struct ProcessingView: View {
     @Namespace private var galleryNamespace
     @State private var navigateToResults = false // 添加导航状态
 
-    // 检测设备方向
-    private var isLandscape: Bool {
-        UIDevice.current.orientation.isLandscape ||
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?.interfaceOrientation.isLandscape == true
-    }
     var body: some View {
         ZStack {
             // 背景图片
@@ -24,17 +17,19 @@ struct ProcessingView: View {
                 .ignoresSafeArea()
 
             GeometryReader { geometry in
-                if isLandscape {
-                    // 横屏布局
-                    landscapeLayout(geometry)
-                } else {
-                    // 竖屏布局
-                    portraitLayout(geometry)
-                }
+                // 强制竖屏布局
+                portraitLayout(geometry)
             }
         }
 
         .onAppear {
+            // 强制竖屏显示
+            AppDelegate.orientationLock = .portrait
+            UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
+            }
+
             handleViewAppear()
             // 检查是否为示例模式
             if let mockViewModel = viewModel as? MockVideoUploadViewModel, mockViewModel.isExampleMode {
@@ -69,57 +64,15 @@ struct ProcessingView: View {
         .navigationBarTitleDisplayMode(.inline)
         // .navigationBarBackButtonHidden(false)
         // .toolbarBackground(Color.clear, for: .navigationBar)
-        .onAppear {
-            // 支持所有方向
-            AppDelegate.orientationLock = .all
-        }
+        // .onDisappear {
+        //     // 离开时恢复支持所有方向
+        //     AppDelegate.orientationLock = .all
+        // }
     }
 }
 
 // MARK: - 布局扩展
 extension ProcessingView {
-    /// 横屏布局
-    @ViewBuilder
-    private func landscapeLayout(_ geometry: GeometryProxy) -> some View {
-        HStack(spacing: 20) {
-            // 左侧：胶片画廊区域 (65%)
-            VStack(spacing: 20) {
-                PhotoStackView(
-                    mainImageName: galleryViewModel.mainImageName,
-                    stackedImages: galleryViewModel.stackedImages,
-                    namespace: galleryNamespace,
-                    baseFrames: galleryViewModel.baseFrameDataMap
-                )
-                .frame(maxHeight: geometry.size.height * 0.5)
-
-                FilmstripView(
-                    displayImages: galleryViewModel.filmstripDisplayImages,
-                    baseFrames: galleryViewModel.baseFrames,
-                    isExampleMode: galleryViewModel.isExampleMode,
-                    config: galleryViewModel.filmstripConfig
-                )
-                .frame(maxHeight: geometry.size.height * 0.3)
-            }
-            .frame(width: geometry.size.width * 0.65)
-            .padding(.leading, 20)
-
-            // 右侧：进度显示区域 (30%)
-            VStack {
-                Spacer()
-
-                ProcessingLoadingView(
-                    progress: viewModel.uploadProgress,
-                    status: viewModel.uploadStatus
-                )
-
-                Spacer()
-            }
-            .frame(width: geometry.size.width * 0.30)
-            .padding(.trailing, 20)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.vertical, 20)
-    }
 
     /// 竖屏布局
     @ViewBuilder
@@ -172,10 +125,6 @@ extension ProcessingView {
 
 extension ProcessingView {
     // MARK: - 事件处理方法
-
-
-
-
 
     /// 处理视图出现事件
     private func handleViewAppear() {
