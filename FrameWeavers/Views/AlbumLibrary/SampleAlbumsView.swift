@@ -15,7 +15,7 @@ struct SampleAlbumsView: View {
                         ForEach(viewModel.historyAlbums) { historyAlbum in
                             AlbumRowView(
                                 title: historyAlbum.title,
-                                description: historyAlbum.originalVideoTitle,
+                                description: historyAlbum.toComicResult()?.summary ?? "暂无摘要",
                                 comicResult: historyAlbum.toComicResult(),
                                 coverImage: historyAlbum.thumbnailImageName ?? "",
                                 isRemoteImage: true,
