@@ -20,110 +20,132 @@ struct StyleSelectionView<ViewModel: VideoUploadViewModel>: View {
     }
 
     var body: some View {
-        ZStack {
-            // 背景图片
-            Image("背景单色")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
+        GeometryReader { geometry in
+            ZStack {
+                // 背景图片
+                Image("背景单色")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
 
-            VStack(spacing: 30) {
-                Text("· 选择故事风格 ·")
-                    .font(.custom("STKaiti", size: 16))
-                    .fontWeight(.bold)
-                    .foregroundColor(Color(hex: "#2F2617"))
-                    .padding(.bottom, 50)
+                VStack(spacing: geometry.size.height * 0.03) {
+                    Text("· 选择故事风格 ·")
+                        .font(.custom("STKaiti", size: min(geometry.size.width * 0.04, 18)))
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(hex: "#2F2617"))
+                        .padding(.bottom, geometry.size.height * 0.05)
 
-                ZStack {
-                    Image("四象限")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 400, height: 400)
+                    // 响应式四象限选择区域
+                    let quadrantSize = min(geometry.size.width * 0.85, geometry.size.height * 0.45)
 
-                    // 图钉图标 - 初始在右上角，根据选中位置移动
-                    let pinPositions = [
-                        (x: 180, y: 40),   // 左上象限右上角
-                        (x: 360, y: 40),   // 右上象限右上角（初始位置）
-                        (x: 180, y: 220),  // 左下象限右上角
-                        (x: 360, y: 220)   // 右下象限右上角
-                    ]
-
-                    let pinIndex = viewModel.selectedStyle.isEmpty ? 1 : (storyStyles.firstIndex { $0.0 == viewModel.selectedStyle } ?? 1)
-                    Image("图钉")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 60, height: 60)
-                        .position(x: CGFloat(pinPositions[pinIndex].x), y: CGFloat(pinPositions[pinIndex].y))
-
-                    // 四个象限的风格选择按钮
-                    let positions = [
-                        (x: 110, y: 110),  // 左上
-                        (x: 290, y: 110),  // 右上
-                        (x: 110, y: 290),  // 左下
-                        (x: 290, y: 290)   // 右下
-                    ]
-
-                    ForEach(Array(storyStyles.enumerated()), id: \.offset) { index, style in
-                        let styleKey = style.0
-                        let styleText = style.1
-
-                        Button(action: {
-                            viewModel.selectStyle(styleKey)
-                        }) {
-                            Text(styleText)
-                                .font(.custom("WSQuanXing", size: 24))
-                                .fontWeight(.bold)
-                                .foregroundColor(viewModel.selectedStyle == styleKey ? Color(hex: "#FF6B35") : Color(hex: "#855C23"))
-                        }
-                        .position(x: CGFloat(positions[index].x), y: CGFloat(positions[index].y))
-                    }
-                }
-                .frame(width: 400, height: 400)
-                .padding(.horizontal)
-                .padding(.bottom, 100)
-
-                // 开始生成按钮 - 使用NavigationLink
-                NavigationLink {
-                    nextView
-                } label: {
                     ZStack {
-                        Image("button1")
+                        Image("四象限")
                             .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 250, height: 44)
+                            .scaledToFit()
+                            .frame(width: quadrantSize, height: quadrantSize)
 
-                        Text("开始生成")
-                            .font(.custom("WSQuanXing", size: 24))
-                            .fontWeight(.bold)
-                            .foregroundColor(
-                                viewModel.selectedStyle.isEmpty ?
-                                    Color(hex: "#CCCCCC") :
-                                    Color(hex: "#855C23")
-                            )
+                        // 响应式图钉位置计算
+                        let pinPositions = calculatePinPositions(for: quadrantSize)
+                        let pinIndex = viewModel.selectedStyle.isEmpty ? 1 : (storyStyles.firstIndex { $0.0 == viewModel.selectedStyle } ?? 1)
+
+                        Image("图钉")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: quadrantSize * 0.15, height: quadrantSize * 0.15)
+                            .position(x: pinPositions[pinIndex].x, y: pinPositions[pinIndex].y)
+
+                        // 响应式按钮位置
+                        let buttonPositions = calculateButtonPositions(for: quadrantSize)
+
+                        ForEach(Array(storyStyles.enumerated()), id: \.offset) { index, style in
+                            let styleKey = style.0
+                            let styleText = style.1
+
+                            Button(action: {
+                                viewModel.selectStyle(styleKey)
+                            }) {
+                                Text(styleText)
+                                    .font(.custom("WSQuanXing", size: min(geometry.size.width * 0.055, 26)))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(viewModel.selectedStyle == styleKey ? Color(hex: "#FF6B35") : Color(hex: "#855C23"))
+                                    .minimumScaleFactor(0.7)
+                                    .lineLimit(2)
+                            }
+                            .position(x: buttonPositions[index].x, y: buttonPositions[index].y)
+                        }
                     }
+                    .frame(width: quadrantSize, height: quadrantSize)
+                    .padding(.horizontal, geometry.size.width * 0.05)
+                    .padding(.bottom, geometry.size.height * 0.08)
+
+                    // 响应式开始生成按钮
+                    NavigationLink {
+                        nextView
+                    } label: {
+                        ZStack {
+                            Image("button1")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: min(geometry.size.width * 0.6, 250),
+                                       height: geometry.size.height * 0.055)
+
+                            Text("开始生成")
+                                .font(.custom("WSQuanXing", size: min(geometry.size.width * 0.055, 26)))
+                                .fontWeight(.bold)
+                                .foregroundColor(
+                                    viewModel.selectedStyle.isEmpty ?
+                                        Color(hex: "#CCCCCC") :
+                                        Color(hex: "#855C23")
+                                )
+                                .minimumScaleFactor(0.8)
+                        }
+                    }
+                    .disabled(viewModel.selectedStyle.isEmpty)
+                    .opacity(viewModel.selectedStyle.isEmpty ? 0.6 : 1.0)
+
+                    Spacer()
                 }
-                .disabled(viewModel.selectedStyle.isEmpty)
-                .opacity(viewModel.selectedStyle.isEmpty ? 0.6 : 1.0)
-
-                // // 显示已选择的视频数量
-                // Text("已选择 \(viewModel.selectedVideos.count) 个视频")
-                //     .font(.custom("STKaiti", size: 14))
-                //     .foregroundColor(Color(hex: "#2F2617"))
-
-                // // 调试信息
-                // Text("状态: \(viewModel.uploadStatus.rawValue)")
-                //     .font(.caption)
-                //     .foregroundColor(.gray)
+                .padding(.horizontal, geometry.size.width * 0.05)
             }
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        // .navigationBarBackButtonHidden(false)
-        // .toolbarBackground(Color.clear, for: .navigationBar)
         .onAppear {
             print("SelectStyleView: 已选择 \(viewModel.selectedVideos.count) 个视频")
             print("SelectStyleView: 初始状态 \(viewModel.uploadStatus.rawValue)")
         }
+    }
+
+    // MARK: - 响应式位置计算方法
+
+    /// 计算图钉的响应式位置
+    private func calculatePinPositions(for size: CGFloat) -> [(x: CGFloat, y: CGFloat)] {
+        let offsetX = size * 0.45  // 相对于中心的X偏移
+        let offsetY = size * 0.1   // 相对于顶部的Y偏移
+        let centerX = size * 0.5
+        let centerY = size * 0.5
+
+        return [
+            (x: centerX - offsetX + size * 0.35, y: centerY - offsetY - size * 0.35), // 左上象限右上角
+            (x: centerX + offsetX, y: centerY - offsetY - size * 0.35),              // 右上象限右上角（初始位置）
+            (x: centerX - offsetX + size * 0.35, y: centerY + offsetY + size * 0.2), // 左下象限右上角
+            (x: centerX + offsetX, y: centerY + offsetY + size * 0.2)                // 右下象限右上角
+        ]
+    }
+
+    /// 计算按钮的响应式位置
+    private func calculateButtonPositions(for size: CGFloat) -> [(x: CGFloat, y: CGFloat)] {
+        let offsetX = size * 0.225  // 相对于中心的X偏移
+        let offsetY = size * 0.225  // 相对于中心的Y偏移
+        let centerX = size * 0.5
+        let centerY = size * 0.5
+
+        return [
+            (x: centerX - offsetX, y: centerY - offsetY), // 左上
+            (x: centerX + offsetX, y: centerY - offsetY), // 右上
+            (x: centerX - offsetX, y: centerY + offsetY), // 左下
+            (x: centerX + offsetX, y: centerY + offsetY)  // 右下
+        ]
     }
 }
 
