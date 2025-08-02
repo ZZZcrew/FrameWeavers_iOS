@@ -14,6 +14,7 @@ struct AnimatedPinView: View {
     // 动画状态
     @State private var animationPhase: AnimationPhase = .idle
     @State private var currentPositionIndex: Int = 1  // 当前图钉实际显示的位置索引
+    @State private var animatedPosition: CGPoint = CGPoint.zero  // 用于平滑位置过渡的动画位置
     
     enum AnimationPhase {
         case idle           // 静止状态
@@ -32,7 +33,7 @@ struct AnimatedPinView: View {
                 .scaleEffect(pinScale)
                 .rotationEffect(.degrees(pinRotation))
                 .offset(y: pinOffset)
-                .position(x: pinPositions[currentPositionIndex].x, y: pinPositions[currentPositionIndex].y)
+                .position(x: animatedPosition.x, y: animatedPosition.y)
                 .shadow(
                     color: showShadow ? Color.black.opacity(0.3) : Color.clear,
                     radius: showShadow ? 3 : 0,
@@ -48,6 +49,7 @@ struct AnimatedPinView: View {
         .onAppear {
             // 初始化位置和插入动画
             currentPositionIndex = currentIndex
+            animatedPosition = CGPoint(x: pinPositions[currentIndex].x, y: pinPositions[currentIndex].y)
             startInsertAnimation()
         }
     }
@@ -99,35 +101,31 @@ struct AnimatedPinView: View {
             showShadow = false  // 隐藏阴影
         }
 
-        // 第二阶段：移动到新位置 - 在拔出完成后才移动位置
+        // 第二阶段：移动到新位置 - 在空中平滑飞行到新位置
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             animationPhase = .moving
 
-            // 立即更新位置（此时图钉在空中，用户看不出位置变化）
-            currentPositionIndex = newIndex
+            let newPosition = CGPoint(x: pinPositions[newIndex].x, y: pinPositions[newIndex].y)
 
-            withAnimation(.easeInOut(duration: 0.4)) {
+            // 同时进行位置移动和高度变化的动画
+            withAnimation(.easeInOut(duration: 1.2)) {  // 增加到1.2秒，让移动更慢更明显
+                animatedPosition = newPosition  // 平滑移动到新位置
                 pinOffset = -35  // 飞行到最高点
                 pinRotation = Double.random(in: -20...20)  // 飞行中的旋转
                 pinScale = 1.15  // 在空中时稍大
             }
+
+            // 更新内部位置索引
+            currentPositionIndex = newIndex
         }
 
-        // 第三阶段：准备插入 - 图钉对准新的目标位置
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-            withAnimation(.easeIn(duration: 0.2)) {
-                pinOffset = -15  // 下降一点，准备插入
-                pinRotation = 0   // 恢复正常角度
-                pinScale = 1.1
-            }
-        }
-
-        // 第四阶段：插入新位置 - 快速插入到新位置
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+        // 第三阶段：直接插入新位置 - 飞行完成后立即插入
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {  // 调整时间点：0.3 + 1.2 = 1.5
             animationPhase = .insertDown
 
             withAnimation(.easeIn(duration: 0.15)) {
                 pinOffset = 2    // 稍微插入过深
+                pinRotation = 0   // 恢复正常角度
                 pinScale = 0.95  // 压缩效果
                 showShadow = true  // 显示阴影
             }
@@ -149,7 +147,7 @@ struct AnimatedPinView: View {
         }
 
         // 重置状态
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {  // 调整总时间：1.5 + 0.7 = 2.2
             animationPhase = .idle
         }
     }
