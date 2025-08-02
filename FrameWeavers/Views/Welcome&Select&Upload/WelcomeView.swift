@@ -7,6 +7,31 @@ struct WelcomeView: View {
     @State private var selectedItems: [PhotosPickerItem] = []
     @State private var showingSampleAlbums = false
 
+    // MARK: - 性能优化：缓存和静态资源
+
+    /// 缓存计算结果，避免重复计算
+    @State private var cachedTextHeight: CGFloat = 0
+    @State private var lastGeometrySize: CGSize = .zero
+
+    /// 静态文本内容，避免重复创建
+    private static let welcomeText = """
+    有些故事，
+    是你想和亲人分享的美好瞬间，
+    可是视频给我们的时间太短，
+    不足以停留在此刻。
+
+    我们想说，我们想分享，
+    此时此刻的故事。
+
+    或许我们还想体验，
+    和你的故事一致的风格，
+    或许我们需要一个氛围，
+    让你讲出属于你自己的故事。
+    """
+
+    /// 静态字体，避免重复创建
+    private static let welcomeFont = UIFont(name: "STKaiti", size: 18) ?? UIFont.systemFont(ofSize: 18)
+
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
@@ -48,20 +73,7 @@ struct WelcomeView: View {
                 // 文字内容区域 - 使用预计算高度，防止动画影响其他元素位置
                 VStack {
                     TypewriterView(
-                        text: """
-                        有些故事，
-                        是你想和亲人分享的美好瞬间，
-                        可是视频给我们的时间太短，
-                        不足以停留在此刻。
-
-                        我们想说，我们想分享，
-                        此时此刻的故事。
-
-                        或许我们还想体验，
-                        和你的故事一致的风格，
-                        或许我们需要一个氛围，
-                        让你讲出属于你自己的故事。
-                        """,
+                        text: Self.welcomeText,
                         typeSpeed: 0.08
                     )
                     .font(.custom("STKaiti", size: 18))
@@ -160,50 +172,48 @@ struct WelcomeView: View {
 
     // MARK: - 私有方法
 
-    /// 计算文字容器的合适高度
+    /// 计算文字容器的合适高度（优化版本，带缓存）
     /// - Parameter geometry: 几何信息
     /// - Returns: 计算后的容器高度
     private func calculateTextContainerHeight(geometry: GeometryProxy) -> CGFloat {
-        let fullText = """
-        有些故事，
-        是你想和亲人分享的美好瞬间，
-        可是视频给我们的时间太短，
-        不足以停留在此刻。
-
-        我们想说，我们想分享，
-        此时此刻的故事。
-
-        或许我们还想体验，
-        和你的故事一致的风格，
-        或许我们需要一个氛围，
-        让你讲出属于你自己的故事。
-        """
+        // 性能优化：检查是否需要重新计算
+        let currentSize = geometry.size
+        if cachedTextHeight > 0 &&
+           abs(currentSize.width - lastGeometrySize.width) < 1.0 &&
+           abs(currentSize.height - lastGeometrySize.height) < 1.0 {
+            return cachedTextHeight
+        }
 
         // 计算文字的实际高度
-        let font = UIFont(name: "STKaiti", size: 18) ?? UIFont.systemFont(ofSize: 18)
         let lineSpacing = DeviceAdaptation.lineSpacing(geometry: geometry)
         let horizontalPadding = geometry.size.width * 0.08 * 2 // 左右padding
         let availableWidth = geometry.size.width - horizontalPadding
 
+        // 性能优化：复用段落样式对象
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = lineSpacing
+        paragraphStyle.alignment = .center
+
         // 使用NSString计算文字高度
-        let textHeight = fullText.boundingRect(
+        let textHeight = Self.welcomeText.boundingRect(
             with: CGSize(width: availableWidth, height: .greatestFiniteMagnitude),
             options: [.usesLineFragmentOrigin, .usesFontLeading],
             attributes: [
-                .font: font,
-                .paragraphStyle: {
-                    let style = NSMutableParagraphStyle()
-                    style.lineSpacing = lineSpacing
-                    style.alignment = .center
-                    return style
-                }()
+                .font: Self.welcomeFont,
+                .paragraphStyle: paragraphStyle
             ],
             context: nil
         ).height
 
         // 添加一些额外空间以确保完整显示，并根据设备调整
         let extraSpace: CGFloat = DeviceAdaptation.isSmallScreen(geometry) ? 40 : 60
-        return textHeight + extraSpace
+        let finalHeight = textHeight + extraSpace
+
+        // 缓存结果
+        cachedTextHeight = finalHeight
+        lastGeometrySize = currentSize
+
+        return finalHeight
     }
 
     /// 处理视频选择
