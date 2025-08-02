@@ -44,15 +44,14 @@ struct StyleSelectionView<ViewModel: VideoUploadViewModel>: View {
                             .scaledToFit()
                             .frame(width: quadrantSize, height: quadrantSize)
 
-                        // 响应式图钉位置计算
-                        let pinPositions = calculatePinPositions(for: quadrantSize)
+                        // 使用动画图钉组件
                         let pinIndex = viewModel.selectedStyle.isEmpty ? 1 : (storyStyles.firstIndex { $0.0 == viewModel.selectedStyle } ?? 1)
 
-                        Image("图钉")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: quadrantSize * 0.15, height: quadrantSize * 0.15)
-                            .position(x: pinPositions[pinIndex].x, y: pinPositions[pinIndex].y)
+                        AnimatedPinView(
+                            currentIndex: pinIndex,
+                            quadrantSize: quadrantSize,
+                            isAnimating: !viewModel.selectedStyle.isEmpty
+                        )
 
                         // 响应式按钮位置
                         let buttonPositions = calculateButtonPositions(for: quadrantSize)
@@ -118,32 +117,7 @@ struct StyleSelectionView<ViewModel: VideoUploadViewModel>: View {
 
     // MARK: - 响应式位置计算方法
 
-    /// 计算图钉的响应式位置
-    private func calculatePinPositions(for size: CGFloat) -> [(x: CGFloat, y: CGFloat)] {
-        let offsetX = size * 0.45  // 相对于中心的X偏移
-        let offsetY = size * 0.1   // 相对于顶部的Y偏移
-        let centerX = size * 0.5
-        let centerY = size * 0.5
 
-        return [
-            // 往下移动：增大Y值或减小负Y偏移
-            // 往上移动：减小Y值或增大负Y偏移
-            // 往左移动：减小X值
-            // 往右移动：增大X值
-
-            // 左上象限 - 往下走一点点：减小 -size * 0.35 中的 0.35
-            (x: centerX - offsetX + size * 0.43, y: centerY - offsetY - size * 0.3),
-
-            // 右上象限 - 往下、往左走一点点：减小 offsetX，减小 -size * 0.35 中的 0.35
-            (x: centerX + offsetX - size * 0.05, y: centerY - offsetY - size * 0.3),
-
-            // 左下象限 - 往下走多一点点：增大 size * 0.2 中的 0.2
-            (x: centerX - offsetX + size * 0.43, y: centerY + offsetY - size * 0.08),
-
-            // 右下象限 - 往上、往左走一点点：减小 offsetX，减小 size * 0.2 中的 0.2
-            (x: centerX + offsetX - size * 0.05, y: centerY + offsetY - size * 0.08)
-        ]
-    }
 
     /// 计算按钮的响应式位置
     private func calculateButtonPositions(for size: CGFloat) -> [(x: CGFloat, y: CGFloat)] {
