@@ -22,9 +22,6 @@ class ComicPanelViewController: ComicBaseViewController {
     }
     
     private func setupView() {
-        // 设置背景
-        setupBackgroundImage()
-        
         // 创建SwiftUI视图并包装
         let hostingController = UIHostingController(
             rootView: ComicPanelView(
@@ -77,9 +74,6 @@ class QuestionsViewController: ComicBaseViewController {
     }
     
     private func setupView() {
-        // 设置背景
-        setupBackgroundImage()
-        
         // 创建SwiftUI视图并包装
         let hostingController = UIHostingController(
             rootView: QuestionsView(

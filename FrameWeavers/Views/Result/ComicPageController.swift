@@ -150,22 +150,7 @@ class ComicBaseViewController: UIViewController {
         viewModel?.handlePageTap(at: location, viewWidth: viewWidth)
     }
     
-    /// 设置背景图片的公共方法
-    func setupBackgroundImage() {
-        let backgroundImageView = UIImageView(image: UIImage(named: "背景单色"))
-        backgroundImageView.contentMode = .scaleAspectFill
-        backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(backgroundImageView)
-        
-        NSLayoutConstraint.activate([
-            backgroundImageView.topAnchor.constraint(equalTo: view.topAnchor),
-            backgroundImageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            backgroundImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            backgroundImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-        
-        view.sendSubviewToBack(backgroundImageView)
-    }
+
     
     /// 添加点击手势的公共方法
     func setupTapGesture() {
