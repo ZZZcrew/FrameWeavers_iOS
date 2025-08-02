@@ -19,6 +19,7 @@ struct SampleAlbumsView: View {
                                 comicResult: historyAlbum.toComicResult(),
                                 coverImage: historyAlbum.thumbnailImageName ?? "",
                                 isRemoteImage: true,
+                                isSampleAlbum: false,
                                 onDelete: { viewModel.deleteHistoryAlbum(historyAlbum) }
                             )
                             .listRowBackground(Color.clear)
@@ -53,6 +54,7 @@ struct SampleAlbumsView: View {
                             comicResult: album.comicResult,
                             coverImage: album.coverImage,
                             isRemoteImage: false,
+                            isSampleAlbum: true,
                             onDelete: nil
                         )
                         .listRowBackground(Color.clear)
