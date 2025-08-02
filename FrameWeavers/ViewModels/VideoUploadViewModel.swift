@@ -135,8 +135,6 @@ class VideoUploadViewModel: ObservableObject {
         return startGeneration()
     }
 
-    // 视频验证功能已移至VideoSelectionViewModel
-    
     func uploadVideo() {
         guard !videoSelectionViewModel.selectedVideos.isEmpty else { return }
 
@@ -185,13 +183,7 @@ class VideoUploadViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    // 网络上传相关功能已移至VideoUploadService
 
-    // HTTP上传功能已移至VideoUploadService
-
-    // MIME类型处理已移至VideoUploadService
-
-    // 上传响应处理已移至VideoUploadService
     
     // MARK: - 进度轮询（使用ProgressPollingService）
     private func startProgressPolling(taskId: String) {
@@ -219,13 +211,6 @@ class VideoUploadViewModel: ObservableObject {
                 self?.errorMessage = message
             }
         )
-    }
-
-    private func simulateProcessing() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            self.comicResult = self.createMockComicResult()
-            self.uploadStatus = .completed
-        }
     }
 
     // MARK: - 基础帧提取
@@ -302,34 +287,6 @@ class VideoUploadViewModel: ObservableObject {
             }
         )
     }
-
-
-
-    private func createMockComicResult() -> ComicResult {
-        let videoTitle = videoSelectionViewModel.selectedVideos.isEmpty ? "测试视频.mp4" : videoSelectionViewModel.selectedVideos.map { $0.lastPathComponent }.joined(separator: ", ")
-
-        return ComicResult(
-            comicId: "mock-comic-123",
-            deviceId: UIDevice.current.identifierForVendor?.uuidString ?? "mock-device",
-            title: "海滩上的温暖时光",  // 添加故事标题
-            originalVideoTitle: videoTitle,
-            creationDate: ISO8601DateFormatter().string(from: Date()),
-            panelCount: 4,
-            panels: [
-                ComicPanel(panelNumber: 1, imageUrl: "Image1", narration: "故事从宁静的沙滩开始"),
-                ComicPanel(panelNumber: 2, imageUrl: "Image2", narration: "一个小小身影闯入画面"),
-                ComicPanel(panelNumber: 3, imageUrl: "Image3", narration: "阳光洒在海面上"),
-                ComicPanel(panelNumber: 4, imageUrl: "Image4", narration: "一家人的笑声比阳光还灿烂")
-            ],
-            finalQuestions: [
-                "你还记得那天沙子的温度吗？",
-                "视频里谁的笑声最大？",
-                "用一个词形容那天的天空？"
-            ]
-        )
-    }
-    
-    // 上传模式切换方法已删除
 
     func cancelUpload() {
         // 取消上传服务
