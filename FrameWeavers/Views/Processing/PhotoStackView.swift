@@ -117,6 +117,7 @@ struct PhotoStackView: View {
             Image("胶带")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
+                .opacity(0.6)  // 60%不透明度
                 .frame(width: 200, height: 50)
                 .offset(y: -100)
                 .zIndex(Double(stackedImages.count + 2))
