@@ -46,8 +46,6 @@ struct ComicPanelView: View {
         }
         .padding()
     }
-
-
 }
 
 // MARK: - Preview
