@@ -63,7 +63,7 @@ struct WelcomeView: View {
                     """,
                     typeSpeed: 0.08
                 )
-                .font(.custom("STKaiti", size: min(geometry.size.width * 0.045, 18)))
+                .font(.custom("STKaiti", size: 18))
                 .multilineTextAlignment(.center)
                 .foregroundColor(Color(hex: "#2F2617"))
                 .lineSpacing(DeviceAdaptation.lineSpacing(geometry: geometry))
