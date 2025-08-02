@@ -43,6 +43,7 @@ final class HistoryServiceTests: XCTestCase {
             comicId: id,
             deviceId: "test-device-123",
             title: "测试连环画",
+            summary: "这是一个测试用的连环画故事摘要",
             originalVideoTitle: "test-video.mp4",
             creationDate: ISO8601DateFormatter().string(from: Date()),
             panelCount: 3,

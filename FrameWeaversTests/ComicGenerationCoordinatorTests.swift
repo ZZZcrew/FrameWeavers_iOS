@@ -81,6 +81,7 @@ final class ComicGenerationCoordinatorTests: XCTestCase {
             comicId: "test-comic",
             deviceId: "test-device",
             title: "测试连环画",
+            summary: "测试连环画的故事摘要",
             originalVideoTitle: "test.mp4",
             creationDate: "2024-01-01T00:00:00Z",
             panelCount: 4,
