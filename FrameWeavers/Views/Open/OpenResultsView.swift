@@ -115,12 +115,16 @@ extension OpenResultsView {
     /// 竖屏布局
     @ViewBuilder
     private func portraitLayout(_ geometry: GeometryProxy) -> some View {
-        VStack(spacing: 40) {
-            // 上方图片区域
+        VStack(spacing: 0) {
+            // 顶部弹性空间
+            Spacer()
+                .frame(minHeight: 20)
+
+            // 图片区域
             if let firstPanel = comicResult.panels.first {
                 AsyncImageView(imageUrl: firstPanel.imageUrl)
                     .aspectRatio(contentMode: .fit)
-                    .frame(maxHeight: 300)
+                    .frame(maxHeight: geometry.size.height * 0.35)
                     .shadow(radius: 10)
                     .padding(.horizontal, 20)
             } else {
@@ -128,15 +132,20 @@ extension OpenResultsView {
                 Image("封面")
                     .resizable()
                     .scaledToFit()
-                    .frame(maxHeight: 300)
+                    .frame(maxHeight: geometry.size.height * 0.35)
                     .shadow(radius: 10)
                     .padding(.horizontal, 20)
             }
 
-            VStack(spacing: 16) {
+            // 图片和文本之间的间距
+            Spacer()
+                .frame(height: 30)
+
+            // 文本区域
+            VStack(spacing: 20) {
                 // 显示连环画标题
                 Text(comicResult.title)
-                    .font(.custom("WSQuanXing", size: 24))
+                    .font(.custom("WSQuanXing", size: 26))
                     .fontWeight(.bold)
                     .foregroundColor(Color(hex: "#855C23"))
                     .multilineTextAlignment(.center)
@@ -145,16 +154,22 @@ extension OpenResultsView {
                 // 显示第一页的旁白作为描述
                 if let firstPanel = comicResult.panels.first, let narration = firstPanel.narration {
                     Text(narration)
-                        .font(.custom("STKaiti", size: 16))
+                        .font(.custom("STKaiti", size: 17))
                         .fontWeight(.bold)
                         .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
                         .opacity(0.6)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 20)
-                        .lineLimit(4)
+                        .lineLimit(5)
+                        .lineSpacing(4)
                 }
             }
 
+            // 文本和按钮之间的间距
+            Spacer()
+                .frame(height: 40)
+
+            // 按钮区域
             NavigationLink {
                 ComicResultView(comicResult: comicResult)
             } label: {
@@ -162,15 +177,20 @@ extension OpenResultsView {
                     Image("button1")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 250, height: 44)
+                        .frame(width: 260, height: 48)
 
                     Text("翻开画册")
-                        .font(.custom("WSQuanXing", size: 24))
+                        .font(.custom("WSQuanXing", size: 26))
                         .fontWeight(.bold)
                         .foregroundColor(Color(hex: "#855C23"))
                 }
             }
+
+            // 底部弹性空间
+            Spacer()
+                .frame(minHeight: 40)
         }
-        .padding()
+        .padding(.horizontal, 20)
+        .padding(.vertical, 20)
     }
 }
