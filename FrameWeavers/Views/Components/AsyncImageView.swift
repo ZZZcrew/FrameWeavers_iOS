@@ -49,7 +49,13 @@ struct AsyncImageView: View {
     }
 
     private func loadImage() {
-        // 首先检查是否是本地图片
+        // 首先检查是否是本地缓存的图片
+        if imageUrl.hasPrefix("ComicImages/") {
+            loadLocalCachedImage()
+            return
+        }
+
+        // 然后检查是否是资源包中的本地图片
         if let localImage = UIImage(named: imageUrl) {
             self.image = localImage
             self.isLoading = false
@@ -63,7 +69,7 @@ struct AsyncImageView: View {
             return
         }
 
-        print("🖼️ AsyncImageView: 开始加载图片: \(imageUrl)")
+        print("🖼️ AsyncImageView: 开始加载网络图片: \(imageUrl)")
 
         URLSession.shared.dataTask(with: url) { data, response, error in
             DispatchQueue.main.async {
@@ -79,10 +85,34 @@ struct AsyncImageView: View {
                     return
                 }
 
-                print("✅ AsyncImageView: 图片加载成功")
+                print("✅ AsyncImageView: 网络图片加载成功")
                 self.image = loadedImage
             }
         }.resume()
+    }
+
+    /// 加载本地缓存的图片
+    private func loadLocalCachedImage() {
+        guard let localURL = LocalImageStorageService.shared.getLocalImageURL(for: imageUrl) else {
+            print("❌ AsyncImageView: 无法获取本地图片路径: \(imageUrl)")
+            isLoading = false
+            return
+        }
+
+        do {
+            let imageData = try Data(contentsOf: localURL)
+            if let localImage = UIImage(data: imageData) {
+                self.image = localImage
+                self.isLoading = false
+                print("✅ AsyncImageView: 本地缓存图片加载成功: \(imageUrl)")
+            } else {
+                print("❌ AsyncImageView: 无法解析本地图片数据: \(imageUrl)")
+                isLoading = false
+            }
+        } catch {
+            print("❌ AsyncImageView: 读取本地图片失败: \(error)")
+            isLoading = false
+        }
     }
 }
 

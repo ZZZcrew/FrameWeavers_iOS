@@ -141,14 +141,9 @@ struct AlbumRowView: View {
             Group {
                 if isRemoteImage {
                     if !coverImage.isEmpty {
-                        AsyncImage(url: URL(string: coverImage)) { image in
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Image(systemName: "photo")
-                                .foregroundColor(.gray)
-                        }
+                        // 使用 AsyncImageView 支持本地缓存图片
+                        AsyncImageView(imageUrl: coverImage)
+                            .aspectRatio(contentMode: .fill)
                     } else {
                         Image(systemName: "photo")
                             .foregroundColor(.gray)

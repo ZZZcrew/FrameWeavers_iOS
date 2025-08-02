@@ -50,19 +50,16 @@ class HistoryService {
         completion: @escaping (Bool) -> Void = { _ in }
     ) {
         // 在后台队列执行保存操作
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else {
-                DispatchQueue.main.async {
-                    completion(false)
-                }
-                return
-            }
+        Task {
+            // 首先下载并保存图片到本地
+            let comicWithLocalImages = await LocalImageStorageService.shared.saveComicImages(comicResult)
 
-            let success = self.saveToHistory(comicResult)
+            // 然后保存到历史记录
+            let success = self.saveToHistory(comicWithLocalImages)
 
-            DispatchQueue.main.async {
+            await MainActor.run {
                 if success {
-                    print("✅ 连环画已成功保存到历史记录: \(comicResult.title)")
+                    print("✅ 连环画已成功保存到历史记录（包含本地图片）: \(comicResult.title)")
                 } else {
                     print("❌ 保存连环画到历史记录失败")
                 }
@@ -75,11 +72,19 @@ class HistoryService {
     /// - Parameter comicResult: 要保存的连环画结果
     /// - Returns: 是否保存成功
     func saveComicToHistory(_ comicResult: ComicResult) async -> Bool {
-        return await withCheckedContinuation { continuation in
-            saveComicToHistory(comicResult) { success in
-                continuation.resume(returning: success)
-            }
+        // 首先下载并保存图片到本地
+        let comicWithLocalImages = await LocalImageStorageService.shared.saveComicImages(comicResult)
+
+        // 然后保存到历史记录
+        let success = self.saveToHistory(comicWithLocalImages)
+
+        if success {
+            print("✅ 连环画已成功保存到历史记录（包含本地图片）: \(comicResult.title)")
+        } else {
+            print("❌ 保存连环画到历史记录失败")
         }
+
+        return success
     }
 
     // MARK: - 查询历史记录
@@ -121,9 +126,13 @@ class HistoryService {
     /// - Returns: 是否删除成功
     func deleteHistoryAlbum(_ historyAlbum: HistoryAlbum) -> Bool {
         do {
+            // 先删除本地图片
+            LocalImageStorageService.shared.deleteComicImages(for: historyAlbum.id)
+
+            // 再删除数据库记录
             modelContext.delete(historyAlbum)
             try modelContext.save()
-            print("✅ 已删除历史画册: \(historyAlbum.title)")
+            print("✅ 已删除历史画册（包含本地图片）: \(historyAlbum.title)")
             return true
         } catch {
             print("❌ 删除历史画册失败: \(error)")
@@ -153,11 +162,16 @@ class HistoryService {
     func clearAllHistory() -> Bool {
         do {
             let allAlbums = try fetchAllHistoryAlbums()
+
+            // 先清空所有本地图片
+            LocalImageStorageService.shared.clearAllImages()
+
+            // 再删除数据库记录
             for album in allAlbums {
                 modelContext.delete(album)
             }
             try modelContext.save()
-            print("✅ 已清空所有历史记录")
+            print("✅ 已清空所有历史记录（包含本地图片）")
             return true
         } catch {
             print("❌ 清空历史记录失败: \(error)")
@@ -218,4 +232,19 @@ struct HistorySummary {
     let totalCount: Int
     let recentAlbums: [HistoryAlbum]
     let lastUpdateDate: Date?
+
+    /// 是否有历史记录
+    var hasHistory: Bool {
+        return totalCount > 0
+    }
+
+    /// 最后创建日期（兼容性属性）
+    var lastCreationDate: Date? {
+        return lastUpdateDate
+    }
+
+    /// 最近的标题列表
+    var recentTitles: [String] {
+        return recentAlbums.map { $0.title }
+    }
 }
