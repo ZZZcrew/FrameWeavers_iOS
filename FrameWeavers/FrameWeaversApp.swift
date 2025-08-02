@@ -3,6 +3,7 @@ import SwiftData
 
 @main
 struct FrameWeaversApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var networkService = NetworkPermissionService()
 
     var sharedModelContainer: ModelContainer = {
