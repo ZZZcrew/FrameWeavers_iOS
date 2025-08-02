@@ -15,10 +15,25 @@ struct QuestionsView: View {
                 .scaledToFill()
                 .ignoresSafeArea()
 
-            VStack(spacing: 40) {
-                // 问题内容区域
-                VStack(spacing: 16) {
-                    ScrollView {
+            GeometryReader { geometry in
+                HStack(spacing: 30) {
+                    // 左侧：装饰区域
+                    VStack(spacing: 25) {
+                        Image(systemName: "questionmark.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(Color(hex: "#855C23").opacity(0.6))
+
+                        Text("互动思考")
+                            .font(.custom("WSQuanXing", size: 24))
+                            .foregroundColor(Color(hex: "#855C23"))
+                            .fontWeight(.bold)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(width: geometry.size.width * 0.45)
+                    .padding(.leading, 20)
+
+                    // 右侧：问题内容区域
+                    VStack(spacing: 25) {
                         TypewriterView(
                             text: questions.enumerated().map { index, question in
                                 "\(index + 1). \(question)"
@@ -29,20 +44,21 @@ struct QuestionsView: View {
                         .font(.custom("STKaiti", size: 18))
                         .foregroundColor(Color(hex: "#2F2617"))
                         .lineSpacing(8)
-                        .multilineTextAlignment(.leading)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 20) // 给ScrollView底部添加一些间距
-                    }
-                    .frame(maxHeight: 400) // 限制ScrollView的最大高度
+                        .multilineTextAlignment(.center)
+                        .lineLimit(nil)
 
-                    // 页码
-                    Text("· 完 ·")
-                        .font(.custom("STKaiti", size: 16))
-                        .foregroundColor(Color(hex: "#2F2617"))
-                        .padding(8)
+                        // 页码
+                        Text("· 完 ·")
+                            .font(.custom("STKaiti", size: 16))
+                            .foregroundColor(Color(hex: "#2F2617"))
+                            .padding(8)
+                    }
+                    .frame(width: geometry.size.width * 0.45)
+                    .padding(.trailing, 20)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.vertical, 20)
             }
-            .padding()
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
@@ -73,5 +89,6 @@ struct QuestionsView_Previews: PreviewProvider {
             )
         }
         .previewDevice("iPhone 14")
+        .previewInterfaceOrientation(.landscapeLeft)
     }
 }
