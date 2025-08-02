@@ -114,11 +114,11 @@ struct PhotoStackView: View {
             .zIndex(Double(stackedImages.count + 1))
 
             // 胶带
-            Rectangle()
-                .fill(Color.white.opacity(0.4))
+            Image("胶带")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
                 .frame(width: 100, height: 25)
-                .rotationEffect(.degrees(-4))
-                .offset(y: -110)
+                .offset(y: -100)
                 .zIndex(Double(stackedImages.count + 2))
         }
         .frame(height: 250)
