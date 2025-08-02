@@ -32,14 +32,14 @@ struct OpenResultsView: View {
                                 .shadow(radius: 10)
                         }
                     }
-                    .frame(width: geometry.size.width * 0.45)
+                    .frame(width: geometry.size.width * 0.60)
                     .padding(.leading, 20)
 
                     // 右侧：文本和按钮区域
-                    VStack(spacing: 25) {
+                    VStack(spacing: 20) {
                         // 显示连环画标题
                         Text(comicResult.title)
-                            .font(.custom("WSQuanXing", size: 26))
+                            .font(.custom("WSQuanXing", size: 24))
                             .fontWeight(.bold)
                             .foregroundColor(Color(hex: "#855C23"))
                             .multilineTextAlignment(.center)
@@ -48,12 +48,12 @@ struct OpenResultsView: View {
                         // 显示第一页的旁白作为描述
                         if let firstPanel = comicResult.panels.first, let narration = firstPanel.narration {
                             Text(narration)
-                                .font(.custom("STKaiti", size: 16))
+                                .font(.custom("STKaiti", size: 15))
                                 .fontWeight(.bold)
                                 .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
                                 .opacity(0.6)
                                 .multilineTextAlignment(.center)
-                                .lineLimit(5)
+                                .lineLimit(4)
                         }
 
                         NavigationLink {
@@ -63,16 +63,16 @@ struct OpenResultsView: View {
                                 Image("button1")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
-                                    .frame(width: 250, height: 44)
+                                    .frame(width: 220, height: 40)
 
                                 Text("翻开画册")
-                                    .font(.custom("WSQuanXing", size: 24))
+                                    .font(.custom("WSQuanXing", size: 22))
                                     .fontWeight(.bold)
                                     .foregroundColor(Color(hex: "#855C23"))
                             }
                         }
                     }
-                    .frame(width: geometry.size.width * 0.45)
+                    .frame(width: geometry.size.width * 0.30)
                     .padding(.trailing, 20)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
