@@ -35,5 +35,13 @@
 		</dict>
 	</dict>
 
+	<!-- 支持iTunes文件共享，让用户可以在文件管理器中查看本地画册数据 -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+
+	<!-- 支持在文件App中显示 -->
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+
 </dict>
 </plist>
