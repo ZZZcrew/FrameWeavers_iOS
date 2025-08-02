@@ -9,28 +9,41 @@ struct WelcomeView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            // 检测是否为小屏幕设备
-            let isSmallScreen = geometry.size.height < 700
-            let iconSize = isSmallScreen ?
-                min(geometry.size.width * 0.2, 80) :
-                min(geometry.size.width * 0.25, 120)
-
             VStack(spacing: 0) {
-                // 顶部弹性空间 - 小屏幕时减少
-                Spacer()
-                    .frame(minHeight: isSmallScreen ? 10 : 20)
+                // 顶部弹性空间 - 响应式调整
+                DeviceAdaptation.responsiveSpacer(
+                    geometry: geometry,
+                    minHeight: 20,
+                    maxHeight: 40
+                )
 
-                // 主图标区域 - 小屏幕时缩小
+                // 主图标区域 - 响应式尺寸
                 Image("icon-home")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: iconSize, height: iconSize)
+                    .frame(
+                        width: DeviceAdaptation.iconSize(
+                            geometry: geometry,
+                            baseRatio: 0.25,
+                            maxSize: 120,
+                            smallScreenRatio: 0.2
+                        ),
+                        height: DeviceAdaptation.iconSize(
+                            geometry: geometry,
+                            baseRatio: 0.25,
+                            maxSize: 120,
+                            smallScreenRatio: 0.2
+                        )
+                    )
                     .shadow(radius: 10)
 
-                // 图标与文字间距 - 小屏幕时减少
-                Spacer()
-                    .frame(minHeight: isSmallScreen ? 8 : 15,
-                           maxHeight: isSmallScreen ? 15 : 30)
+                // 图标与文字间距 - 响应式调整
+                DeviceAdaptation.responsiveSpacer(
+                    geometry: geometry,
+                    minHeight: 15,
+                    maxHeight: 30,
+                    smallScreenRatio: 0.5
+                )
 
                 // 文字内容区域 - 让文字自适应高度
                 TypewriterView(
@@ -53,16 +66,17 @@ struct WelcomeView: View {
                 .font(.custom("STKaiti", size: min(geometry.size.width * 0.045, 18)))
                 .multilineTextAlignment(.center)
                 .foregroundColor(Color(hex: "#2F2617"))
-                .lineSpacing(isSmallScreen ?
-                    max(geometry.size.height * 0.008, 3) :
-                    geometry.size.height * 0.012)
+                .lineSpacing(DeviceAdaptation.lineSpacing(geometry: geometry))
                 .padding(.horizontal, geometry.size.width * 0.08)
                 .fixedSize(horizontal: false, vertical: true) // 允许垂直方向自适应
 
-                // 文字与按钮间距 - 小屏幕时减少
-                Spacer()
-                    .frame(minHeight: isSmallScreen ? 8 : 15,
-                           maxHeight: isSmallScreen ? 20 : 40)
+                // 文字与按钮间距 - 响应式调整
+                DeviceAdaptation.responsiveSpacer(
+                    geometry: geometry,
+                    minHeight: 15,
+                    maxHeight: 40,
+                    smallScreenRatio: 0.4
+                )
 
                 // 主要操作按钮区域
                 PhotosPicker(
@@ -84,10 +98,13 @@ struct WelcomeView: View {
                     }
                 }
 
-                // 按钮与提示文字间距 - 小屏幕时减少
-                Spacer()
-                    .frame(minHeight: isSmallScreen ? 5 : 10,
-                           maxHeight: isSmallScreen ? 15 : 25)
+                // 按钮与提示文字间距 - 响应式调整
+                DeviceAdaptation.responsiveSpacer(
+                    geometry: geometry,
+                    minHeight: 10,
+                    maxHeight: 25,
+                    smallScreenRatio: 0.5
+                )
 
                 // 底部提示文字
                 Text("""
@@ -99,14 +116,20 @@ struct WelcomeView: View {
                     .multilineTextAlignment(.center)
                     .foregroundColor(Color(hex: "#2F2617"))
                     .tracking(1.2)
-                    .lineSpacing(isSmallScreen ?
-                        max(geometry.size.height * 0.008, 2) :
-                        geometry.size.height * 0.012)
+                    .lineSpacing(DeviceAdaptation.lineSpacing(
+                        geometry: geometry,
+                        baseRatio: 0.012,
+                        minSpacing: 2
+                    ))
                     .padding(.horizontal, geometry.size.width * 0.1)
 
-                // 底部弹性空间 - 小屏幕时减少
-                Spacer()
-                    .frame(minHeight: isSmallScreen ? 10 : 20)
+                // 底部弹性空间 - 响应式调整
+                DeviceAdaptation.responsiveSpacer(
+                    geometry: geometry,
+                    minHeight: 20,
+                    maxHeight: 40,
+                    smallScreenRatio: 0.5
+                )
             }
             .frame(minHeight: geometry.size.height) // 确保内容占满整个屏幕高度
             .frame(maxWidth: .infinity) // 确保内容水平居中
