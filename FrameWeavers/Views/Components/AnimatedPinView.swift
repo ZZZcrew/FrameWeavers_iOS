@@ -5,21 +5,22 @@ struct AnimatedPinView: View {
     let currentIndex: Int
     let quadrantSize: CGFloat
     let isAnimating: Bool
-    
+
     @State private var pinOffset: CGFloat = 0
     @State private var pinRotation: Double = 0
     @State private var pinScale: CGFloat = 1.0
     @State private var showShadow: Bool = true
+    @State private var hasAppeared: Bool = false  // 控制是否已经出现过
 
     // 动画状态
     @State private var animationPhase: AnimationPhase = .idle
     @State private var currentPositionIndex: Int = 1  // 当前图钉实际显示的位置索引
     @State private var animatedPosition: CGPoint = CGPoint.zero  // 用于平滑位置过渡的动画位置
-    
+
     enum AnimationPhase {
         case idle           // 静止状态
         case pullOut        // 拔出阶段
-        case moving         // 移动阶段  
+        case moving         // 移动阶段
         case insertDown     // 插入阶段
     }
     
@@ -42,15 +43,22 @@ struct AnimatedPinView: View {
                 )
         }
         .onChange(of: currentIndex) { oldValue, newValue in
-            if oldValue != newValue {
+            if oldValue != newValue && hasAppeared {
                 startPinAnimation(from: oldValue, to: newValue)
             }
         }
         .onAppear {
-            // 初始化位置和插入动画
+            // 初始化位置，但不立即播放动画
             currentPositionIndex = currentIndex
             animatedPosition = CGPoint(x: pinPositions[currentIndex].x, y: pinPositions[currentIndex].y)
-            startInsertAnimation()
+
+            if !hasAppeared {
+                hasAppeared = true
+                // 延迟播放初始动画，避免阻塞界面渲染
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    startInsertAnimation()
+                }
+            }
         }
     }
     
@@ -81,13 +89,14 @@ struct AnimatedPinView: View {
         ]
     }
     
-    /// 开始图钉切换动画 - 正确的顺序：拔出 → 移动 → 插入
+    /// 开始图钉切换动画 - 优化性能版本
     private func startPinAnimation(from oldIndex: Int, to newIndex: Int) {
         guard oldIndex != newIndex else { return }
 
-        // 第一阶段：拔出动画 - 从当前位置拔出图钉
+        // 使用单个动画序列，避免多个DispatchQueue调用
         animationPhase = .pullOut
 
+        // 第一阶段：拔出动画
         withAnimation(.easeIn(duration: 0.15)) {
             pinOffset = -12  // 向上拔出
             pinRotation = Double.random(in: -5...5)  // 轻微摇摆
@@ -101,10 +110,12 @@ struct AnimatedPinView: View {
             showShadow = false  // 隐藏阴影
         }
 
-        // 第二阶段：移动到新位置 - 在空中平滑飞行到新位置
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            animationPhase = .moving
+        // 使用Task替代DispatchQueue，性能更好
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 300_000_000) // 0.3秒
 
+            // 第二阶段：移动动画
+            animationPhase = .moving
             let newPosition = CGPoint(x: pinPositions[newIndex].x, y: pinPositions[newIndex].y)
 
             // 同时进行位置移动和高度变化的动画
@@ -117,10 +128,10 @@ struct AnimatedPinView: View {
 
             // 更新内部位置索引
             currentPositionIndex = newIndex
-        }
 
-        // 第三阶段：直接插入新位置 - 飞行完成后立即插入
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {  // 调整时间点：0.3 + 1.2 = 1.5
+            try? await Task.sleep(nanoseconds: 1_200_000_000) // 1.2秒
+
+            // 第三阶段：插入动画
             animationPhase = .insertDown
 
             withAnimation(.easeIn(duration: 0.15)) {
@@ -130,65 +141,63 @@ struct AnimatedPinView: View {
                 showShadow = true  // 显示阴影
             }
 
-            // 弹回效果 - 模拟插入后的反弹
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7, blendDuration: 0).delay(0.15)) {
-                pinOffset = 0    // 回到正确位置
-                pinScale = 1.0   // 恢复原大小
-            }
-
-            // 轻微的后续震动
-            withAnimation(.spring(response: 0.15, dampingFraction: 0.5, blendDuration: 0).delay(0.3)) {
-                pinScale = 0.98
-            }
-
-            withAnimation(.spring(response: 0.15, dampingFraction: 0.8, blendDuration: 0).delay(0.4)) {
+            // 弹回效果
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                pinOffset = 0
                 pinScale = 1.0
             }
-        }
 
-        // 重置状态
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {  // 调整总时间：1.5 + 0.7 = 2.2
+            try? await Task.sleep(nanoseconds: 300_000_000) // 0.3秒
+
+            // 最终稳定
+            withAnimation(.spring(response: 0.15, dampingFraction: 0.8)) {
+                pinScale = 1.0
+            }
+
+            try? await Task.sleep(nanoseconds: 200_000_000) // 0.2秒
             animationPhase = .idle
         }
     }
     
-    /// 初始插入动画 - 模拟第一次插入图钉
+    /// 初始插入动画 - 优化性能版本
     private func startInsertAnimation() {
-        // 初始状态：图钉从很高的地方落下
+        // 初始状态
         pinOffset = -50
         pinScale = 1.3
         pinRotation = Double.random(in: -15...15)
         showShadow = false
 
-        // 延迟一点开始动画，让界面先渲染
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            // 第一阶段：快速下降
+        // 使用Task替代多个DispatchQueue调用
+        Task { @MainActor in
+            // 快速下降
             withAnimation(.easeIn(duration: 0.4)) {
                 pinOffset = -5
                 pinScale = 1.1
                 pinRotation = Double.random(in: -5...5)
             }
 
-            // 第二阶段：插入冲击
-            withAnimation(.easeIn(duration: 0.1).delay(0.4)) {
-                pinOffset = 3  // 插入过深
-                pinScale = 0.9  // 压缩
+            try? await Task.sleep(nanoseconds: 400_000_000) // 0.4秒
+
+            // 插入冲击
+            withAnimation(.easeIn(duration: 0.1)) {
+                pinOffset = 3
+                pinScale = 0.9
                 pinRotation = 0
                 showShadow = true
             }
 
-            // 第三阶段：弹回到正确位置
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0).delay(0.5)) {
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1秒
+
+            // 弹回到正确位置
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
                 pinOffset = 0
                 pinScale = 1.0
             }
 
-            // 第四阶段：轻微震动效果
-            withAnimation(.spring(response: 0.2, dampingFraction: 0.4, blendDuration: 0).delay(0.7)) {
-                pinScale = 0.95
-            }
+            try? await Task.sleep(nanoseconds: 400_000_000) // 0.4秒
 
-            withAnimation(.spring(response: 0.2, dampingFraction: 0.8, blendDuration: 0).delay(0.8)) {
+            // 最终稳定
+            withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
                 pinScale = 1.0
             }
         }
