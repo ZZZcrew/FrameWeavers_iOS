@@ -18,8 +18,8 @@ struct AsyncImageView: View {
                     ProgressView()
                         .scaleEffect(1.5)
                     Text("加载中...")
-                        .font(.caption)
-                        .foregroundColor(.gray)
+                        .font(.custom("STKaiti", size: 12))
+                        .foregroundColor(Color(hex: "#2F2617"))
                         .padding(.top, 8)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -33,10 +33,10 @@ struct AsyncImageView: View {
                     VStack {
                         Image(systemName: "photo")
                             .font(.largeTitle)
-                            .foregroundColor(.gray)
+                            .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
                         Text("图片加载失败")
-                            .font(.caption)
-                            .foregroundColor(.gray)
+                            .font(.custom("STKaiti", size: 12))
+                            .foregroundColor(Color(hex: "#2F2617"))
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(Color.gray.opacity(0.1))

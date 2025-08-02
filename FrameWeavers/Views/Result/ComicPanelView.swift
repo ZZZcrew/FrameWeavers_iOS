@@ -37,10 +37,10 @@ struct ComicPanelView: View {
                         VStack {
                             Image(systemName: "text.bubble")
                                 .font(.largeTitle)
-                                .foregroundColor(.gray.opacity(0.5))
+                                .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
                             Text("暂无文本描述")
-                                .foregroundColor(.gray.opacity(0.5))
-                                .font(.body)
+                                .font(.custom("STKaiti", size: 16))
+                                .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
                         }
                     }
 

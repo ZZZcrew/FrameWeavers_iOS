@@ -8,20 +8,20 @@ struct ProcessingLoadingView: View {
     var body: some View {
         VStack(spacing: 15) {
             Text(statusText)
-                .font(.system(size: 16))
-                .foregroundColor(.gray)
-            
+                .font(.custom("STKaiti", size: 16))
+                .foregroundColor(Color(hex: "#2F2617"))
+
             ZStack(alignment: .leading) {
                 Capsule().fill(Color.black.opacity(0.1))
                 Capsule()
-                    .fill(Color.gray.opacity(0.8))
+                    .fill(Color(hex: "#855C23"))
                     .frame(width: 200 * CGFloat(progress))
             }
             .frame(width: 200, height: 6)
-            
+
             Text("\(Int(progress * 100))%")
-                .font(.system(size: 14))
-                .foregroundColor(.gray)
+                .font(.custom("STKaiti", size: 14))
+                .foregroundColor(Color(hex: "#2F2617"))
         }
     }
     

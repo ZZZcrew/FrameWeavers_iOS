@@ -10,8 +10,11 @@ struct ProcessingView: View {
     
     var body: some View {
         ZStack {
-            // 背景色
-            Color(red: 0.91, green: 0.88, blue: 0.83).ignoresSafeArea()
+            // 背景图片
+            Image("背景单色")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
 
             VStack(spacing: 40) {
                 // 简化的胶片画廊视图
