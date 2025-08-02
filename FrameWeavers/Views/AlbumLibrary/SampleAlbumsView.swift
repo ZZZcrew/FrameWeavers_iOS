@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct SampleAlbumsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -96,6 +97,13 @@ struct SampleAlbumsView: View {
             }
         }
         .onAppear {
+            // 强制竖屏显示
+            AppDelegate.orientationLock = .portrait
+            UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
+            }
+
             // 初始化ViewModel的历史记录服务
             viewModel.setHistoryService(modelContext: modelContext)
         }
