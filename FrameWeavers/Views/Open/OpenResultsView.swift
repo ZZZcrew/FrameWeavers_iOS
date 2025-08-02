@@ -6,13 +6,13 @@ struct OpenResultsView: View {
     @Environment(\.dismiss) private var dismiss
     let comicResult: ComicResult
 
-    // 检测设备方向
-    private var isLandscape: Bool {
-        UIDevice.current.orientation.isLandscape ||
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?.interfaceOrientation.isLandscape == true
-    }
+    // 检测设备方向 - 暂时不使用，保留以备将来使用
+    // private var isLandscape: Bool {
+    //     UIDevice.current.orientation.isLandscape ||
+    //     UIApplication.shared.connectedScenes
+    //         .compactMap { $0 as? UIWindowScene }
+    //         .first?.interfaceOrientation.isLandscape == true
+    // }
 
     var body: some View {
         ZStack {
@@ -23,13 +23,17 @@ struct OpenResultsView: View {
                 .ignoresSafeArea()
 
             GeometryReader { geometry in
-                if isLandscape {
-                    // 横屏布局
-                    self.landscapeLayout(geometry)
-                } else {
-                    // 竖屏布局
-                    self.portraitLayout(geometry)
-                }
+                // 强制使用竖屏布局
+                self.portraitLayout(geometry)
+
+                // 保留横屏布局代码以备将来使用
+                // if isLandscape {
+                //     // 横屏布局
+                //     self.landscapeLayout(geometry)
+                // } else {
+                //     // 竖屏布局
+                //     self.portraitLayout(geometry)
+                // }
             }
         }
         .navigationTitle("")
@@ -37,8 +41,12 @@ struct OpenResultsView: View {
         // .navigationBarBackButtonHidden(false)
         // .toolbarBackground(Color.clear, for: .navigationBar)
         .onAppear {
-            // 支持所有方向
-            AppDelegate.orientationLock = .all
+            // 强制竖屏显示
+            AppDelegate.orientationLock = .portrait
+            UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
+            }
         }
     }
 }
