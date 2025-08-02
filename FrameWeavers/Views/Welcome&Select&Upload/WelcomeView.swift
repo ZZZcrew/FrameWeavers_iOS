@@ -45,30 +45,34 @@ struct WelcomeView: View {
                     smallScreenRatio: 0.5
                 )
 
-                // 文字内容区域 - 让文字自适应高度
-                TypewriterView(
-                    text: """
-                    有些故事，
-                    是你想和亲人分享的美好瞬间，
-                    可是视频给我们的时间太短，
-                    不足以停留在此刻。
+                // 文字内容区域 - 使用预计算高度，防止动画影响其他元素位置
+                VStack {
+                    TypewriterView(
+                        text: """
+                        有些故事，
+                        是你想和亲人分享的美好瞬间，
+                        可是视频给我们的时间太短，
+                        不足以停留在此刻。
 
-                    我们想说，我们想分享，
-                    此时此刻的故事。
+                        我们想说，我们想分享，
+                        此时此刻的故事。
 
-                    或许我们还想体验，
-                    和你的故事一致的风格，
-                    或许我们需要一个氛围，
-                    让你讲出属于你自己的故事。
-                    """,
-                    typeSpeed: 0.08
-                )
-                .font(.custom("STKaiti", size: 18))
-                .multilineTextAlignment(.center)
-                .foregroundColor(Color(hex: "#2F2617"))
-                .lineSpacing(DeviceAdaptation.lineSpacing(geometry: geometry))
-                .padding(.horizontal, geometry.size.width * 0.08)
-                .fixedSize(horizontal: false, vertical: true) // 允许垂直方向自适应
+                        或许我们还想体验，
+                        和你的故事一致的风格，
+                        或许我们需要一个氛围，
+                        让你讲出属于你自己的故事。
+                        """,
+                        typeSpeed: 0.08
+                    )
+                    .font(.custom("STKaiti", size: 18))
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(Color(hex: "#2F2617"))
+                    .lineSpacing(DeviceAdaptation.lineSpacing(geometry: geometry))
+                    .padding(.horizontal, geometry.size.width * 0.08)
+
+                    Spacer() // 填充剩余空间
+                }
+                .frame(height: calculateTextContainerHeight(geometry: geometry)) // 动态计算高度
 
                 // 文字与按钮间距 - 响应式调整
                 DeviceAdaptation.responsiveSpacer(
@@ -155,6 +159,52 @@ struct WelcomeView: View {
     }
 
     // MARK: - 私有方法
+
+    /// 计算文字容器的合适高度
+    /// - Parameter geometry: 几何信息
+    /// - Returns: 计算后的容器高度
+    private func calculateTextContainerHeight(geometry: GeometryProxy) -> CGFloat {
+        let fullText = """
+        有些故事，
+        是你想和亲人分享的美好瞬间，
+        可是视频给我们的时间太短，
+        不足以停留在此刻。
+
+        我们想说，我们想分享，
+        此时此刻的故事。
+
+        或许我们还想体验，
+        和你的故事一致的风格，
+        或许我们需要一个氛围，
+        让你讲出属于你自己的故事。
+        """
+
+        // 计算文字的实际高度
+        let font = UIFont(name: "STKaiti", size: 18) ?? UIFont.systemFont(ofSize: 18)
+        let lineSpacing = DeviceAdaptation.lineSpacing(geometry: geometry)
+        let horizontalPadding = geometry.size.width * 0.08 * 2 // 左右padding
+        let availableWidth = geometry.size.width - horizontalPadding
+
+        // 使用NSString计算文字高度
+        let textHeight = fullText.boundingRect(
+            with: CGSize(width: availableWidth, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: [
+                .font: font,
+                .paragraphStyle: {
+                    let style = NSMutableParagraphStyle()
+                    style.lineSpacing = lineSpacing
+                    style.alignment = .center
+                    return style
+                }()
+            ],
+            context: nil
+        ).height
+
+        // 添加一些额外空间以确保完整显示，并根据设备调整
+        let extraSpace: CGFloat = DeviceAdaptation.isSmallScreen(geometry) ? 40 : 60
+        return textHeight + extraSpace
+    }
 
     /// 处理视频选择
     /// - Parameter items: 选择的PhotosPicker项目
