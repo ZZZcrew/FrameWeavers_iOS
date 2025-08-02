@@ -26,7 +26,8 @@ struct FrameWeaversApp: App {
                 .environmentObject(networkService)
                 .task {
                     // 应用启动时主动检查网络权限
-                    await networkService.checkNetworkPermission()
+                    let hasPermission = await networkService.checkNetworkPermission()
+                    print("🌐 App启动: 网络权限检查结果 - \(hasPermission ? "有权限" : "无权限")")
                 }
         }
         .modelContainer(sharedModelContainer)
