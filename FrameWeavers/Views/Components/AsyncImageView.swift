@@ -62,6 +62,14 @@ struct AsyncImageView: View {
             return
         }
 
+        // MVP: 检查是否有缓存的网络图片
+        if let cachedImage = loadCachedNetworkImage() {
+            self.image = cachedImage
+            self.isLoading = false
+            print("✅ AsyncImageView: 使用缓存图片")
+            return
+        }
+
         // 如果不是本地图片，尝试从网络加载
         guard let url = URL(string: imageUrl) else {
             print("❌ AsyncImageView: 无效的图片URL: \(imageUrl)")
@@ -87,6 +95,13 @@ struct AsyncImageView: View {
 
                 print("✅ AsyncImageView: 网络图片加载成功")
                 self.image = loadedImage
+
+                // MVP: 自动缓存网络图片到本地
+                if self.imageUrl.contains("frame-api.zeabur.app") {
+                    Task {
+                        await self.cacheImageToLocal(data: data)
+                    }
+                }
             }
         }.resume()
     }
@@ -112,6 +127,61 @@ struct AsyncImageView: View {
         } catch {
             print("❌ AsyncImageView: 读取本地图片失败: \(error)")
             isLoading = false
+        }
+    }
+
+    /// MVP: 加载缓存的网络图片
+    /// - Returns: 缓存的图片，如果不存在则返回nil
+    private func loadCachedNetworkImage() -> UIImage? {
+        // 生成缓存文件名（基于URL的哈希值）
+        let fileName = "cached_\(imageUrl.hashValue.magnitude).jpg"
+
+        // 获取缓存目录
+        guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+
+        let cacheDirectory = documentsPath.appendingPathComponent("ImageCache")
+        let fileURL = cacheDirectory.appendingPathComponent(fileName)
+
+        // 检查文件是否存在
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+            return nil
+        }
+
+        // 加载图片
+        do {
+            let imageData = try Data(contentsOf: fileURL)
+            return UIImage(data: imageData)
+        } catch {
+            print("❌ AsyncImageView: 读取缓存图片失败: \(error)")
+            return nil
+        }
+    }
+
+    /// MVP: 简单缓存网络图片到本地
+    /// - Parameter data: 图片数据
+    private func cacheImageToLocal(data: Data) async {
+        // 生成缓存文件名（基于URL的哈希值）
+        let fileName = "cached_\(imageUrl.hashValue.magnitude).jpg"
+
+        // 获取缓存目录
+        guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return
+        }
+
+        let cacheDirectory = documentsPath.appendingPathComponent("ImageCache")
+        let fileURL = cacheDirectory.appendingPathComponent(fileName)
+
+        do {
+            // 创建缓存目录
+            try FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
+
+            // 保存图片数据
+            try data.write(to: fileURL)
+            print("✅ AsyncImageView: 图片已缓存到本地: \(fileName)")
+        } catch {
+            print("❌ AsyncImageView: 缓存图片失败: \(error)")
         }
     }
 }

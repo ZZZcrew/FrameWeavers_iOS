@@ -111,28 +111,64 @@ class LocalImageStorageService {
                 createImageDirectoryIfNeeded()
                 print("✅ 已清理所有本地图片缓存")
             }
+
+            // MVP: 同时清理网络图片缓存
+            clearNetworkImageCache()
         } catch {
             print("❌ 清理图片缓存失败: \(error)")
+        }
+    }
+
+    /// MVP: 清理网络图片缓存
+    func clearNetworkImageCache() {
+        guard let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return
+        }
+
+        let cacheDirectory = documentsPath.appendingPathComponent("ImageCache")
+
+        do {
+            if fileManager.fileExists(atPath: cacheDirectory.path) {
+                try fileManager.removeItem(at: cacheDirectory)
+                print("✅ 已清理网络图片缓存")
+            }
+        } catch {
+            print("❌ 清理网络图片缓存失败: \(error)")
         }
     }
     
     /// 获取本地图片缓存大小
     /// - Returns: 缓存大小（字节）
     func getCacheSize() -> Int64 {
-        guard let enumerator = fileManager.enumerator(at: imageDirectory, includingPropertiesForKeys: [.fileSizeKey]) else {
-            return 0
-        }
-        
         var totalSize: Int64 = 0
-        for case let fileURL as URL in enumerator {
-            do {
-                let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey])
-                totalSize += Int64(resourceValues.fileSize ?? 0)
-            } catch {
-                continue
+
+        // 计算画册图片缓存大小
+        if let enumerator = fileManager.enumerator(at: imageDirectory, includingPropertiesForKeys: [.fileSizeKey]) {
+            for case let fileURL as URL in enumerator {
+                do {
+                    let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey])
+                    totalSize += Int64(resourceValues.fileSize ?? 0)
+                } catch {
+                    continue
+                }
             }
         }
-        
+
+        // MVP: 计算网络图片缓存大小
+        if let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let cacheDirectory = documentsPath.appendingPathComponent("ImageCache")
+            if let enumerator = fileManager.enumerator(at: cacheDirectory, includingPropertiesForKeys: [.fileSizeKey]) {
+                for case let fileURL as URL in enumerator {
+                    do {
+                        let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey])
+                        totalSize += Int64(resourceValues.fileSize ?? 0)
+                    } catch {
+                        continue
+                    }
+                }
+            }
+        }
+
         return totalSize
     }
     
