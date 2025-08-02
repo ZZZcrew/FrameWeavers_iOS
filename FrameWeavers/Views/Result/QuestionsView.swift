@@ -23,24 +23,24 @@ struct QuestionsView: View {
                     .fontWeight(.medium)
                     .padding(.horizontal, 20)
 
-                // 下方问题内容区域
+                // 下方问题内容区域 - 限制高度避免"完"被推到底部
                 VStack(spacing: 16) {
                     ScrollView {
-                        VStack(alignment: .leading, spacing: 20) {
-                            ForEach(questions, id: \.self) { question in
-                                TypewriterView(
-                                    text: question,
-                                    typeSpeed: 0.10,
-                                    showCursor: false
-                                )
-                                .font(.custom("STKaiti", size: 18))
-                                .foregroundColor(Color(hex: "#2F2617"))
-                                .lineSpacing(8)
-                                .multilineTextAlignment(.leading)
-                                .padding(.horizontal, 20)
-                            }
-                        }
+                        TypewriterView(
+                            text: questions.enumerated().map { index, question in
+                                "\(index + 1). \(question)"
+                            }.joined(separator: "\n\n"),
+                            typeSpeed: 0.10,
+                            showCursor: false
+                        )
+                        .font(.custom("STKaiti", size: 18))
+                        .foregroundColor(Color(hex: "#2F2617"))
+                        .lineSpacing(8)
+                        .multilineTextAlignment(.leading)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 20) // 给ScrollView底部添加一些间距
                     }
+                    .frame(maxHeight: 400) // 限制ScrollView的最大高度
 
                     // 页码
                     Text("· 完 ·")
