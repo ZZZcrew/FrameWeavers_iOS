@@ -117,10 +117,40 @@ struct PhotoStackView: View {
             Image("胶带")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 100, height: 25)
+                .frame(width: 200, height: 50)
                 .offset(y: -100)
                 .zIndex(Double(stackedImages.count + 2))
         }
         .frame(height: 250)
+    }
+}
+
+// MARK: - Preview
+struct PhotoStackView_Previews: PreviewProvider {
+    @Namespace static var namespace
+
+    static var previews: some View {
+        VStack(spacing: 40) {
+            // 预览1：基本状态
+            PhotoStackView(
+                mainImageName: "Image1",
+                stackedImages: [],
+                namespace: namespace,
+                baseFrames: [:]
+            )
+            .previewDisplayName("基本状态")
+
+            // 预览2：有堆叠图片
+            PhotoStackView(
+                mainImageName: "Image2",
+                stackedImages: ["Image1", "Image3"],
+                namespace: namespace,
+                baseFrames: [:]
+            )
+            .previewDisplayName("有堆叠图片")
+        }
+        .padding()
+        .background(Color(red: 0.91, green: 0.88, blue: 0.83))
+        .previewLayout(.sizeThatFits)
     }
 }
