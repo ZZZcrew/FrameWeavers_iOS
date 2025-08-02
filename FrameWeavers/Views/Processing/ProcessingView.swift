@@ -100,7 +100,6 @@ extension ProcessingView {
                 )
                 .frame(maxHeight: geometry.size.height * 0.2)
             }
-            .padding(.horizontal, 20)
 
             // 中间弹性空间
             Spacer()
