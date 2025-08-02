@@ -37,7 +37,9 @@ struct ComicResultView: View {
             // 强制横屏显示
             AppDelegate.orientationLock = .landscape
             UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
-            UINavigationController.attemptRotationToDeviceOrientation()
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .landscape))
+            }
         }
     }
 }
