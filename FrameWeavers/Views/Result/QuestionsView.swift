@@ -7,11 +7,6 @@ struct QuestionsView: View {
     let pageIndex: Int
     let totalPages: Int
 
-    // 判断是否为横屏
-    private var isLandscape: Bool {
-        geometry.size.width > geometry.size.height
-    }
-
     var body: some View {
         ZStack {
             // 背景图片
@@ -20,53 +15,41 @@ struct QuestionsView: View {
                 .scaledToFill()
                 .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                // 顶部标题区域 - 参考ToolbarItem样式
-                VStack(spacing: 0) {
-                    Text("互动问题")
-                        .font(.custom("WSQuanXing", size: 20))
-                        .foregroundColor(Color(hex: "#855C23"))
-                        .fontWeight(.medium)
-                        .padding(.top, 20)
-                        .padding(.bottom, 30)
-                }
+            VStack(spacing: 40) {
+                // 上方标题区域 - 参考ComicPanelView的结构
+                Text("互动问题")
+                    .font(.custom("WSQuanXing", size: 20))
+                    .foregroundColor(Color(hex: "#855C23"))
+                    .fontWeight(.medium)
+                    .padding(.horizontal, 20)
 
-                Spacer()
-
-                // 问题内容区域
-                ScrollView {
-                    VStack(alignment: .leading, spacing: isLandscape ? 12 : 20) {
-                        ForEach(questions, id: \.self) { question in
-                            HStack(alignment: .top, spacing: 12) {
+                // 下方问题内容区域
+                VStack(spacing: 16) {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 20) {
+                            ForEach(questions, id: \.self) { question in
                                 TypewriterView(
                                     text: question,
                                     typeSpeed: 0.10,
                                     showCursor: false
                                 )
-                                .font(.custom("STKaiti", size: isLandscape ? 14 : 18))
+                                .font(.custom("STKaiti", size: 18))
                                 .foregroundColor(Color(hex: "#2F2617"))
+                                .lineSpacing(8)
+                                .multilineTextAlignment(.leading)
+                                .padding(.horizontal, 20)
                             }
-                            .padding(isLandscape ? 8 : 16)
-                            .background(Color.clear)
                         }
                     }
-                    .padding(.horizontal, isLandscape ? 30 : 20)
+
+                    // 页码
+                    Text("· 完 ·")
+                        .font(.custom("STKaiti", size: 16))
+                        .foregroundColor(Color(hex: "#2F2617"))
+                        .padding(8)
                 }
-                .frame(maxWidth: geometry.size.width * (isLandscape ? 0.85 : 0.9))
-                .frame(maxHeight: isLandscape ? geometry.size.height * 0.6 : .infinity)
-
-                Spacer()
-
-                // 底部页码
-                Text("· 完 ·")
-                    .font(.custom("STKaiti", size: isLandscape ? 14 : 16))
-                    .foregroundColor(Color(hex: "#2F2617"))
-                    .padding(8)
-                    .background(Color.clear)
-                    .padding(.bottom, isLandscape ? 10 : 20)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.horizontal, isLandscape ? 20 : 0)
+            .padding()
         }
     }
 }
