@@ -126,10 +126,22 @@ struct StyleSelectionView<ViewModel: VideoUploadViewModel>: View {
         let centerY = size * 0.5
 
         return [
-            (x: centerX - offsetX + size * 0.35, y: centerY - offsetY - size * 0.35), // 左上象限右上角
-            (x: centerX + offsetX, y: centerY - offsetY - size * 0.35),              // 右上象限右上角（初始位置）
-            (x: centerX - offsetX + size * 0.35, y: centerY + offsetY + size * 0.2), // 左下象限右上角
-            (x: centerX + offsetX, y: centerY + offsetY + size * 0.2)                // 右下象限右上角
+            // 往下移动：增大Y值或减小负Y偏移
+            // 往上移动：减小Y值或增大负Y偏移
+            // 往左移动：减小X值
+            // 往右移动：增大X值
+
+            // 左上象限 - 往下走一点点：减小 -size * 0.35 中的 0.35
+            (x: centerX - offsetX + size * 0.43, y: centerY - offsetY - size * 0.3),
+
+            // 右上象限 - 往下、往左走一点点：减小 offsetX，减小 -size * 0.35 中的 0.35
+            (x: centerX + offsetX - size * 0.05, y: centerY - offsetY - size * 0.3),
+
+            // 左下象限 - 往下走多一点点：增大 size * 0.2 中的 0.2
+            (x: centerX - offsetX + size * 0.43, y: centerY + offsetY - size * 0.08),
+
+            // 右下象限 - 往上、往左走一点点：减小 offsetX，减小 size * 0.2 中的 0.2
+            (x: centerX + offsetX - size * 0.05, y: centerY + offsetY - size * 0.08)
         ]
     }
 
