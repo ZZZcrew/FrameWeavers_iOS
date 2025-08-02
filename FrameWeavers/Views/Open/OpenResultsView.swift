@@ -79,7 +79,7 @@ extension OpenResultsView {
                     .lineLimit(3)
 
                 // 显示故事摘要作为描述
-                Text(comicResult.summary)
+                Text(comicResult.summary ?? "暂无故事摘要")
                     .font(.custom("STKaiti", size: 15))
                     .fontWeight(.bold)
                     .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
@@ -150,7 +150,7 @@ extension OpenResultsView {
                     .padding(.horizontal, 20)
 
                 // 显示故事摘要作为描述
-                Text(comicResult.summary)
+                Text(comicResult.summary ?? "暂无故事摘要")
                     .font(.custom("STKaiti", size: 17))
                     .fontWeight(.bold)
                     .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))

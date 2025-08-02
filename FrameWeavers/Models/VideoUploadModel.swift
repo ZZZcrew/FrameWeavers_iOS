@@ -487,12 +487,30 @@ struct ComicResult: Codable {
     let comicId: String
     let deviceId: String
     let title: String  // 故事标题
-    let summary: String  // 故事摘要/描述
+    let summary: String?  // 故事摘要/描述（可选，兼容旧版本数据）
     let originalVideoTitle: String  // 原始视频文件名
     let creationDate: String
     let panelCount: Int
     let panels: [ComicPanel]
     let finalQuestions: [String]
+
+    // 自定义初始化器，为summary提供默认值
+    init(comicId: String, deviceId: String, title: String, summary: String?, originalVideoTitle: String, creationDate: String, panelCount: Int, panels: [ComicPanel], finalQuestions: [String]) {
+        self.comicId = comicId
+        self.deviceId = deviceId
+        self.title = title
+        self.summary = summary ?? "暂无故事摘要，因为这些事旧故事"  // 为旧数据提供默认值
+        self.originalVideoTitle = originalVideoTitle
+        self.creationDate = creationDate
+        self.panelCount = panelCount
+        self.panels = panels
+        self.finalQuestions = finalQuestions
+    }
+
+    // 便利初始化器，保持向后兼容
+    init(comicId: String, deviceId: String, title: String, summary: String, originalVideoTitle: String, creationDate: String, panelCount: Int, panels: [ComicPanel], finalQuestions: [String]) {
+        self.init(comicId: comicId, deviceId: deviceId, title: title, summary: summary as String?, originalVideoTitle: originalVideoTitle, creationDate: creationDate, panelCount: panelCount, panels: panels, finalQuestions: finalQuestions)
+    }
 }
 
 struct ComicPanel: Codable, Identifiable {
