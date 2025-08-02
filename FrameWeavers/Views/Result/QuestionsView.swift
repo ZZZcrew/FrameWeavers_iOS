@@ -18,19 +18,19 @@ struct QuestionsView: View {
             GeometryReader { geometry in
                 HStack(spacing: 30) {
                     // 左侧：装饰区域
-                    VStack(spacing: 25) {
-                        Image(systemName: "questionmark.circle.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(Color(hex: "#855C23").opacity(0.6))
+                    // VStack(spacing: 25) {
+                    //     Image(systemName: "questionmark.circle.fill")
+                    //         .font(.system(size: 60))
+                    //         .foregroundColor(Color(hex: "#855C23").opacity(0.6))
 
-                        Text("互动思考")
-                            .font(.custom("WSQuanXing", size: 24))
-                            .foregroundColor(Color(hex: "#855C23"))
-                            .fontWeight(.bold)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(width: geometry.size.width * 0.45)
-                    .padding(.leading, 20)
+                    //     Text("互动思考")
+                    //         .font(.custom("WSQuanXing", size: 24))
+                    //         .foregroundColor(Color(hex: "#855C23"))
+                    //         .fontWeight(.bold)
+                    //         .multilineTextAlignment(.center)
+                    // }
+                    // .frame(width: geometry.size.width * 0.45)
+                    // .padding(.leading, 20)
 
                     // 右侧：问题内容区域
                     VStack(spacing: 25) {
