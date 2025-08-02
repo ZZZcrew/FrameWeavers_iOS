@@ -62,14 +62,14 @@ struct QuestionsView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text("互动问题")
-                    .font(.custom("WSQuanXing", size: 20))
-                    .foregroundColor(Color(hex: "#855C23"))
-                    .fontWeight(.medium)
-            }
-        }
+        // .toolbar {
+        //     ToolbarItem(placement: .principal) {
+        //         Text("互动问题")
+        //             .font(.custom("WSQuanXing", size: 20))
+        //             .foregroundColor(Color(hex: "#855C23"))
+        //             .fontWeight(.medium)
+        //     }
+        // }
     }
 }
 
