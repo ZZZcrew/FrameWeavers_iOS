@@ -24,15 +24,15 @@ struct WelcomeView: View {
                     .frame(
                         width: DeviceAdaptation.iconSize(
                             geometry: geometry,
-                            baseRatio: 0.25,
-                            maxSize: 120,
-                            smallScreenRatio: 0.2
+                            baseRatio: 0.18,
+                            maxSize: 90,
+                            smallScreenRatio: 0.15
                         ),
                         height: DeviceAdaptation.iconSize(
                             geometry: geometry,
-                            baseRatio: 0.25,
-                            maxSize: 120,
-                            smallScreenRatio: 0.2
+                            baseRatio: 0.18,
+                            maxSize: 90,
+                            smallScreenRatio: 0.15
                         )
                     )
                     .shadow(radius: 10)
