@@ -65,8 +65,6 @@ struct SampleAlbumsView: View {
                             .font(.custom("WSQuanXing", size: 20))
                             .foregroundColor(Color(hex: "#855C23"))
                     }
-                    .padding(.horizontal, 4)
-                    .textCase(nil)
                 }
             }
             .background {
