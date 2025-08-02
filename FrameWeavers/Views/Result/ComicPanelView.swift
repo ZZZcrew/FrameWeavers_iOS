@@ -8,43 +8,51 @@ struct ComicPanelView: View {
     let totalPages: Int
 
     var body: some View {
-        VStack(spacing: 40) {
-            // 上方图片区域
-            AsyncImageView(imageUrl: panel.imageUrl)
-                .aspectRatio(contentMode: .fit)
-                .frame(maxHeight: 300)
-                .shadow(radius: 10)
-                .padding(.horizontal, 20)
+        ZStack {
+            // 背景图片
+            Image("背景单色")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
 
-            // 下方文本区域
-            VStack(spacing: 16) {
-                if let narration = panel.narration {
-                    Text(narration)
+            VStack(spacing: 40) {
+                // 上方图片区域
+                AsyncImageView(imageUrl: panel.imageUrl)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxHeight: 300)
+                    // .shadow(radius: 10)
+                    .padding(.horizontal, 20)
+
+                // 下方文本区域
+                VStack(spacing: 16) {
+                    if let narration = panel.narration {
+                        Text(narration)
+                            .font(.custom("STKaiti", size: 16))
+                            .foregroundColor(Color(hex: "#2F2617"))
+                            .lineSpacing(8)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
+                    } else {
+                        // 如果没有叙述文本，显示占位符
+                        VStack {
+                            Image(systemName: "text.bubble")
+                                .font(.largeTitle)
+                                .foregroundColor(.gray.opacity(0.5))
+                            Text("暂无文本描述")
+                                .foregroundColor(.gray.opacity(0.5))
+                                .font(.body)
+                        }
+                    }
+
+                    // 页码
+                    Text("· \(pageIndex + 1) ·")
                         .font(.custom("STKaiti", size: 16))
                         .foregroundColor(Color(hex: "#2F2617"))
-                        .lineSpacing(8)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 20)
-                } else {
-                    // 如果没有叙述文本，显示占位符
-                    VStack {
-                        Image(systemName: "text.bubble")
-                            .font(.largeTitle)
-                            .foregroundColor(.gray.opacity(0.5))
-                        Text("暂无文本描述")
-                            .foregroundColor(.gray.opacity(0.5))
-                            .font(.body)
-                    }
+                        .padding(8)
                 }
-
-                // 页码
-                Text("· \(pageIndex + 1) ·")
-                    .font(.custom("STKaiti", size: 16))
-                    .foregroundColor(Color(hex: "#2F2617"))
-                    .padding(8)
             }
+            .padding()
         }
-        .padding()
     }
 }
 
