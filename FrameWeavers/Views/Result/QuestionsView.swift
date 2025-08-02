@@ -16,14 +16,7 @@ struct QuestionsView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 40) {
-                // 上方标题区域 - 参考ComicPanelView的结构
-                Text("互动问题")
-                    .font(.custom("WSQuanXing", size: 20))
-                    .foregroundColor(Color(hex: "#855C23"))
-                    .fontWeight(.medium)
-                    .padding(.horizontal, 20)
-
-                // 下方问题内容区域 - 限制高度避免"完"被推到底部
+                // 问题内容区域
                 VStack(spacing: 16) {
                     ScrollView {
                         TypewriterView(
@@ -50,6 +43,16 @@ struct QuestionsView: View {
                 }
             }
             .padding()
+        }
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("互动问题")
+                    .font(.custom("WSQuanXing", size: 20))
+                    .foregroundColor(Color(hex: "#855C23"))
+                    .fontWeight(.medium)
+            }
         }
     }
 }
