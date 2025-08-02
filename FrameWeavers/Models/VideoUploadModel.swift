@@ -487,6 +487,7 @@ struct ComicResult: Codable {
     let comicId: String
     let deviceId: String
     let title: String  // 故事标题
+    let summary: String  // 故事摘要/描述
     let originalVideoTitle: String  // 原始视频文件名
     let creationDate: String
     let panelCount: Int

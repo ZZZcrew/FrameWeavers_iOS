@@ -146,6 +146,7 @@ class ComicGenerationService {
             comicId: taskId,
             deviceId: DeviceIDGenerator.generateDeviceID(),
             title: storyInfo.title,  // 使用故事标题
+            summary: storyInfo.summary,  // 使用故事摘要
             originalVideoTitle: storyInfo.videoName,  // 保留原始视频文件名
             creationDate: storyInfo.creationTime,
             panelCount: panels.count,

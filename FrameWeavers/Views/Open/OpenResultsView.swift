@@ -78,16 +78,14 @@ extension OpenResultsView {
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
 
-                // 显示第一页的旁白作为描述
-                if let firstPanel = comicResult.panels.first, let narration = firstPanel.narration {
-                    Text(narration)
-                        .font(.custom("STKaiti", size: 15))
-                        .fontWeight(.bold)
-                        .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
-                        .opacity(0.6)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(4)
-                }
+                // 显示故事摘要作为描述
+                Text(comicResult.summary)
+                    .font(.custom("STKaiti", size: 15))
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
+                    .opacity(0.6)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(4)
 
                 NavigationLink {
                     ComicResultView(comicResult: comicResult)
@@ -151,18 +149,16 @@ extension OpenResultsView {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 20)
 
-                // 显示第一页的旁白作为描述
-                if let firstPanel = comicResult.panels.first, let narration = firstPanel.narration {
-                    Text(narration)
-                        .font(.custom("STKaiti", size: 17))
-                        .fontWeight(.bold)
-                        .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
-                        .opacity(0.6)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 20)
-                        .lineLimit(5)
-                        .lineSpacing(4)
-                }
+                // 显示故事摘要作为描述
+                Text(comicResult.summary)
+                    .font(.custom("STKaiti", size: 17))
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
+                    .opacity(0.6)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
+                    .lineLimit(5)
+                    .lineSpacing(4)
             }
 
             // 文本和按钮之间的间距
