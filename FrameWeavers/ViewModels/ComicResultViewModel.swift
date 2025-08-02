@@ -134,6 +134,7 @@ extension ComicResultViewModel {
             comicId: "preview-001",
             deviceId: "preview-device",
             title: "预览连环画",
+            summary: "这是一个用于预览的连环画故事摘要",
             originalVideoTitle: "预览视频",
             creationDate: "2025-07-30",
             panelCount: 3,

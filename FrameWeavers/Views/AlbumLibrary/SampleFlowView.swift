@@ -152,6 +152,7 @@ class MockVideoUploadViewModel: VideoUploadViewModel {
         comicId: "preview-001",
         deviceId: "preview-device",
         title: "小猫的冒险之旅",  // 添加故事标题
+        summary: "一只勇敢小猫的奇妙探险故事，充满了发现、友谊和成长的美好回忆。",
         originalVideoTitle: "小猫的冒险之旅",
         creationDate: "2025-07-26",
         panelCount: 4,
