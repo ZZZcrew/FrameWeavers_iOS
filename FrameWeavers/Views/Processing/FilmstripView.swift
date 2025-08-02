@@ -109,7 +109,7 @@ struct FilmstripView: View {
         // 延迟启动动画，确保视图已完全渲染
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             withAnimation(.linear(duration: Double(totalWidth / config.scrollSpeed)).repeatForever(autoreverses: false)) {
-                scrollOffset = -CGFloat(totalWidth)
+                scrollOffset = -totalWidth
             }
         }
     }

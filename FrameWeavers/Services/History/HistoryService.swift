@@ -213,4 +213,9 @@ class HistoryService {
     }
 }
 
-
+// MARK: - 历史记录摘要数据结构
+struct HistorySummary {
+    let totalCount: Int
+    let recentAlbums: [HistoryAlbum]
+    let lastUpdateDate: Date?
+}

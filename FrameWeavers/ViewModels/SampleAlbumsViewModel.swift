@@ -183,4 +183,13 @@ class SampleAlbumsViewModel: ObservableObject {
     }
 }
 
+// MARK: - 示例画册数据模型
 
+/// 示例画册数据模型
+struct SampleAlbum: Identifiable {
+    let id: String
+    let title: String
+    let description: String
+    let coverImage: String
+    let comicResult: ComicResult?
+}
