@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import UIKit
 
 struct OpenResultsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -76,5 +77,15 @@ struct OpenResultsView: View {
         .navigationBarTitleDisplayMode(.inline)
         // .navigationBarBackButtonHidden(false)
         // .toolbarBackground(Color.clear, for: .navigationBar)
+        .onAppear {
+            // 强制横屏显示
+            AppDelegate.orientationLock = .landscape
+            UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
+            UINavigationController.attemptRotationToDeviceOrientation()
+        }
+        .onDisappear {
+            // 恢复所有方向支持
+            AppDelegate.orientationLock = .all
+        }
     }
 }
