@@ -110,13 +110,20 @@ struct AlbumRowView: View {
     let comicResult: ComicResult?
     let coverImage: String
     let isRemoteImage: Bool
+    let isSampleAlbum: Bool
     let onDelete: (() -> Void)?
 
     var body: some View {
         if let comicResult = comicResult {
             // 有内容的画册 - 可以点击
             NavigationLink {
-                SampleFlowView(comicResult: comicResult)
+                if isSampleAlbum {
+                    // 示例画册：保留完整流程（风格选择 -> 处理 -> 结果）
+                    SampleFlowView(comicResult: comicResult)
+                } else {
+                    // 历史画册：直接跳转到结果页面
+                    OpenResultsView(comicResult: comicResult)
+                }
             } label: {
                 albumRowContent
             }
