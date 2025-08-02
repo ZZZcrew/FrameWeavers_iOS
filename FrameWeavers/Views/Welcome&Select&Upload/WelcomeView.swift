@@ -9,21 +9,28 @@ struct WelcomeView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 0) {
-                // 顶部弹性空间
-                Spacer()
+            // 检测是否为小屏幕设备
+            let isSmallScreen = geometry.size.height < 700
+            let iconSize = isSmallScreen ?
+                min(geometry.size.width * 0.2, 80) :
+                min(geometry.size.width * 0.25, 120)
 
-                // 主图标区域
+            VStack(spacing: 0) {
+                // 顶部弹性空间 - 小屏幕时减少
+                Spacer()
+                    .frame(minHeight: isSmallScreen ? 10 : 20)
+
+                // 主图标区域 - 小屏幕时缩小
                 Image("icon-home")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: min(geometry.size.width * 0.25, 120),
-                            height: min(geometry.size.width * 0.25, 120))
+                    .frame(width: iconSize, height: iconSize)
                     .shadow(radius: 10)
 
-                // 图标与文字间距
+                // 图标与文字间距 - 小屏幕时减少
                 Spacer()
-                    // .frame(height: 30)
+                    .frame(minHeight: isSmallScreen ? 8 : 15,
+                           maxHeight: isSmallScreen ? 15 : 30)
 
                 // 文字内容区域 - 让文字自适应高度
                 TypewriterView(
@@ -46,13 +53,16 @@ struct WelcomeView: View {
                 .font(.custom("STKaiti", size: min(geometry.size.width * 0.045, 18)))
                 .multilineTextAlignment(.center)
                 .foregroundColor(Color(hex: "#2F2617"))
-                .lineSpacing(geometry.size.height * 0.012)
+                .lineSpacing(isSmallScreen ?
+                    max(geometry.size.height * 0.008, 3) :
+                    geometry.size.height * 0.012)
                 .padding(.horizontal, geometry.size.width * 0.08)
                 .fixedSize(horizontal: false, vertical: true) // 允许垂直方向自适应
 
-                // 文字与按钮间距
+                // 文字与按钮间距 - 小屏幕时减少
                 Spacer()
-                    // .frame(height: 40)
+                    .frame(minHeight: isSmallScreen ? 8 : 15,
+                           maxHeight: isSmallScreen ? 20 : 40)
 
                 // 主要操作按钮区域
                 PhotosPicker(
@@ -74,9 +84,10 @@ struct WelcomeView: View {
                     }
                 }
 
-                // 按钮与提示文字间距
+                // 按钮与提示文字间距 - 小屏幕时减少
                 Spacer()
-                    // .frame(height: 25)
+                    .frame(minHeight: isSmallScreen ? 5 : 10,
+                           maxHeight: isSmallScreen ? 15 : 25)
 
                 // 底部提示文字
                 Text("""
@@ -88,11 +99,14 @@ struct WelcomeView: View {
                     .multilineTextAlignment(.center)
                     .foregroundColor(Color(hex: "#2F2617"))
                     .tracking(1.2)
-                    .lineSpacing(geometry.size.height * 0.012)
+                    .lineSpacing(isSmallScreen ?
+                        max(geometry.size.height * 0.008, 2) :
+                        geometry.size.height * 0.012)
                     .padding(.horizontal, geometry.size.width * 0.1)
 
-                // 底部弹性空间
+                // 底部弹性空间 - 小屏幕时减少
                 Spacer()
+                    .frame(minHeight: isSmallScreen ? 10 : 20)
             }
             .frame(minHeight: geometry.size.height) // 确保内容占满整个屏幕高度
             .frame(maxWidth: .infinity) // 确保内容水平居中
