@@ -83,9 +83,5 @@ struct OpenResultsView: View {
             UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
             UINavigationController.attemptRotationToDeviceOrientation()
         }
-        .onDisappear {
-            // 恢复所有方向支持
-            AppDelegate.orientationLock = .all
-        }
     }
 }
