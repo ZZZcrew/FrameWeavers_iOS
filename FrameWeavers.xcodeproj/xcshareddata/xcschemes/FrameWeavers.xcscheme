@@ -41,6 +41,17 @@
                ReferencedContainer = "container:FrameWeavers.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D87816242E3DA59600EADE4A"
+               BuildableName = "FrameWeaversUITests.xctest"
+               BlueprintName = "FrameWeaversUITests"
+               ReferencedContainer = "container:FrameWeavers.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
