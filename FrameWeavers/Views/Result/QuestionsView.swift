@@ -21,35 +21,39 @@ struct QuestionsView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
+                // 顶部标题区域 - 参考ToolbarItem样式
+                VStack(spacing: 0) {
+                    Text("互动问题")
+                        .font(.custom("WSQuanXing", size: 20))
+                        .foregroundColor(Color(hex: "#855C23"))
+                        .fontWeight(.medium)
+                        .padding(.top, 20)
+                        .padding(.bottom, 30)
+                }
+
                 Spacer()
 
-                VStack(spacing: isLandscape ? 15 : 30) {
-                    Text("互动问题")
-                        .font(.custom("STKaiti", size: isLandscape ? 20 : 28))
-                        .foregroundColor(Color(hex: "#855C23"))
-
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: isLandscape ? 12 : 20) {
-                            ForEach(questions, id: \.self) { question in
-                                HStack(alignment: .top, spacing: 12) {
-                                    TypewriterView(
-                                        text: question,
-                                        typeSpeed: 0.10,
-                                        showCursor: false
-                                    )
-                                    .font(.custom("STKaiti", size: isLandscape ? 14 : 18))
-                                    .foregroundColor(Color(hex: "#2F2617"))
-                                }
-                                .padding(isLandscape ? 8 : 16)
-                                .background(Color.clear)
+                // 问题内容区域
+                ScrollView {
+                    VStack(alignment: .leading, spacing: isLandscape ? 12 : 20) {
+                        ForEach(questions, id: \.self) { question in
+                            HStack(alignment: .top, spacing: 12) {
+                                TypewriterView(
+                                    text: question,
+                                    typeSpeed: 0.10,
+                                    showCursor: false
+                                )
+                                .font(.custom("STKaiti", size: isLandscape ? 14 : 18))
+                                .foregroundColor(Color(hex: "#2F2617"))
                             }
+                            .padding(isLandscape ? 8 : 16)
+                            .background(Color.clear)
                         }
-                        .padding(.horizontal, isLandscape ? 30 : 20)
                     }
-                    .frame(maxHeight: isLandscape ? geometry.size.height * 0.6 : .infinity)
+                    .padding(.horizontal, isLandscape ? 30 : 20)
                 }
                 .frame(maxWidth: geometry.size.width * (isLandscape ? 0.85 : 0.9))
-                .frame(maxHeight: isLandscape ? geometry.size.height * 0.8 : .infinity)
+                .frame(maxHeight: isLandscape ? geometry.size.height * 0.6 : .infinity)
 
                 Spacer()
 
@@ -63,7 +67,6 @@ struct QuestionsView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal, isLandscape ? 20 : 0)
-            .padding(.vertical, isLandscape ? 10 : 0)
         }
     }
 }
