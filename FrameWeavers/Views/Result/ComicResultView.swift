@@ -35,11 +35,6 @@ struct ComicResultView: View {
     }
 }
 
-
-
-
-
-
 // MARK: - Preview Data
 struct ComicResultView_Previews: PreviewProvider {
     static var previews: some View {
@@ -135,5 +130,3 @@ struct ComicResultView_Previews: PreviewProvider {
         }
     }
 }
-
-
