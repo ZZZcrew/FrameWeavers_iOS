@@ -13,50 +13,58 @@ struct QuestionsView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
+        ZStack {
+            // 背景图片
+            Image("背景单色")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
 
-            VStack(spacing: isLandscape ? 15 : 30) {
-                Text("互动问题")
-                    .font(.custom("STKaiti", size: isLandscape ? 20 : 28))
-                    .foregroundColor(Color(hex: "#855C23"))
+            VStack(spacing: 0) {
+                Spacer()
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: isLandscape ? 12 : 20) {
-                        ForEach(questions, id: \.self) { question in
-                            HStack(alignment: .top, spacing: 12) {
-                                TypewriterView(
-                                    text: question,
-                                    typeSpeed: 0.10,
-                                    showCursor: false
-                                )
-                                .font(.custom("STKaiti", size: isLandscape ? 14 : 18))
-                                .foregroundColor(Color(hex: "#2F2617"))
+                VStack(spacing: isLandscape ? 15 : 30) {
+                    Text("互动问题")
+                        .font(.custom("STKaiti", size: isLandscape ? 20 : 28))
+                        .foregroundColor(Color(hex: "#855C23"))
+
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: isLandscape ? 12 : 20) {
+                            ForEach(questions, id: \.self) { question in
+                                HStack(alignment: .top, spacing: 12) {
+                                    TypewriterView(
+                                        text: question,
+                                        typeSpeed: 0.10,
+                                        showCursor: false
+                                    )
+                                    .font(.custom("STKaiti", size: isLandscape ? 14 : 18))
+                                    .foregroundColor(Color(hex: "#2F2617"))
+                                }
+                                .padding(isLandscape ? 8 : 16)
+                                .background(Color.clear)
                             }
-                            .padding(isLandscape ? 8 : 16)
-                            .background(Color.clear)
                         }
+                        .padding(.horizontal, isLandscape ? 30 : 20)
                     }
-                    .padding(.horizontal, isLandscape ? 30 : 20)
+                    .frame(maxHeight: isLandscape ? geometry.size.height * 0.6 : .infinity)
                 }
-                .frame(maxHeight: isLandscape ? geometry.size.height * 0.6 : .infinity)
+                .frame(maxWidth: geometry.size.width * (isLandscape ? 0.85 : 0.9))
+                .frame(maxHeight: isLandscape ? geometry.size.height * 0.8 : .infinity)
+
+                Spacer()
+
+                // 底部页码
+                Text("· 完 ·")
+                    .font(.custom("STKaiti", size: isLandscape ? 14 : 16))
+                    .foregroundColor(Color(hex: "#2F2617"))
+                    .padding(8)
+                    .background(Color.clear)
+                    .padding(.bottom, isLandscape ? 10 : 20)
             }
-            .frame(maxWidth: geometry.size.width * (isLandscape ? 0.85 : 0.9))
-            .frame(maxHeight: isLandscape ? geometry.size.height * 0.8 : .infinity)
-
-            Spacer()
-
-            // 底部页码
-            Text("· 完 ·")
-                .font(.custom("STKaiti", size: isLandscape ? 14 : 16))
-                .foregroundColor(Color(hex: "#2F2617"))
-                .padding(8)
-                .background(Color.clear)
-                .padding(.bottom, isLandscape ? 10 : 20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.horizontal, isLandscape ? 20 : 0)
+            .padding(.vertical, isLandscape ? 10 : 0)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, isLandscape ? 20 : 0)
-        .padding(.vertical, isLandscape ? 10 : 0)
     }
 }
 
