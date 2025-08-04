@@ -95,6 +95,7 @@ class VideoUploadViewModel: ObservableObject {
     /// - Parameter style: 故事风格
     func selectStyle(_ style: String) {
         selectedStyle = style
+        print("🎨 VideoUploadViewModel: 选择故事风格 = '\(style)'")
     }
 
     /// 开始生成连环画
@@ -250,6 +251,7 @@ class VideoUploadViewModel: ObservableObject {
             videoPath: videoPath,
             storyStyle: selectedStyle
         )
+        print("🎬 VideoUploadViewModel: 创建生成配置，故事风格 = '\(selectedStyle)'")
 
         // 开始完整生成流程
         await comicGenerationCoordinator.startCompleteGeneration(

@@ -32,6 +32,7 @@ class ComicGenerationService {
             "max_concurrent": String(request.maxConcurrent)
         ]
         print("📝 ComicGenerationService: 请求参数: \(parameters)")
+        print("🎨 ComicGenerationService: 故事风格 = '\(request.storyStyle)'")
         
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
