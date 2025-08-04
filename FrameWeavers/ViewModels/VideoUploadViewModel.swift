@@ -274,8 +274,12 @@ class VideoUploadViewModel: ObservableObject {
                     self?.uploadStatus = .completed
                     self?.uploadProgress = 1.0
 
-                    // 保存到历史记录
-                    self?.saveComicToHistory(comicResult)
+                    // 保存到历史记录前，先检查是否存在
+                    if let comicId = self?.comicResult?.comicId, self?.isComicAlreadyExists(comicId) == false {
+                        self?.saveComicToHistory(comicResult)
+                    } else {
+                        print("ℹ️ 连环画已存在于历史记录中，无需重复保存。")
+                    }
 
                     print("✅ 连环画生成完成！")
                 }
