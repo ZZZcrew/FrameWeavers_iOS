@@ -276,7 +276,7 @@ class VideoUploadViewModel: ObservableObject {
 
                     // 保存到历史记录前，先检查是否存在
                     if let comicId = self?.comicResult?.comicId, self?.isComicAlreadyExists(comicId) == false {
-                        self?.saveComicToHistory(comicResult)
+                        self?.saveComicToHistory(comicResult, storyStyle: self?.selectedStyle)
                     } else {
                         print("ℹ️ 连环画已存在于历史记录中，无需重复保存。")
                     }
@@ -347,14 +347,14 @@ class VideoUploadViewModel: ObservableObject {
 
     /// 保存连环画到历史记录
     /// - Parameter comicResult: 要保存的连环画结果
-    private func saveComicToHistory(_ comicResult: ComicResult) {
+    private func saveComicToHistory(_ comicResult: ComicResult, storyStyle: String?) {
         guard let historyService = historyService else {
             print("⚠️ 历史记录服务未初始化，无法保存历史记录")
             return
         }
 
         // 异步保存，避免阻塞主线程
-        historyService.saveComicToHistory(comicResult) { success in
+        historyService.saveComicToHistory(comicResult, storyStyle: storyStyle) { success in
             // 回调已经在主线程执行，无需额外调度
             if !success {
                 print("❌ 保存连环画到历史记录失败")

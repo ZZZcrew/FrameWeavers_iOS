@@ -14,15 +14,17 @@ final class HistoryAlbum {
     var panelCount: Int
     var comicData: Data // 存储序列化的ComicResult
     var deviceId: String
+    var storyStyle: String? // 新增：故事风格
     var thumbnailImageName: String? // 封面图片名称
     
-    init(from comicResult: ComicResult) {
+    init(from comicResult: ComicResult, storyStyle: String?) {
         self.id = comicResult.comicId
         self.title = comicResult.title
         self.originalVideoTitle = comicResult.originalVideoTitle
         self.creationDate = ISO8601DateFormatter().date(from: comicResult.creationDate) ?? Date()
         self.panelCount = comicResult.panelCount
         self.deviceId = comicResult.deviceId
+        self.storyStyle = storyStyle // 保存故事风格
         self.thumbnailImageName = comicResult.panels.first?.imageUrl
         
         // 序列化ComicResult为Data
@@ -54,14 +56,17 @@ struct HistoryAlbumDisplayModel: Identifiable {
     let description: String
     let coverImage: String?
     let creationDate: Date
+    let storyStyle: String? // 新增：故事风格
     let comicResult: ComicResult?
     
     init(from historyAlbum: HistoryAlbum) {
         self.id = historyAlbum.id
         self.title = historyAlbum.title
-        self.description = "\(historyAlbum.panelCount)页 · \(DateFormatter.shortDate.string(from: historyAlbum.creationDate))"
+        let styleText = historyAlbum.storyStyle ?? "未知风格"
+        self.description = "\(historyAlbum.panelCount)页 · \(styleText) · \(DateFormatter.shortDate.string(from: historyAlbum.creationDate))"
         self.coverImage = historyAlbum.thumbnailImageName
         self.creationDate = historyAlbum.creationDate
+        self.storyStyle = historyAlbum.storyStyle
         self.comicResult = historyAlbum.toComicResult()
     }
 }

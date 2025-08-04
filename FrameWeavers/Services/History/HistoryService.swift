@@ -18,7 +18,7 @@ class HistoryService {
     /// 保存新的画册到历史记录
     /// - Parameter comicResult: 要保存的画册结果
     /// - Returns: 是否保存成功
-    func saveToHistory(_ comicResult: ComicResult) -> Bool {
+    func saveToHistory(_ comicResult: ComicResult, storyStyle: String?) -> Bool {
         do {
             // 检查是否已存在相同ID的记录
             let existingAlbum = try fetchHistoryAlbum(by: comicResult.comicId)
@@ -28,7 +28,7 @@ class HistoryService {
             }
             
             // 创建新的历史记录
-            let historyAlbum = HistoryAlbum(from: comicResult)
+            let historyAlbum = HistoryAlbum(from: comicResult, storyStyle: storyStyle)
             modelContext.insert(historyAlbum)
             
             try modelContext.save()
@@ -47,6 +47,7 @@ class HistoryService {
     ///   - completion: 完成回调，返回是否保存成功
     func saveComicToHistory(
         _ comicResult: ComicResult,
+        storyStyle: String?,
         completion: @escaping (Bool) -> Void = { _ in }
     ) {
         // 在后台队列执行保存操作
@@ -55,7 +56,7 @@ class HistoryService {
             let comicWithLocalImages = await LocalImageStorageService.shared.saveComicImages(comicResult)
 
             // 然后保存到历史记录
-            let success = self.saveToHistory(comicWithLocalImages)
+            let success = self.saveToHistory(comicWithLocalImages, storyStyle: storyStyle)
 
             await MainActor.run {
                 if success {
@@ -71,12 +72,12 @@ class HistoryService {
     /// 异步保存连环画结果到历史记录（async/await）
     /// - Parameter comicResult: 要保存的连环画结果
     /// - Returns: 是否保存成功
-    func saveComicToHistory(_ comicResult: ComicResult) async -> Bool {
+    func saveComicToHistory(_ comicResult: ComicResult, storyStyle: String?) async -> Bool {
         // 首先下载并保存图片到本地
         let comicWithLocalImages = await LocalImageStorageService.shared.saveComicImages(comicResult)
 
         // 然后保存到历史记录
-        let success = self.saveToHistory(comicWithLocalImages)
+        let success = self.saveToHistory(comicWithLocalImages, storyStyle: storyStyle)
 
         if success {
             print("✅ 连环画已成功保存到历史记录（包含本地图片）: \(comicResult.title)")
