@@ -3,13 +3,7 @@ import Foundation
 // MARK: - 网络配置
 struct NetworkConfig {
     // 基础URL配置 - 根据运行环境自动选择
-    static let baseURL: String = {
-        #if targetEnvironment(simulator)
-        return "http://frame-api.zeabur.app/"
-        #else
-        return "https://frame-api.zeabur.app/"
-        #endif
-    }()
+    static let baseURL: String = URLConfig.baseURL
 
     // API端点
     enum Endpoint {
