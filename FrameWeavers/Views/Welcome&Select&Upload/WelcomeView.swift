@@ -101,7 +101,7 @@ struct WelcomeView: View {
 
                 PhotosPicker(
                     selection: $selectedItems,
-                    maxSelectionCount: 5,  // 最多选择5个视频
+                    maxSelectionCount: 9,  // 最多选择9个视频
                     matching: .videos,
                     photoLibrary: .shared()
                 ) {
@@ -127,7 +127,6 @@ struct WelcomeView: View {
 
                 // 底部提示文字
                 Text("""
-                最多上传5段3分钟内的视频
                 选择有故事的片段效果更佳
                 """)
                     .font(.custom("STKaiti", size: min(geometry.size.width * 0.03, 12)))

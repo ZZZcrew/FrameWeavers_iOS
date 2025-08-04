@@ -194,7 +194,7 @@ class VideoSelectionViewModel {
             // 收集所有结果
             var hasError = false
             var errorMsg = ""
-            let maxFileSize: Int64 = 800 * 1024 * 1024 // 800MB限制，与服务器保持一致
+            let maxFileSize: Int64 = 1000 * 1024 * 1024 // 1000MB限制，与服务器保持一致
 
             for await (index, result) in group {
                 switch result {
