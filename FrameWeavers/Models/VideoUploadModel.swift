@@ -331,7 +331,7 @@ struct CompleteComicRequest {
 
     init(taskId: String,
          videoPath: String,
-         storyStyle: String = "温馨童话",  // 参考Python测试的默认值
+         storyStyle: String,
          targetFrames: Int = 8,  // 参考API文档默认值：目标关键帧数量
          frameInterval: Double = 2.0,  // 参考Python测试
          significanceWeight: Double = 0.7,  // 参考Python测试

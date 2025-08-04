@@ -33,7 +33,7 @@ class ComicGenerationCoordinator {
         
         init(taskId: String,
              videoPath: String,
-             storyStyle: String = "温馨童话",
+             storyStyle: String,
              targetFrames: Int = 8,
              frameInterval: Double = 2.0,
              significanceWeight: Double = 0.7,

@@ -248,7 +248,7 @@ class VideoUploadViewModel: ObservableObject {
         let config = ComicGenerationCoordinator.GenerationConfig(
             taskId: taskId,
             videoPath: videoPath,
-            storyStyle: selectedStyle.isEmpty ? "温馨童话" : selectedStyle
+            storyStyle: selectedStyle
         )
 
         // 开始完整生成流程
