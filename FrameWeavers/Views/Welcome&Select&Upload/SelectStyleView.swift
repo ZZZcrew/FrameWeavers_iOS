@@ -8,7 +8,7 @@ struct StyleSelectionView<ViewModel: VideoUploadViewModel>: View {
 
     // 定义故事风格
     private let storyStyles = [
-        ("文艺哲学", "文 艺\n哲 学"),
+        ("赛博科幻", "赛 博\n科 幻"),
         ("童话想象", "童 话\n想 象"),
         ("悬念反转", "悬 念\n反 转"),
         ("生活散文", "生 活\n散 文")
