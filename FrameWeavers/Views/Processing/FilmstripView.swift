@@ -69,6 +69,8 @@ struct FilmstripView: View {
         }
     }
 
+    private let scaleFactor: CGFloat = 0.75 // 定义缩放因子
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -94,6 +96,7 @@ struct FilmstripView: View {
                         }
                     }
                 }
+                .scaleEffect(scaleFactor) // 使用缩放因子
                 .offset(x: scrollOffset)
                 .onAppear {
                     startScrolling()
@@ -114,17 +117,19 @@ struct FilmstripView: View {
         guard !currentImages.isEmpty else { return }
 
         let itemWidth = config.frameWidth + config.frameSpacing
-        let totalWidth = itemWidth * CGFloat(config.repeatCount)  // 与显示逻辑保持一致
+        let totalWidth = itemWidth * CGFloat(config.repeatCount)
+        let scaledTotalWidth = totalWidth * scaleFactor // 计算缩放后的总宽度
 
         // 从右侧开始显示，让用户立即看到胶片内容
         let screenWidth = UIScreen.main.bounds.width
-        scrollOffset = screenWidth - totalWidth  // 从屏幕右侧开始显示
+        let initialOffset = screenWidth - (totalWidth - scaledTotalWidth) / 2 // 调整初始偏移量
+        scrollOffset = initialOffset
 
         // 延迟启动动画，确保视图已完全渲染
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             let effectiveSpeed = customScrollSpeed ?? config.scrollSpeed
             withAnimation(.linear(duration: Double(totalWidth / effectiveSpeed)).repeatForever(autoreverses: false)) {
-                scrollOffset = screenWidth  // 向右滚动到屏幕右侧外完全消失
+                scrollOffset = -totalWidth // 滚动到最左侧
             }
         }
     }
@@ -136,11 +141,13 @@ struct FilmstripView: View {
         guard !currentImages.isEmpty else { return }
 
         let itemWidth = config.frameWidth + config.frameSpacing
-        let totalWidth = itemWidth * CGFloat(config.repeatCount)  // 保持与startScrolling一致
+        let totalWidth = itemWidth * CGFloat(config.repeatCount)
+        let scaledTotalWidth = totalWidth * scaleFactor // 同样需要计算缩放后的宽度
 
         let screenWidth = UIScreen.main.bounds.width
+        let initialOffset = screenWidth - (totalWidth - scaledTotalWidth) / 2
         withAnimation(.linear(duration: 0)) {
-            scrollOffset = screenWidth - totalWidth  // 重置到右侧起始位置
+            scrollOffset = initialOffset // 重置到右侧起始位置
         }
 
         // 重新启动滚动
