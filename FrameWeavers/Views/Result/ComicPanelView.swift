@@ -21,6 +21,10 @@ struct ComicPanelView: View {
                     VStack {
                         AsyncImageView(imageUrl: panel.imageUrl)
                             .aspectRatio(contentMode: .fit)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 0)
+                                    .stroke(Color(hex: "#2F2617"), lineWidth: 2)
+                            )
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                     .frame(width: geometry.size.width * 0.60)
