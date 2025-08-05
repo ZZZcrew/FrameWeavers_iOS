@@ -107,24 +107,6 @@ struct DeviceAdaptation {
         return max(geometry.size.height * ratio, minSpacing)
     }
     
-    /// 响应式字体大小
-    /// - Parameters:
-    ///   - geometry: 几何信息
-    ///   - baseRatio: 基础比例
-    ///   - maxSize: 最大字体大小
-    ///   - smallScreenMultiplier: 小屏幕倍数
-    /// - Returns: 计算后的字体大小
-    static func fontSize(
-        geometry: GeometryProxy,
-        baseRatio: CGFloat,
-        maxSize: CGFloat,
-        smallScreenMultiplier: CGFloat = 0.9
-    ) -> CGFloat {
-        let ratio = isSmallScreen(geometry) ? 
-            baseRatio * smallScreenMultiplier : baseRatio
-        return min(geometry.size.width * ratio, maxSize)
-    }
-    
     // MARK: - 布局辅助方法
     
     /// 创建响应式 Spacer
@@ -148,46 +130,5 @@ struct DeviceAdaptation {
         return Spacer()
             .frame(minHeight: actualMin, maxHeight: actualMax)
     }
-    
-    /// 获取安全的内容高度
-    /// - Parameter geometry: 几何信息
-    /// - Returns: 可用的内容高度
-    static func safeContentHeight(_ geometry: GeometryProxy) -> CGFloat {
-        // 预留导航栏和状态栏空间
-        let reservedHeight: CGFloat = deviceType == .iPad ? 100 : 80
-        return max(geometry.size.height - reservedHeight, 400)
-    }
-}
 
-// MARK: - SwiftUI 扩展
-
-extension View {
-    /// 应用响应式间距
-    func responsiveSpacing(
-        _ geometry: GeometryProxy,
-        baseSpacing: CGFloat,
-        smallScreenMultiplier: CGFloat = 0.6
-    ) -> some View {
-        self.padding(DeviceAdaptation.spacing(
-            geometry: geometry,
-            baseSpacing: baseSpacing,
-            smallScreenMultiplier: smallScreenMultiplier
-        ))
-    }
-    
-    /// 应用响应式字体
-    func responsiveFont(
-        _ geometry: GeometryProxy,
-        family: String,
-        baseRatio: CGFloat,
-        maxSize: CGFloat,
-        smallScreenMultiplier: CGFloat = 0.9
-    ) -> some View {
-        self.font(.custom(family, size: DeviceAdaptation.fontSize(
-            geometry: geometry,
-            baseRatio: baseRatio,
-            maxSize: maxSize,
-            smallScreenMultiplier: smallScreenMultiplier
-        )))
-    }
 }
