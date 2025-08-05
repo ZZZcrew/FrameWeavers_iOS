@@ -41,10 +41,10 @@ struct ComicReaderMenuBar: View {
                 // 记录按钮
                 recordButton
             }
-            .padding(.trailing, 30) // 确保在最右侧
+            .padding(.trailing, 20) // 更贴近右侧边缘
         }
         .padding(.top, 20)
-        .padding(.horizontal, 20)
+        .padding(.leading, 20)
     }
     
     /// 分享按钮
