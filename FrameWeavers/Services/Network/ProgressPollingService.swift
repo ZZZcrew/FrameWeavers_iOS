@@ -15,6 +15,9 @@ class ProgressPollingService {
     // MARK: - Private Properties
     private var progressTimer: Timer?
     private var cancellables = Set<AnyCancellable>()
+
+    // MARK: - 简化轮询配置
+    private let pollingInterval: TimeInterval = 5.0 // 简化：固定5秒间隔
     
     // MARK: - Progress Polling Result
     struct ProgressResult {
@@ -44,7 +47,7 @@ class ProgressPollingService {
     
     // MARK: - 基础任务状态轮询
     
-    /// 开始进度轮询
+    /// 开始进度轮询（简化版）
     /// - Parameters:
     ///   - taskId: 任务ID
     ///   - onProgress: 进度更新回调
@@ -57,8 +60,8 @@ class ProgressPollingService {
         onFailed: @escaping (String) -> Void
     ) {
         stopProgressPolling()
-        
-        progressTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+
+        progressTimer = Timer.scheduledTimer(withTimeInterval: pollingInterval, repeats: true) { [weak self] _ in
             self?.checkTaskStatus(
                 taskId: taskId,
                 onProgress: onProgress,
@@ -66,6 +69,8 @@ class ProgressPollingService {
                 onFailed: onFailed
             )
         }
+
+        print("📊 开始轮询，间隔: \(pollingInterval)秒")
     }
     
     /// 停止进度轮询
@@ -82,7 +87,7 @@ class ProgressPollingService {
         onFailed: @escaping (String) -> Void
     ) {
         let url = NetworkConfig.Endpoint.taskStatus(taskId: taskId).url
-        
+
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 self?.handleTaskStatusResponse(
@@ -190,7 +195,7 @@ class ProgressPollingService {
                 
                 // 调用进度回调
                 onProgress(result)
-                
+
                 // 如果需要提取基础帧，调用完成回调
                 if result.shouldExtractFrames {
                     onCompleted()
@@ -216,7 +221,7 @@ class ProgressPollingService {
         onFailed: @escaping (String) -> Void
     ) async {
         let maxWaitTime: TimeInterval = 3000.0  // 最多等待3000秒（50分钟）
-        let interval: TimeInterval = 2.0  // 每2秒查询一次，参考Python实现
+        let interval: TimeInterval = 5.0  // 优化：每5秒查询一次，减少网络开销
         let startTime = Date()
         var lastProgress = -1
         var consecutiveErrors = 0  // 连续错误计数
