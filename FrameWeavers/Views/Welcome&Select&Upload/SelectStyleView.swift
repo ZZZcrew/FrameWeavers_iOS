@@ -66,7 +66,8 @@ struct StyleSelectionView<ViewModel: VideoUploadViewModel>: View {
                                 Text(styleText)
                                     .font(.custom("WSQuanXing", size: min(geometry.size.width * 0.055, 26)))
                                     .fontWeight(.bold)
-                                    .foregroundColor(viewModel.selectedStyle == styleKey ? Color(hex: "#FF6B35") : Color(hex: "#855C23"))
+                                    .foregroundColor(Color(hex: "#855C23"))
+                                    .opacity(viewModel.selectedStyle == styleKey ? 1.0 : 0.3)
                                     .minimumScaleFactor(0.7)
                                     .lineLimit(2)
                             }

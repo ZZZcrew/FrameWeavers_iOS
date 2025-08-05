@@ -18,7 +18,7 @@ class VideoUploadViewModel: ObservableObject {
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
     @Published var keyFrames: [KeyFrameData] = [] // 关键帧数据
     @Published var shouldNavigateToStyleSelection = false // 导航状态
-    @Published var selectedStyle: String = "" // 选择的故事风格
+    @Published var selectedStyle: String = "童话想象" // 选择的故事风格，默认选中右上象限
 
     // MARK: - 服务依赖
     private var cancellables = Set<AnyCancellable>()
@@ -334,13 +334,13 @@ class VideoUploadViewModel: ObservableObject {
         currentTaskId = nil
         currentVideoPath = nil  // 清理视频路径
         shouldNavigateToStyleSelection = false  // 重置导航状态
-        selectedStyle = ""  // 重置选择的风格
+        selectedStyle = "童话想象"  // 重置为默认选择的风格
     }
 
     /// 重置导航状态
     func resetNavigationState() {
         shouldNavigateToStyleSelection = false
-        selectedStyle = ""
+        selectedStyle = "童话想象"  // 重置为默认选择的风格
     }
 
     // MARK: - 历史记录管理
