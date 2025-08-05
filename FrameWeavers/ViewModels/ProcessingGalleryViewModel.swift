@@ -10,7 +10,6 @@ class ProcessingGalleryViewModel: ObservableObject {
     @Published var stackedImages: [String] = [] // 已堆叠的图片列表
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
     @Published var isUsingBaseFrames: Bool = false // 是否使用基础帧
-    @Published var filmstripDisplayImages: [DisplayImageData] = [] // 保留兼容性，但不再使用
     @Published var isExampleMode: Bool = false // 是否为示例模式
 
     let imageNames = ["Image1", "Image2", "Image3", "Image4"]

@@ -2,7 +2,6 @@ import SwiftUI
 
 /// 胶片传送带视图 - 纯UI组件，遵循MVVM架构
 struct FilmstripView: View {
-    let displayImages: [DisplayImageData]
     let baseFrames: [BaseFrameData]  // 直接使用基础帧数据
     let isExampleMode: Bool
     let config: FilmstripConfiguration
@@ -10,13 +9,11 @@ struct FilmstripView: View {
     let customScrollSpeed: Double?  // 自定义滚动速度
     @State private var scrollOffset: CGFloat = 0
 
-    init(displayImages: [DisplayImageData] = [],
-         baseFrames: [BaseFrameData] = [],
+    init(baseFrames: [BaseFrameData] = [],
          isExampleMode: Bool = false,
          config: FilmstripConfiguration = .default,
          comicResult: ComicResult? = nil,
          customScrollSpeed: Double? = nil) {
-        self.displayImages = displayImages
         self.baseFrames = baseFrames
         self.isExampleMode = isExampleMode
         self.config = config
@@ -56,8 +53,8 @@ struct FilmstripView: View {
                 )
             }
         } else {
-            // 等待状态：使用传入的displayImages或显示占位符
-            return displayImages.isEmpty ? createLoadingPlaceholders() : displayImages
+            // 等待状态：显示占位符
+            return createLoadingPlaceholders()
         }
     }
 
@@ -102,10 +99,6 @@ struct FilmstripView: View {
                     // 当基础帧数据变化时，重新启动滚动动画
                     restartScrolling()
                 }
-                .onChange(of: isExampleMode) { _, _ in
-                    // 当模式变化时，重新启动滚动动画
-                    restartScrolling()
-                }
             }
         }
         .frame(height: 100)
@@ -118,7 +111,7 @@ struct FilmstripView: View {
         guard !currentImages.isEmpty else { return }
 
         let itemWidth = config.frameWidth + config.frameSpacing
-        let totalWidth = itemWidth * CGFloat(currentImages.count)
+        let totalWidth = itemWidth * CGFloat(config.repeatCount)  // 与显示逻辑保持一致
 
         // 从右侧开始显示，让用户立即看到胶片内容
         let screenWidth = UIScreen.main.bounds.width
@@ -140,7 +133,7 @@ struct FilmstripView: View {
         guard !currentImages.isEmpty else { return }
 
         let itemWidth = config.frameWidth + config.frameSpacing
-        let totalWidth = itemWidth * CGFloat(currentImages.count)
+        let totalWidth = itemWidth * CGFloat(config.repeatCount)  // 保持与startScrolling一致
 
         let screenWidth = UIScreen.main.bounds.width
         withAnimation(.linear(duration: 0)) {
