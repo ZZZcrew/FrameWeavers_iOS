@@ -74,8 +74,7 @@ struct FilmstripView: View {
             ZStack {
                 // 胶片背景 - 限制高度并作为背景层
                 Image("胶片")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
+                    .resizable(resizingMode: .tile)
                     .frame(height: 100)
                     .clipped()
 
