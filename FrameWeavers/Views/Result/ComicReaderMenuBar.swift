@@ -12,30 +12,17 @@ struct ComicReaderMenuBar: View {
     let onRecordTapped: () -> Void
     
     var body: some View {
-        ZStack {
-            // 半透明背景遮罩
+        VStack {
+            // 顶部菜单栏
             if isVisible {
-                Color.black.opacity(0.3)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            isVisible = false
-                        }
-                    }
+                topMenuBar
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
-            
-            // 菜单栏内容
-            VStack {
-                // 顶部菜单栏
-                if isVisible {
-                    topMenuBar
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
-                
-                Spacer()
-            }
+
+            Spacer()
         }
         .animation(.easeInOut(duration: 0.3), value: isVisible)
+        .allowsHitTesting(isVisible) // 只有在显示时才响应点击，允许用户继续翻页
     }
     
     /// 顶部菜单栏
