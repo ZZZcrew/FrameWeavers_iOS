@@ -22,7 +22,6 @@ struct ComicPanelView: View {
                         AsyncImageView(imageUrl: panel.imageUrl)
                             .aspectRatio(contentMode: .fit)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .shadow(radius: 10)
                     }
                     .frame(width: geometry.size.width * 0.60)
                     .padding(.leading, 20)

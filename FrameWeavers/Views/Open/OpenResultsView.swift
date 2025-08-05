@@ -63,14 +63,12 @@ extension OpenResultsView {
                     AsyncImageView(imageUrl: firstPanel.imageUrl)
                         .aspectRatio(contentMode: .fit)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .shadow(radius: 10)
                 } else {
                     // 如果没有页面，显示默认封面
                     Image("封面")
                         .resizable()
                         .scaledToFit()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .shadow(radius: 10)
                 }
             }
             .frame(width: geometry.size.width * 0.60)
@@ -131,7 +129,6 @@ extension OpenResultsView {
                 AsyncImageView(imageUrl: firstPanel.imageUrl)
                     .aspectRatio(contentMode: .fit)
                     .frame(maxHeight: geometry.size.height * 0.35)
-                    .shadow(radius: 10)
                     .padding(.horizontal, 20)
             } else {
                 // 如果没有页面，显示默认封面
@@ -139,7 +136,6 @@ extension OpenResultsView {
                     .resizable()
                     .scaledToFit()
                     .frame(maxHeight: geometry.size.height * 0.35)
-                    .shadow(radius: 10)
                     .padding(.horizontal, 20)
             }
 
