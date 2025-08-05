@@ -52,12 +52,19 @@ class ProcessingGalleryViewModel: ObservableObject {
     }
 
     /// 设置为示例模式
-    func setExampleMode(_ isExample: Bool) {
+    func setExampleMode(_ isExample: Bool, comicResult: ComicResult? = nil) {
         print("🎭 ProcessingGalleryViewModel: 设置示例模式: \(isExample)")
         isExampleMode = isExample
         if isExample {
-            // 示例模式下重置为第一个本地图片
-            mainImageName = imageNames.first ?? ""
+            // 示例模式下优先使用画册的第一张图片，否则使用默认图片
+            if let comicResult = comicResult, let firstPanel = comicResult.panels.first {
+                mainImageName = firstPanel.imageUrl
+                print("🖼️ 示例模式使用画册图片: \(mainImageName)")
+            } else {
+                // 兜底：使用默认本地图片
+                mainImageName = imageNames.first ?? ""
+                print("🖼️ 示例模式使用默认图片: \(mainImageName)")
+            }
             isUsingBaseFrames = false
         }
     }

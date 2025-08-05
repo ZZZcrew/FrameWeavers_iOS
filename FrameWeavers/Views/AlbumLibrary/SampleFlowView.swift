@@ -69,7 +69,7 @@ struct SampleProcessingView: View {
 // MARK: - Mock ViewModel
 class MockVideoUploadViewModel: VideoUploadViewModel {
     var isExampleMode: Bool = true  // 标识这是示例模式
-    private let targetComicResult: ComicResult?
+    let targetComicResult: ComicResult?  // 改为公开，供ProcessingView访问
     private var mockTimer: Timer?
 
     init(comicResult: ComicResult? = nil) {

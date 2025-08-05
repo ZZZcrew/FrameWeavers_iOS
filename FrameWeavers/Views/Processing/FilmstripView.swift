@@ -6,28 +6,42 @@ struct FilmstripView: View {
     let baseFrames: [BaseFrameData]  // 直接使用基础帧数据
     let isExampleMode: Bool
     let config: FilmstripConfiguration
+    let comicResult: ComicResult?  // 示例模式下的画册数据
     @State private var scrollOffset: CGFloat = 0
 
     init(displayImages: [DisplayImageData] = [],
          baseFrames: [BaseFrameData] = [],
          isExampleMode: Bool = false,
-         config: FilmstripConfiguration = .default) {
+         config: FilmstripConfiguration = .default,
+         comicResult: ComicResult? = nil) {
         self.displayImages = displayImages
         self.baseFrames = baseFrames
         self.isExampleMode = isExampleMode
         self.config = config
+        self.comicResult = comicResult
     }
 
     /// 计算实际显示的图片数据
     private var actualDisplayImages: [DisplayImageData] {
         if isExampleMode {
-            // 示例模式：使用本地图片
-            return ["Image1", "Image2", "Image3", "Image4"].map { name in
-                DisplayImageData(
-                    id: name,
-                    imageSource: .local(name: name),
-                    fallbackName: name
-                )
+            // 示例模式：优先使用画册的实际图片，否则使用默认本地图片
+            if let comicResult = comicResult, !comicResult.panels.isEmpty {
+                return comicResult.panels.map { panel in
+                    DisplayImageData(
+                        id: panel.imageUrl,
+                        imageSource: .local(name: panel.imageUrl),
+                        fallbackName: panel.imageUrl
+                    )
+                }
+            } else {
+                // 兜底：使用默认本地图片
+                return ["Image1", "Image2", "Image3", "Image4"].map { name in
+                    DisplayImageData(
+                        id: name,
+                        imageSource: .local(name: name),
+                        fallbackName: name
+                    )
+                }
             }
         } else if !baseFrames.isEmpty {
             // 真实模式：使用基础帧数据

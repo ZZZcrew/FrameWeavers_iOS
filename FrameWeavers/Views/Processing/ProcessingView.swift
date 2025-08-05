@@ -34,7 +34,7 @@ struct ProcessingView: View {
             // 检查是否为示例模式
             if let mockViewModel = viewModel as? MockVideoUploadViewModel, mockViewModel.isExampleMode {
                 print("🎭 检测到示例模式，设置 galleryViewModel 为示例模式")
-                galleryViewModel.setExampleMode(true)
+                galleryViewModel.setExampleMode(true, comicResult: mockViewModel.targetComicResult)
             } else {
                 // 立即检查是否已有基础帧数据
                 print("🔍 ProcessingView onAppear: 检查现有基础帧数据，数量: \(viewModel.baseFrames.count)")
@@ -96,7 +96,8 @@ extension ProcessingView {
                     displayImages: galleryViewModel.filmstripDisplayImages,
                     baseFrames: galleryViewModel.baseFrames,
                     isExampleMode: galleryViewModel.isExampleMode,
-                    config: galleryViewModel.filmstripConfig
+                    config: galleryViewModel.filmstripConfig,
+                    comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult
                 )
                 .frame(maxHeight: geometry.size.height * 0.2)
             }
