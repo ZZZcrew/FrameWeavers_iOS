@@ -523,6 +523,22 @@ struct ComicPanel: Codable, Identifiable {
         self.narration = narration
     }
 
+    // 自定义解码器，支持向后兼容
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // 尝试解码 id，如果不存在则生成新的
+        if let existingId = try container.decodeIfPresent(UUID.self, forKey: .id) {
+            self.id = existingId
+        } else {
+            self.id = UUID()
+        }
+
+        self.panelNumber = try container.decode(Int.self, forKey: .panelNumber)
+        self.imageUrl = try container.decode(String.self, forKey: .imageUrl)
+        self.narration = try container.decodeIfPresent(String.self, forKey: .narration)
+    }
+
     enum CodingKeys: String, CodingKey {
         case id, panelNumber, imageUrl, narration
     }

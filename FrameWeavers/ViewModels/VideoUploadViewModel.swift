@@ -356,8 +356,10 @@ class VideoUploadViewModel: ObservableObject {
         // 异步保存，避免阻塞主线程
         historyService.saveComicToHistory(comicResult, storyStyle: storyStyle) { success in
             // 回调已经在主线程执行，无需额外调度
-            if !success {
-                print("❌ 保存连环画到历史记录失败")
+            if success {
+                print("✅ 连环画已成功保存到历史记录: \(comicResult.title)")
+            } else {
+                print("❌ 保存连环画到历史记录失败: \(comicResult.title)")
             }
         }
     }
