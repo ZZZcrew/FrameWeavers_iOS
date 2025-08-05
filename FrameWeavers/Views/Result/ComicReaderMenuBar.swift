@@ -45,18 +45,6 @@ struct ComicReaderMenuBar: View {
         }
         .padding(.top, 20)
         .padding(.horizontal, 20)
-        .background(
-            // 渐变背景
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color.black.opacity(0.6),
-                    Color.clear
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 100)
-        )
     }
     
     /// 分享按钮
