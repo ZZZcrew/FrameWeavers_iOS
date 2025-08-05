@@ -7,18 +7,21 @@ struct FilmstripView: View {
     let isExampleMode: Bool
     let config: FilmstripConfiguration
     let comicResult: ComicResult?  // 示例模式下的画册数据
+    let customScrollSpeed: Double?  // 自定义滚动速度
     @State private var scrollOffset: CGFloat = 0
 
     init(displayImages: [DisplayImageData] = [],
          baseFrames: [BaseFrameData] = [],
          isExampleMode: Bool = false,
          config: FilmstripConfiguration = .default,
-         comicResult: ComicResult? = nil) {
+         comicResult: ComicResult? = nil,
+         customScrollSpeed: Double? = nil) {
         self.displayImages = displayImages
         self.baseFrames = baseFrames
         self.isExampleMode = isExampleMode
         self.config = config
         self.comicResult = comicResult
+        self.customScrollSpeed = customScrollSpeed
     }
 
     /// 计算实际显示的图片数据
@@ -123,7 +126,8 @@ struct FilmstripView: View {
 
         // 延迟启动动画，确保视图已完全渲染
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            withAnimation(.linear(duration: Double(totalWidth / config.scrollSpeed)).repeatForever(autoreverses: false)) {
+            let effectiveSpeed = customScrollSpeed ?? config.scrollSpeed
+            withAnimation(.linear(duration: Double(totalWidth / effectiveSpeed)).repeatForever(autoreverses: false)) {
                 scrollOffset = screenWidth  // 向右滚动到屏幕右侧外完全消失
             }
         }

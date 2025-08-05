@@ -97,7 +97,8 @@ extension ProcessingView {
                     baseFrames: galleryViewModel.baseFrames,
                     isExampleMode: galleryViewModel.isExampleMode,
                     config: galleryViewModel.filmstripConfig,
-                    comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult
+                    comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult,
+                    customScrollSpeed: 10.0  // 设置较慢的滚动速度
                 )
                 .frame(maxHeight: geometry.size.height * 0.2)
             }
