@@ -7,8 +7,9 @@ struct ComicReaderMenuBar: View {
     @Binding var isVisible: Bool
     let geometry: GeometryProxy
     
-    // 分享按钮的占位符动作
+    // 按钮动作
     let onShareTapped: () -> Void
+    let onRecordTapped: () -> Void
     
     var body: some View {
         ZStack {
@@ -42,13 +43,16 @@ struct ComicReaderMenuBar: View {
         HStack {
             Spacer()
             
-            // 右侧按钮组 - 放在最右侧
-            HStack(spacing: 20) {
-                // 分享按钮
-                shareButton
-                
+            // 右侧按钮组 - 竖排显示，放在最右侧
+            VStack(spacing: 15) {
                 // 关闭按钮
                 closeButton
+
+                // 分享按钮
+                shareButton
+
+                // 记录按钮
+                recordButton
             }
             .padding(.trailing, 30) // 确保在最右侧
         }
@@ -71,14 +75,9 @@ struct ComicReaderMenuBar: View {
     /// 分享按钮
     private var shareButton: some View {
         Button(action: onShareTapped) {
-            Image(systemName: "square.and.arrow.up")
-                .font(.title2)
-                .foregroundColor(.white)
+            Image("分享按钮")
+                .resizable()
                 .frame(width: 44, height: 44)
-                .background(
-                    Circle()
-                        .fill(Color.black.opacity(0.5))
-                )
         }
         .buttonStyle(PlainButtonStyle())
         .accessibilityLabel("分享")
@@ -90,17 +89,25 @@ struct ComicReaderMenuBar: View {
         Button(action: {
             dismiss()
         }) {
-            Image(systemName: "xmark")
-                .font(.title2)
-                .fontWeight(.medium)
-                .foregroundColor(.white)
+            Image("关闭按钮")
+                .resizable()
                 .frame(width: 44, height: 44)
-                .background(
-                    Circle()
-                        .fill(Color.black.opacity(0.5))
-                )
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel("关闭")
+        .accessibilityHint("关闭连环画阅读")
+    }
+
+    /// 记录按钮
+    private var recordButton: some View {
+        Button(action: onRecordTapped) {
+            Image("记录按钮")
+                .resizable()
+                .frame(width: 44, height: 44)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel("记录")
+        .accessibilityHint("记录阅读进度")
     }
 }
 
@@ -118,6 +125,9 @@ struct ComicReaderMenuBar: View {
                 geometry: geometry,
                 onShareTapped: {
                     print("分享按钮被点击")
+                },
+                onRecordTapped: {
+                    print("记录按钮被点击")
                 }
             )
         }
