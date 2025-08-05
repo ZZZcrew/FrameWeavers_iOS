@@ -6,7 +6,7 @@ import SwiftData
 /// 历史画册SwiftData模型
 /// 用于存储用户生成的画册历史记录
 @Model
-final class HistoryAlbum {
+final class HistoryAlbum: Identifiable {
     var id: String
     var title: String
     var originalVideoTitle: String

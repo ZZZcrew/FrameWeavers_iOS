@@ -12,7 +12,7 @@ struct SampleAlbumsView: View {
                 // 历史记录部分
                 if viewModel.hasHistory {
                     Section {
-                        ForEach(viewModel.historyAlbums) { historyAlbum in
+                        ForEach(viewModel.historyAlbums, id: \.id) { historyAlbum in
                             AlbumRowView(
                                 title: historyAlbum.title,
                                 description: HistoryAlbumDisplayModel(from: historyAlbum).description,

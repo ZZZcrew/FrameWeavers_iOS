@@ -511,13 +511,20 @@ struct ComicResult: Codable {
 }
 
 struct ComicPanel: Codable, Identifiable {
-    let id = UUID()
+    let id: UUID
     let panelNumber: Int
     let imageUrl: String
     let narration: String?
 
+    init(panelNumber: Int, imageUrl: String, narration: String?) {
+        self.id = UUID()
+        self.panelNumber = panelNumber
+        self.imageUrl = imageUrl
+        self.narration = narration
+    }
+
     enum CodingKeys: String, CodingKey {
-        case panelNumber, imageUrl, narration
+        case id, panelNumber, imageUrl, narration
     }
 }
 
