@@ -78,19 +78,27 @@ extension ProcessingView {
     @ViewBuilder
     private func portraitLayout(_ geometry: GeometryProxy) -> some View {
         VStack(spacing: 0) {
-            // 顶部弹性空间
+            // 顶部弹性空间 - 响应式
             Spacer()
-                .frame(minHeight: 20)
+                .frame(
+                    minHeight: geometry.size.height * 0.02,
+                    maxHeight: geometry.size.height * 0.06
+                )
 
             // 胶片画廊区域
-            VStack(spacing: 30) {
+            VStack(spacing: geometry.size.height * 0.03) {
                 PhotoStackView(
                     mainImageName: galleryViewModel.mainImageName,
                     stackedImages: galleryViewModel.stackedImages,
                     namespace: galleryNamespace,
                     baseFrames: galleryViewModel.baseFrameDataMap
                 )
-                .frame(maxHeight: geometry.size.height * 0.35)
+                .frame(
+                    maxHeight: max(
+                        geometry.size.height * 0.32,
+                        min(geometry.size.height * 0.38, 300)
+                    )
+                )
 
                 FilmstripView(
                     baseFrames: galleryViewModel.baseFrames,
@@ -99,25 +107,36 @@ extension ProcessingView {
                     comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult,
                     customScrollSpeed: 50.0  // 设置较慢的滚动速度
                 )
-                .frame(maxHeight: geometry.size.height * 0.2)
+                .frame(
+                    maxHeight: max(
+                        geometry.size.height * 0.18,
+                        min(geometry.size.height * 0.22, 180)
+                    )
+                )
             }
 
-            // 中间弹性空间
+            // 中间弹性空间 - 响应式
             Spacer()
-                .frame(height: 40)
+                .frame(
+                    minHeight: geometry.size.height * 0.03,
+                    maxHeight: geometry.size.height * 0.08
+                )
 
             // 进度显示区域
             ProcessingLoadingView(
                 progress: viewModel.uploadProgress,
                 status: viewModel.uploadStatus
             )
-            .padding(.horizontal, 20)
+            .padding(.horizontal, geometry.size.width * 0.05)
 
-            // 底部弹性空间
+            // 底部弹性空间 - 响应式
             Spacer()
-                .frame(minHeight: 40)
+                .frame(
+                    minHeight: geometry.size.height * 0.04,
+                    maxHeight: geometry.size.height * 0.1
+                )
         }
-        .padding(.vertical, 20)
+        .padding(.vertical, geometry.size.height * 0.02)
     }
 }
 
