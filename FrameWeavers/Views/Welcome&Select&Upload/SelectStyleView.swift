@@ -83,21 +83,11 @@ struct StyleSelectionView<ViewModel: VideoUploadViewModel>: View {
                         nextView
                     } label: {
                         ZStack {
-                            Image("button1")
+                            Image("开始生成")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: min(geometry.size.width * 0.6, 250),
                                        height: geometry.size.height * 0.055)
-
-                            Text("开始生成")
-                                .font(.custom("WSQuanXing", size: min(geometry.size.width * 0.055, 26)))
-                                .fontWeight(.bold)
-                                .foregroundColor(
-                                    viewModel.selectedStyle.isEmpty ?
-                                        Color(hex: "#CCCCCC") :
-                                        Color(hex: "#855C23")
-                                )
-                                .minimumScaleFactor(0.8)
                         }
                     }
                     .disabled(viewModel.selectedStyle.isEmpty)

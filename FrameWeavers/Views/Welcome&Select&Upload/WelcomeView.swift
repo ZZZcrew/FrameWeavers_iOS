@@ -97,7 +97,6 @@ struct WelcomeView: View {
                 // 提前计算几何值，避免在闭包中捕获geometry
                 let buttonWidth = min(geometry.size.width * 0.65, 280)
                 let buttonHeight = min(geometry.size.width * 0.65 * 0.176, 50)
-                let fontSize = min(geometry.size.width * 0.06, 24)
 
                 PhotosPicker(
                     selection: $selectedItems,
@@ -110,10 +109,6 @@ struct WelcomeView: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: buttonWidth, height: buttonHeight)
-
-                        Text("开启一段故事织造")
-                            .font(.custom("WSQuanXing", size: fontSize))
-                            .foregroundColor(Color(hex: "#855C23"))
                     }
                 }
 

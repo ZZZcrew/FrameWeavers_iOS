@@ -109,18 +109,13 @@ extension OpenResultsView {
                     ComicResultView(comicResult: comicResult)
                 } label: {
                     ZStack {
-                        Image("button1")
+                        Image("翻开画册")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(
                                 width: min(geometry.size.width * 0.25, 240),
                                 height: min(geometry.size.height * 0.08, 45)
                             )
-
-                        Text("翻开画册")
-                            .font(.custom("WSQuanXing", size: min(geometry.size.width * 0.025, 24)))
-                            .fontWeight(.bold)
-                            .foregroundColor(Color(hex: "#855C23"))
                     }
                 }
 
@@ -197,18 +192,13 @@ extension OpenResultsView {
                 ComicResultView(comicResult: comicResult)
             } label: {
                 ZStack {
-                    Image("button1")
+                    Image("翻开画册")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(
                             width: min(geometry.size.width * 0.65, 280),
                             height: min(geometry.size.height * 0.06, 52)
                         )
-
-                    Text("翻开画册")
-                        .font(.custom("WSQuanXing", size: min(geometry.size.width * 0.065, 28)))
-                        .fontWeight(.bold)
-                        .foregroundColor(Color(hex: "#855C23"))
                 }
             }
 
