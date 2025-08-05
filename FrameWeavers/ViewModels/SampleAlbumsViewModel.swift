@@ -17,32 +17,117 @@ class SampleAlbumsViewModel: ObservableObject {
     let sampleAlbums: [SampleAlbum] = [
         SampleAlbum(
             id: "sample-001",
-            title: "时光里的温暖记忆",
-            description: "一个关于家庭温情的美好故事",
-            coverImage: "封面",
+            title: "山魂觉醒：AI咖啡师的千年之约",
+            description: "在重庆涪陵的千年山魂中，一个关于未来的约定悄然开启。当冰冷的AI代码开始学习冲煮一杯有温度的咖啡时，科技便化作了传承文化的崭新方式，与壮丽山河达成了和谐共鸣，谱写出人、自然与科技共生的新篇章。",
+            coverImage: "key_frame_00_styled",
             comicResult: ComicResult(
                 comicId: "sample-001",
                 deviceId: "sample-device",
-                title: "时光里的温暖记忆",
-                summary: "一个关于祖孙情深的温馨故事，记录了奶奶对孙女的无私关爱和离别时的不舍之情。",
-                originalVideoTitle: "时光里的温暖记忆",
-                creationDate: "2025-07-26",
-                panelCount: 3,
+                title: "山魂觉醒：AI咖啡师的千年之约",
+                summary: "在重庆涪陵的千年山魂中，一个关于未来的约定悄然开启。当冰冷的AI代码开始学习冲煮一杯有温度的咖啡时，科技便化作了传承文化的崭新方式，与壮丽山河达成了和谐共鸣，谱写出人、自然与科技共生的新篇章。",
+                originalVideoTitle: "山魂觉醒：AI咖啡师的千年之约",
+                creationDate: "2025-08-05",
+                panelCount: 20,
                 panels: [
                     ComicPanel(
                         panelNumber: 1,
-                        imageUrl: "1-第1页",
-                        narration: "阳光透过窗棂洒在桌案上，奶奶正在为即将远行的孙女准备行囊。每一件衣物都被细心地叠好，每一样物品都承载着满满的爱意。"
+                        imageUrl: "key_frame_00_styled",
+                        narration: "传说，在这座香气弥漫的山城，古老的群山与未来立下了一个约定。"
                     ),
                     ComicPanel(
                         panelNumber: 2,
-                        imageUrl: "1-第2页",
-                        narration: "小女孩依偎在奶奶身边，听着那些讲了无数遍却永远不厌倦的故事。奶奶温暖的怀抱，是这世界上最安全的港湾。"
+                        imageUrl: "key_frame_01_styled",
+                        narration: "而在时间的长河深处，一个崭新的世界正在被悄然构建，它不源于泥土，而生于光与代码。"
                     ),
                     ComicPanel(
                         panelNumber: 3,
-                        imageUrl: "1-第3页",
-                        narration: "离别的时刻终于到来，奶奶将一个小小的香囊塞进孙女的手中。'无论走到哪里，都要记得回家的路。'奶奶的话语如春风般温柔。"
+                        imageUrl: "key_frame_02_styled",
+                        narration: "这里，日光信守着千年的诺言，水色青翠，染透了历史的衣褶。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 4,
+                        imageUrl: "key_frame_03_styled",
+                        narration: "每一条索道，都像一首被传唱的童谣，载着人们穿越云海，触碰时间的脉络。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 5,
+                        imageUrl: "key_frame_04_styled",
+                        narration: "当夜幕降临，星辰是唯一的见证者，看这片土地如何在静默中，孕育着一场变革。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 6,
+                        imageUrl: "key_frame_05_styled",
+                        narration: "文化的传承，从未被遗忘，它化作基石，为即将到来的新生事物，铺就最坚实厚重的道路。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 7,
+                        imageUrl: "key_frame_06_styled",
+                        narration: "于是，想象力被赋予了形态，思想的电波绘成了穿越时光的云图。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 8,
+                        imageUrl: "key_frame_07_styled",
+                        narration: "古老的栈道依然蜿蜒，它见证了过去，也引领着抵达未来的方向。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 9,
+                        imageUrl: "key_frame_08_styled",
+                        narration: "传统的轮廓依然清晰，是这片土地永恒的注脚，也是新故事的序章。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 10,
+                        imageUrl: "key_frame_09_styled",
+                        narration: "在这宁静之下，一种截然不同的心跳声，开始与古老的山峦共鸣。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 11,
+                        imageUrl: "key_frame_10_styled",
+                        narration: "终于，在极致洁净的空间里，一个融合了科技与温度的造物，悄然诞生。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 12,
+                        imageUrl: "key_frame_11_styled",
+                        narration: "它用精密的计算，复刻着手冲的艺术；用不知疲倦的专注，延续着咖啡的灵魂。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 13,
+                        imageUrl: "key_frame_12_styled",
+                        narration: "这便是约定的答案——当AI开始冲煮第一杯咖啡，千年的山魂便注入了全新的生命。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 14,
+                        imageUrl: "key_frame_13_styled",
+                        narration: "夜色中，咖啡馆的灯光，成为了山谷里最温暖的信标，等待着与每一颗探索的心同频共振。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 15,
+                        imageUrl: "key_frame_14_styled",
+                        narration: "此刻，宇宙的壮丽与科技的奇迹在这片峡谷中交汇，谱写出新的乐章。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 16,
+                        imageUrl: "key_frame_15_styled",
+                        narration: "“六小龙”的传说，伴着月光，化作一双翅膀，飞翔在涪陵大地的上空。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 17,
+                        imageUrl: "key_frame_16_styled",
+                        narration: "捧起这杯咖啡，便是捧起了整片山河。你的心跳，将与这片土地的脉搏同频。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 18,
+                        imageUrl: "key_frame_17_styled",
+                        narration: "从云端航线到林间小径，过去与未来在此交织，所有的足迹都将留下印记。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 19,
+                        imageUrl: "key_frame_18_styled",
+                        narration: "山川发出最诚挚的邀请，炊烟与云雾，是写给世界最动人的诗篇。"
+                    ),
+                    ComicPanel(
+                        panelNumber: 20,
+                        imageUrl: "key_frame_19_styled",
+                        narration: "前方的路已经清晰——那是一条通往未来的栈道，它连接的不是两座山，而是传统与新生。"
                     )
                 ],
                 finalQuestions: [
