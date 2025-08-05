@@ -72,8 +72,12 @@ struct FilmstripView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // 胶片背景
-                Color.black.opacity(0.8)
+                // 胶片背景 - 限制高度并作为背景层
+                Image("胶片")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 100)
+                    .clipped()
 
                 // 滚动的图片传送带
                 HStack(spacing: config.frameSpacing) {
@@ -236,6 +240,41 @@ struct FilmFrameView: View {
                         .foregroundColor(.white)
                 )
         }
+    }
+}
+
+// MARK: - SwiftUI Preview
+struct FilmstripView_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: 20) {
+            Text("胶片传送带预览")
+                .font(.title2)
+                .padding()
+
+            // 示例模式预览 - 使用默认配置
+            FilmstripView(
+                baseFrames: [],
+                isExampleMode: true,
+                config: .default,
+                comicResult: nil,
+                customScrollSpeed: 30.0
+            )
+            .background(Color.gray.opacity(0.1))
+
+            // 等待状态预览
+            FilmstripView(
+                baseFrames: [],
+                isExampleMode: false,
+                config: .default,
+                comicResult: nil,
+                customScrollSpeed: 50.0
+            )
+            .background(Color.gray.opacity(0.1))
+
+            Spacer()
+        }
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("胶片传送带")
     }
 }
 
