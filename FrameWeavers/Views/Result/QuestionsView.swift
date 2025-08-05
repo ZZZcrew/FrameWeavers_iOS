@@ -38,12 +38,6 @@ struct QuestionsView: View {
                     .padding(.horizontal, 40) // 左右边距
                     .padding(.top, 20)
 
-                    // 分隔线 - "目"字中间的横线
-                    Rectangle()
-                        .fill(Color.black)
-                        .frame(height: 1)
-                        .padding(.horizontal, 40)
-
                     // "完"字区域 - "目"字下面的"口"
                     VStack {
                         Text("· 完 ·")
@@ -56,26 +50,12 @@ struct QuestionsView: View {
                 }
                 .frame(maxWidth: .infinity) // 使用全屏宽度
                 .padding(.horizontal, 20) // 整体左右边距
-                // 添加黑边显示文本活动范围 - "目"字的外轮廓
-                .overlay(
-                    Rectangle()
-                        .stroke(Color.black, lineWidth: 3)
-                )
-                .background(Color.black.opacity(0.1))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.vertical, 20)
             }
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        // .toolbar {
-        //     ToolbarItem(placement: .principal) {
-        //         Text("互动问题")
-        //             .font(.custom("WSQuanXing", size: 20))
-        //             .foregroundColor(Color(hex: "#855C23"))
-        //             .fontWeight(.medium)
-        //     }
-        // }
     }
 }
 

@@ -58,12 +58,6 @@ struct ComicPanelView: View {
                         .padding(.horizontal, 10)
                         .padding(.top, 20)
 
-                        // 分隔线 - "目"字中间的横线
-                        Rectangle()
-                            .fill(Color.black)
-                            .frame(height: 1)
-                            .padding(.horizontal, 10)
-
                         // 页码区域 - "目"字下面的"口"
                         VStack {
                             Text("· \(pageIndex + 1) ·")
@@ -74,14 +68,8 @@ struct ComicPanelView: View {
                         .frame(height: 60) // 固定页码区域高度
                         .padding(.horizontal, 10)
                     }
-                    .frame(width: geometry.size.width * 0.30 - 20) // 减去右边距，避免超出屏幕
+                    .frame(width: max(100, geometry.size.width * 0.30 - 20)) // 确保最小宽度100，避免负数
                     .padding(.trailing, 20)
-                    // 添加黑边显示文本活动范围 - "目"字的外轮廓
-                    .overlay(
-                        Rectangle()
-                            .stroke(Color.black, lineWidth: 3)
-                    )
-                    .background(Color.black.opacity(0.1))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.vertical, 20)
