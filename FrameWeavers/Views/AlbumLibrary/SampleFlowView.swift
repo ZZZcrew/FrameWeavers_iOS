@@ -101,10 +101,10 @@ class MockVideoUploadViewModel: VideoUploadViewModel {
         uploadProgress = 0
         errorMessage = nil
 
-        // 模拟上传进度
-        mockTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
+        // 模拟上传进度 - 延长等待时间让用户更好地观看动画
+        mockTimer = Timer.scheduledTimer(withTimeInterval: 0.15, repeats: true) { timer in
             DispatchQueue.main.async {
-                self.uploadProgress += 0.02
+                self.uploadProgress += 0.01  // 减小每次增量，延长总时间
 
                 if self.uploadProgress >= 0.3 {
                     self.uploadStatus = .processing

@@ -117,22 +117,30 @@ struct FilmstripView: View {
         let itemWidth = config.frameWidth + config.frameSpacing
         let totalWidth = itemWidth * CGFloat(currentImages.count)
 
-        // 重置滚动偏移量，确保从正确位置开始
-        scrollOffset = 0
+        // 从右侧开始显示，让用户立即看到胶片内容
+        let screenWidth = UIScreen.main.bounds.width
+        scrollOffset = screenWidth - totalWidth  // 从屏幕右侧开始显示
 
         // 延迟启动动画，确保视图已完全渲染
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             withAnimation(.linear(duration: Double(totalWidth / config.scrollSpeed)).repeatForever(autoreverses: false)) {
-                scrollOffset = -totalWidth
+                scrollOffset = screenWidth  // 向右滚动到屏幕右侧外完全消失
             }
         }
     }
 
     /// 重启滚动动画 - 当数据变化时调用
     private func restartScrolling() {
-        // 停止当前动画
+        // 停止当前动画，重置到左侧起始位置
+        let currentImages = actualDisplayImages
+        guard !currentImages.isEmpty else { return }
+
+        let itemWidth = config.frameWidth + config.frameSpacing
+        let totalWidth = itemWidth * CGFloat(currentImages.count)
+
+        let screenWidth = UIScreen.main.bounds.width
         withAnimation(.linear(duration: 0)) {
-            scrollOffset = 0
+            scrollOffset = screenWidth - totalWidth  // 重置到右侧起始位置
         }
 
         // 重新启动滚动
