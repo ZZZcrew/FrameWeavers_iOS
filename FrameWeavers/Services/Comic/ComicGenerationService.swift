@@ -27,7 +27,6 @@ class ComicGenerationService {
             "frame_interval": String(request.frameInterval),
             "significance_weight": String(request.significanceWeight),
             "quality_weight": String(request.qualityWeight),
-            "style_prompt": request.stylePrompt,
             "image_size": request.imageSize,
             "max_concurrent": String(request.maxConcurrent)
         ]

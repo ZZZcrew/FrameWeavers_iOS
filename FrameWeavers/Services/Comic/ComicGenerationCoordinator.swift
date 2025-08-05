@@ -27,7 +27,6 @@ class ComicGenerationCoordinator {
         let frameInterval: Double
         let significanceWeight: Double
         let qualityWeight: Double
-        let stylePrompt: String
         let imageSize: String
         let maxConcurrent: Int
         
@@ -38,7 +37,6 @@ class ComicGenerationCoordinator {
              frameInterval: Double = 2.0,
              significanceWeight: Double = 0.7,
              qualityWeight: Double = 0.3,
-             stylePrompt: String = "Convert to Ink and brushwork style, Chinese style, Yellowed and old, Low saturation, Low brightness",
              imageSize: String = "1780x1024",
              maxConcurrent: Int = 50) {
             self.taskId = taskId
@@ -48,7 +46,6 @@ class ComicGenerationCoordinator {
             self.frameInterval = frameInterval
             self.significanceWeight = significanceWeight
             self.qualityWeight = qualityWeight
-            self.stylePrompt = stylePrompt
             self.imageSize = imageSize
             self.maxConcurrent = maxConcurrent
         }
@@ -190,7 +187,6 @@ class ComicGenerationCoordinator {
             frameInterval: config.frameInterval,
             significanceWeight: config.significanceWeight,
             qualityWeight: config.qualityWeight,
-            stylePrompt: config.stylePrompt,
             imageSize: config.imageSize,
             maxConcurrent: config.maxConcurrent
         )

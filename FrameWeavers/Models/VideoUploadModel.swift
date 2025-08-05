@@ -325,7 +325,6 @@ struct CompleteComicRequest {
     let frameInterval: Double
     let significanceWeight: Double
     let qualityWeight: Double
-    let stylePrompt: String
     let imageSize: String
     let maxConcurrent: Int
 
@@ -336,7 +335,6 @@ struct CompleteComicRequest {
          frameInterval: Double = 2.0,  // 参考Python测试
          significanceWeight: Double = 0.7,  // 参考Python测试
          qualityWeight: Double = 0.3,  // 参考Python测试
-         stylePrompt: String = "Convert to Ink and brushwork style, Chinese style, Yellowed and old, Low saturation, Low brightness",  // 参考Python测试
          imageSize: String = "1780x1024",  // 参考Python测试
          maxConcurrent: Int = 50) {
         self.taskId = taskId
@@ -346,7 +344,6 @@ struct CompleteComicRequest {
         self.frameInterval = frameInterval
         self.significanceWeight = significanceWeight
         self.qualityWeight = qualityWeight
-        self.stylePrompt = stylePrompt
         self.imageSize = imageSize
         self.maxConcurrent = maxConcurrent
     }
