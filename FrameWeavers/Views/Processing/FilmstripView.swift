@@ -271,6 +271,22 @@ struct FilmstripView_Previews: PreviewProvider {
             )
             .background(Color.gray.opacity(0.1))
 
+            // 单独预览胶片背景图片
+            Image("胶片")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(height: 120)
+                .previewLayout(.sizeThatFits)
+                .previewDisplayName("胶片背景（fit）")
+
+            Image("胶片")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(height: 100)
+                .clipped()
+                .previewLayout(.sizeThatFits)
+                .previewDisplayName("胶片背景（fill, clipped）")
+
             Spacer()
         }
         .previewLayout(.sizeThatFits)
