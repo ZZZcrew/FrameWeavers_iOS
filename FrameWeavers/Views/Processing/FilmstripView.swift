@@ -131,7 +131,7 @@ struct FilmstripView: View {
 
     /// 重启滚动动画 - 当数据变化时调用
     private func restartScrolling() {
-        // 停止当前动画，重置到左侧起始位置
+        // 停止当前动画，重置到右侧起始位置
         let currentImages = actualDisplayImages
         guard !currentImages.isEmpty else { return }
 
