@@ -100,7 +100,6 @@ private extension WelcomeView {
             .dynamicTypeSize(...DynamicTypeSize.accessibility1) // 限制最大字体
             .multilineTextAlignment(.center)
             .foregroundColor(Color(hex: "#2F2617"))
-            .lineSpacing(4)
     }
 
     var videoSelectionButton: some View {
