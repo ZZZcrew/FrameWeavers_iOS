@@ -140,26 +140,3 @@ struct TypewriterView: View {
         onComplete?()
     }
 }
-
-// // MARK: - 预览
-// struct TypewriterView_Previews: PreviewProvider {
-//     static var previews: some View {
-//         TypewriterView(
-//             text: """
-//             有些记忆，
-//             沉在手机深处，
-//             无人翻阅，也无人倾听。
-//             我们捡起那些画面，
-//             像织布的人，
-//             一帧帧织成故事。
-//             """,
-//             typeSpeed: 0.08
-//         )
-//         .font(.custom("STKaiti", size: 16))
-//         .fontWeight(.bold)
-//         .multilineTextAlignment(.center)
-//         .foregroundColor(Color(hex: "#2F2617"))
-//         .lineSpacing(15)
-//         .padding()
-//     }
-// }
