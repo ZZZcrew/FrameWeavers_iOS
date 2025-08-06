@@ -166,14 +166,24 @@ var landscapeLayout: some View {
     .frame(maxWidth: .infinity, maxHeight: .infinity)
 }
 
-// 竖屏布局：使用ScrollView + VStack
+// 竖屏布局：根据内容决定是否使用ScrollView
 var portraitLayout: some View {
-    ScrollView {
-        VStack(spacing: regularSpacing) {
-            // 垂直排列的内容
-        }
-        .padding(.horizontal, regularPadding)
+    // 如果内容适合屏幕，可以不使用ScrollView
+    VStack(spacing: regularSpacing) {
+        Spacer(minLength: topSpacing)
+        // 垂直排列的内容
+        Spacer(minLength: bottomSpacing)
     }
+    .padding(.horizontal, regularPadding)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+    // 或者使用ScrollView（内容较多时）
+    // ScrollView {
+    //     VStack(spacing: regularSpacing) {
+    //         // 垂直排列的内容
+    //     }
+    //     .padding(.horizontal, regularPadding)
+    // }
 }
 ```
 
@@ -199,28 +209,40 @@ ViewThatFits {
 ```
 
 ### 横屏适配原则
-1. **移除ScrollView**：横屏时通常不需要滚动
+1. **移除ScrollView**：横屏时通常不需要滚动，直接使用HStack
 2. **使用HStack**：水平排列主要内容
-3. **紧凑尺寸**：减小间距、字体、组件大小
+3. **适当调整尺寸**：横屏组件可以比竖屏稍大，充分利用水平空间
 4. **固定高度**：使用`.frame(maxHeight: .infinity)`填满屏幕
 5. **简化内容**：必要时隐藏次要元素
+6. **竖屏也可无ScrollView**：如果内容适合屏幕，竖屏也可移除ScrollView
 
 ## 🎨 现代布局组件
 
-### ScrollView + VStack 模式 (推荐)
+### 布局选择策略
 ```swift
-// ✅ 现代布局模式 - 简洁高效
+// ✅ 内容适合屏幕时：直接使用VStack (推荐)
+VStack(spacing: adaptiveSpacing) {
+    Spacer(minLength: topSpacing)
+
+    // 内容组件
+    welcomeIcon
+    welcomeText
+    actionButton
+    hintText
+
+    Spacer(minLength: bottomSpacing)
+}
+.padding(.horizontal, horizontalPadding)
+.frame(maxWidth: .infinity, maxHeight: .infinity)
+
+// ✅ 内容较多时：使用ScrollView + VStack
 ScrollView {
     VStack(spacing: adaptiveSpacing) {
-        Spacer(minLength: topSpacing)
-
         // 内容组件
         welcomeIcon
         welcomeText
         actionButton
         hintText
-
-        Spacer(minLength: bottomSpacing)
     }
     .padding(.horizontal, horizontalPadding)
     .frame(maxWidth: .infinity)
@@ -265,15 +287,104 @@ ViewThatFits {
 ```swift
 // ✅ 基于Size Classes的响应式属性
 private extension View {
-    var adaptiveSpacing: CGFloat { isCompact ? 16 : 24 }
-    var adaptivePadding: CGFloat { isCompact ? 20 : 40 }
-    var adaptiveIconSize: CGFloat { isCompact ? 70 : 90 }
-    var adaptiveButtonWidth: CGFloat { isCompact ? 250 : 280 }
+    var isCompact: Bool { horizontalSizeClass == .compact }
+    var isLandscape: Bool {
+        horizontalSizeClass == .compact && verticalSizeClass == .compact
+    }
+
+    // 竖屏属性
+    var portraitSpacing: CGFloat { isCompact ? 16 : 24 }
+    var portraitPadding: CGFloat { isCompact ? 20 : 40 }
+    var portraitIconSize: CGFloat { isCompact ? 70 : 90 }
+
+    // 横屏属性 (可以比竖屏稍大)
+    var landscapeSpacing: CGFloat { 30 }
+    var landscapePadding: CGFloat { 25 }
+    var landscapeIconSize: CGFloat { 80 }  // 比竖屏compact(70)大
 }
 
 // ✅ 使用系统间距
 VStack(spacing: .systemSpacing) { ... }  // iOS17+
 HStack(spacing: .systemSpacing) { ... }
+```
+
+## 🔀 双布局系统最佳实践
+
+### 完整的双布局实现
+```swift
+struct AdaptiveView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
+    var body: some View {
+        ZStack {
+            backgroundImage
+
+            if horizontalSizeClass == .compact && verticalSizeClass == .compact {
+                landscapeLayout  // iPhone横屏
+            } else {
+                portraitLayout   // 竖屏或iPad
+            }
+        }
+    }
+}
+
+// MARK: - Layout Components
+private extension AdaptiveView {
+    var portraitLayout: some View {
+        VStack(spacing: portraitSpacing) {
+            Spacer(minLength: portraitTopSpacing)
+            portraitTitleText
+            Spacer(minLength: portraitMiddleSpacing)
+            portraitMainContent
+            Spacer(minLength: portraitBottomSpacing)
+            portraitActionButton
+            Spacer(minLength: portraitEndSpacing)
+        }
+        .padding(.horizontal, portraitPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    var landscapeLayout: some View {
+        HStack(spacing: landscapeSpacing) {
+            VStack(spacing: 15) {
+                landscapeTitleText
+                landscapeMainContent
+            }
+            .frame(maxWidth: .infinity)
+
+            VStack {
+                Spacer()
+                landscapeActionButton
+                Spacer()
+            }
+            .frame(width: landscapeButtonAreaWidth)
+        }
+        .padding(.horizontal, landscapePadding)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+// MARK: - Adaptive Properties
+private extension AdaptiveView {
+    var isCompact: Bool { horizontalSizeClass == .compact }
+
+    // 竖屏属性
+    var portraitSpacing: CGFloat { isCompact ? 16 : 24 }
+    var portraitTopSpacing: CGFloat { isCompact ? 20 : 40 }
+    var portraitMiddleSpacing: CGFloat { isCompact ? 30 : 50 }
+    var portraitBottomSpacing: CGFloat { isCompact ? 40 : 60 }
+    var portraitEndSpacing: CGFloat { isCompact ? 20 : 40 }
+    var portraitPadding: CGFloat { isCompact ? 20 : 40 }
+    var portraitContentSize: CGFloat { isCompact ? 280 : 350 }
+
+    // 横屏属性
+    var landscapeSpacing: CGFloat { 30 }
+    var landscapePadding: CGFloat { 25 }
+    var landscapeContentSize: CGFloat { 240 }  // 比竖屏compact稍大
+    var landscapeButtonAreaWidth: CGFloat { 220 }
+}
 ```
 
 ## 🧩 实际应用示例
@@ -370,12 +481,19 @@ private extension ModernWelcomeView {
 
 ### 测试检查清单
 #### 必测项目
-- [ ] iPhone 15 Pro (标准)
+- [ ] iPhone 15 Pro (标准竖屏)
+- [ ] iPhone 15 Pro (横屏) - 重点测试
 - [ ] iPhone 15 Pro Max (大屏)
 - [ ] iPad Pro 12.9" (平板)
-- [ ] 横竖屏切换
+- [ ] 横竖屏切换流畅性
 - [ ] 动态字体大小调整
 - [ ] 分屏模式 (iPad)
+
+#### 横屏适配测试
+- [ ] 所有内容都在屏幕内可见
+- [ ] 组件大小合适，不会过小
+- [ ] 布局美观，左右分布合理
+- [ ] 无需滚动即可看到所有内容
 
 #### 动态类型测试
 - [ ] 设置 → 显示与亮度 → 文字大小
@@ -393,6 +511,8 @@ private extension ModernWelcomeView {
 - ❌ 自定义文字高度缓存类
 - ❌ 错误使用 `ViewThatFits(in: .vertical)` 进行横屏适配
 - ❌ 横屏时仍使用ScrollView导致内容超出屏幕
+- ❌ 横屏组件过小，浪费水平空间
+- ❌ 竖屏内容适合时仍强制使用ScrollView
 
 ### 性能禁忌
 - ❌ 过度使用 `GeometryReader`
