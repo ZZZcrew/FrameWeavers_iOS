@@ -67,35 +67,33 @@ private extension StyleSelectionView {
     var portraitQuadrantSize: CGFloat { isCompact ? 280 : 350 }
     var portraitButtonMaxWidth: CGFloat { isCompact ? 220 : 250 }
 
-    // 横屏布局的属性
-    var landscapeSpacing: CGFloat { 25 }
-    var landscapeHorizontalPadding: CGFloat { 20 }
-    var landscapeQuadrantSize: CGFloat { 180 }
-    var landscapeButtonMaxWidth: CGFloat { 160 }
+    // 横屏布局的属性 - 放大组件
+    var landscapeSpacing: CGFloat { 30 }
+    var landscapeHorizontalPadding: CGFloat { 25 }
+    var landscapeQuadrantSize: CGFloat { 240 }  // 从180增加到240
+    var landscapeButtonMaxWidth: CGFloat { 200 }  // 从160增加到200
 }
 
 // MARK: - Layout Components
 private extension StyleSelectionView {
     var portraitLayout: some View {
-        ScrollView {
-            VStack(spacing: portraitSpacing) {
-                Spacer(minLength: portraitTopSpacing)
+        VStack(spacing: portraitSpacing) {
+            Spacer(minLength: portraitTopSpacing)
 
-                portraitTitleText
+            portraitTitleText
 
-                Spacer(minLength: portraitTitleBottomSpacing)
+            Spacer(minLength: portraitTitleBottomSpacing)
 
-                portraitQuadrantArea
+            portraitQuadrantArea
 
-                Spacer(minLength: portraitButtonTopSpacing)
+            Spacer(minLength: portraitButtonTopSpacing)
 
-                portraitStartButton
+            portraitStartButton
 
-                Spacer(minLength: portraitBottomSpacing)
-            }
-            .padding(.horizontal, portraitHorizontalPadding)
-            .frame(maxWidth: .infinity)
+            Spacer(minLength: portraitBottomSpacing)
         }
+        .padding(.horizontal, portraitHorizontalPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     var landscapeLayout: some View {
@@ -111,7 +109,7 @@ private extension StyleSelectionView {
                 landscapeStartButton
                 Spacer()
             }
-            .frame(width: 180)
+            .frame(width: 220)  // 增加按钮区域宽度
         }
         .padding(.horizontal, landscapeHorizontalPadding)
         .padding(.vertical, 10)
@@ -189,7 +187,7 @@ private extension StyleSelectionView {
 private extension StyleSelectionView {
     var landscapeTitleText: some View {
         Text("· 选择故事风格 ·")
-            .font(.custom("STKaiti", size: 16))
+            .font(.custom("STKaiti", size: 18))  // 从16增加到18
             .dynamicTypeSize(...DynamicTypeSize.large)
             .fontWeight(.bold)
             .foregroundColor(Color(hex: "#2F2617"))
@@ -222,7 +220,7 @@ private extension StyleSelectionView {
                     viewModel.selectStyle(styleKey)
                 }) {
                     Text(styleText)
-                        .font(.custom("WSQuanXing", size: 18))
+                        .font(.custom("WSQuanXing", size: 20))  // 从18增加到20
                         .dynamicTypeSize(...DynamicTypeSize.large)
                         .fontWeight(.bold)
                         .foregroundColor(Color(hex: "#855C23"))
@@ -244,7 +242,7 @@ private extension StyleSelectionView {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: landscapeButtonMaxWidth)
-                .frame(height: 35)
+                .frame(height: 45)  // 从35增加到45
         }
         .disabled(viewModel.selectedStyle.isEmpty)
         .opacity(viewModel.selectedStyle.isEmpty ? 0.6 : 1.0)
