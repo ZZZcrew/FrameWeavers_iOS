@@ -2,181 +2,326 @@
 type: "always_apply"
 ---
 
-# 📱 移动端响应式设计规范
+# 📱 iOS17+ 现代响应式设计规范
+
+**目标系统**: iOS17+, iPadOS17+ (不考虑更低版本)
+**核心理念**: 简洁、现代、高效 - 充分利用最新SwiftUI特性
 
 ## 🎯 核心原则
 
-### 1. 使用系统字体和动态类型
-- **始终使用系统提供的字体样式**而非固定大小
-- **支持动态类型(Dynamic Type)**让用户可调整文字大小
-- **使用相对布局**适应不同文字大小
+### 1. 优先使用现代SwiftUI特性
+- **Size Classes** - 替代复杂的设备检测
+- **ScrollView** - 替代复杂的GeometryReader布局
+- **Environment Values** - 响应系统设置变化
+- **Dynamic Type** - 系统级字体缩放支持
 
-### 2. iOS/iPadOS 字体规范
+### 2. 禁止过度工程化
+- ❌ **禁止**自定义设备适配工具类
+- ❌ **禁止**复杂的GeometryReader嵌套
+- ❌ **禁止**手动计算屏幕尺寸
+- ❌ **禁止**固定像素值布局
 
-#### 系统字体大小对照表
-| 样式类型 | iOS大小 | iPadOS大小 | 使用场景 |
-|---------|---------|------------|----------|
-| `.largeTitle` | 34pt | 34pt | 页面大标题 |
-| `.title` | 28pt | 28pt | 页面标题 |
-| `.title2` | 22pt | 22pt | 次要标题 |
-| `.title3` | 20pt | 20pt | 小标题 |
-| `.headline` | 17pt | 17pt | 重要文字 |
-| `.body` | 17pt | 17pt | 正文内容 |
-| `.callout` | 16pt | 16pt | 说明文字 |
-| `.subheadline` | 15pt | 15pt | 副标题 |
-| `.footnote` | 13pt | 13pt | 脚注 |
-| `.caption` | 12pt | 12pt | 图片说明 |
-| `.caption2` | 11pt | 11pt | 最小文字 |
+## 🏗️ 现代布局架构
 
-#### SF Pro 字体使用规则
-- **≥20pt**: 使用 SF Pro Display
-- **<20pt**: 使用 SF Pro Text
-- **字符间距**: 系统自动调整，无需手动设置
-
-### 3. 响应式布局规范
-
-#### 使用 GeometryReader
+### 基础响应式模板
 ```swift
-// ✅ 推荐做法
-GeometryReader { geometry in
-    VStack(spacing: geometry.size.height * 0.05) {
-        Text("标题")
-            .font(.title)
-            .frame(width: geometry.size.width * 0.9)
+struct ModernResponsiveView: View {
+    // MARK: - Environment
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: adaptiveSpacing) {
+                Spacer(minLength: topSpacing)
+
+                // 内容组件
+                contentView
+
+                Spacer(minLength: bottomSpacing)
+            }
+            .padding(.horizontal, horizontalPadding)
+            .frame(maxWidth: .infinity)
+        }
     }
 }
 
-// ❌ 避免做法
-VStack(spacing: 40) {
-    Text("标题")
-        .font(.system(size: 28))
-        .frame(width: 350)
+// MARK: - Adaptive Properties
+private extension ModernResponsiveView {
+    var isCompact: Bool {
+        horizontalSizeClass == .compact || verticalSizeClass == .compact
+    }
+
+    var adaptiveSpacing: CGFloat { isCompact ? 16 : 24 }
+    var topSpacing: CGFloat { isCompact ? 20 : 40 }
+    var bottomSpacing: CGFloat { isCompact ? 20 : 40 }
+    var horizontalPadding: CGFloat { isCompact ? 20 : 40 }
 }
 ```
 
-#### 相对尺寸计算
-- **间距**: 使用屏幕高度的百分比
-- **字体**: 使用 `min(geometry.size.width * 比例, 最大值)` 限制
-- **按钮**: 使用 `maxWidth: .infinity` 配合内边距
+## 🔤 现代字体系统
 
-### 4. 动态类型支持
-
-#### SwiftUI 实现
+### 系统字体样式 (iOS17+)
 ```swift
-// 支持动态类型
+// ✅ 推荐：使用系统字体样式
+Text("标题").font(.largeTitle)     // 34pt - 页面大标题
+Text("标题").font(.title)         // 28pt - 页面标题
+Text("标题").font(.title2)        // 22pt - 次要标题
+Text("内容").font(.body)          // 17pt - 正文内容
+Text("说明").font(.callout)       // 16pt - 说明文字
+Text("脚注").font(.footnote)      // 13pt - 脚注
+Text("标签").font(.caption)       // 12pt - 图片说明
+
+// ❌ 禁止：固定字体大小
+Text("标题").font(.system(size: 28)) // 禁止使用
+```
+
+### 动态类型支持
+```swift
+// ✅ 限制字体大小范围
 Text("内容")
     .font(.body)
-    .dynamicTypeSize(...Large) // 限制最大尺寸
+    .dynamicTypeSize(...DynamicTypeSize.accessibility1) // 限制最大字体
 
-// 响应动态类型变化
+// ✅ 响应动态类型变化
 @Environment(\.dynamicTypeSize) var dynamicTypeSize
 
+var adaptiveFont: Font {
+    dynamicTypeSize.isAccessibilitySize ? .title3 : .body
+}
+```
+
+### 自定义字体的现代用法
+```swift
+// ✅ 支持动态类型的自定义字体
+Text("内容")
+    .font(.custom("STKaiti", size: 18))
+    .dynamicTypeSize(...DynamicTypeSize.large) // 限制范围
+```
+
+## 📐 Size Classes 响应式设计
+
+### 基础Size Classes判断
+```swift
+@Environment(\.horizontalSizeClass) private var horizontalSizeClass
+@Environment(\.verticalSizeClass) private var verticalSizeClass
+
+// 简洁的响应式判断
+var isCompact: Bool {
+    horizontalSizeClass == .compact || verticalSizeClass == .compact
+}
+
+// 基于Size Classes的布局
 var body: some View {
-    if dynamicTypeSize.isAccessibilitySize {
-        // 大字体布局
+    if horizontalSizeClass == .compact {
+        compactLayout    // iPhone竖屏、iPad分屏
     } else {
-        // 正常布局
+        regularLayout    // iPad横屏、iPhone横屏
     }
 }
 ```
 
-#### UIKit 实现
+### 设备适配策略
+- **iPhone**: 主要使用 `.compact` 水平尺寸类
+- **iPad**: 主要使用 `.regular` 水平尺寸类
+- **分屏/多窗口**: 自动适配为 `.compact`
+- **横竖屏**: 通过 `verticalSizeClass` 判断
+
+## 🎨 现代布局组件
+
+### ScrollView + VStack 模式 (推荐)
 ```swift
-label.adjustsFontForContentSizeCategory = true
-label.font = UIFont.preferredFont(forTextStyle: .body)
-label.numberOfLines = 0
-```
+// ✅ 现代布局模式 - 简洁高效
+ScrollView {
+    VStack(spacing: adaptiveSpacing) {
+        Spacer(minLength: topSpacing)
 
-### 5. 设备适配断点
+        // 内容组件
+        welcomeIcon
+        welcomeText
+        actionButton
+        hintText
 
-#### iPhone 尺寸分类
-- **小屏**: iPhone SE (375×667)
-- **标准**: iPhone 13/14/15 (390×844)
-- **大屏**: iPhone 14/15 Plus (430×932)
-- **最大**: iPhone Pro Max (430×932)
+        Spacer(minLength: bottomSpacing)
+    }
+    .padding(.horizontal, horizontalPadding)
+    .frame(maxWidth: .infinity)
+}
 
-#### iPad 尺寸分类
-- **iPad mini**: 768×1024
-- **iPad Air**: 820×1180
-- **iPad Pro 11"**: 834×1194
-- **iPad Pro 12.9"**: 1024×1366
-
-### 6. 实际应用模板
-
-#### 响应式文本组件
-```swift
-struct ResponsiveText: View {
-    let text: String
-    let style: Font.TextStyle
-    
-    var body: some View {
-        GeometryReader { geometry in
-            Text(text)
-                .font(style)
-                .lineLimit(nil)
-                .minimumScaleFactor(0.5)
-                .padding(.horizontal, geometry.size.width * 0.05)
-        }
+// ❌ 旧模式 - 复杂且性能差
+GeometryReader { geometry in
+    VStack(spacing: 0) {
+        DeviceAdaptation.responsiveSpacer(...)  // 禁止
+        // 复杂的计算逻辑
     }
 }
 ```
 
-#### 响应式按钮
+### ViewThatFits 自适应布局 (iOS16+)
 ```swift
-struct ResponsiveButton: View {
-    let title: String
-    let action: () -> Void
-    
+// ✅ 自动选择合适的布局
+ViewThatFits {
+    // 优先显示完整布局
+    HStack(spacing: 20) {
+        image
+        VStack { title; description }
+        actionButton
+    }
+
+    // 空间不足时的简化布局
+    VStack(spacing: 12) {
+        image
+        title
+        actionButton
+    }
+
+    // 最小布局
+    VStack(spacing: 8) {
+        title
+        actionButton
+    }
+}
+```
+
+### 响应式间距和尺寸
+```swift
+// ✅ 基于Size Classes的响应式属性
+private extension View {
+    var adaptiveSpacing: CGFloat { isCompact ? 16 : 24 }
+    var adaptivePadding: CGFloat { isCompact ? 20 : 40 }
+    var adaptiveIconSize: CGFloat { isCompact ? 70 : 90 }
+    var adaptiveButtonWidth: CGFloat { isCompact ? 250 : 280 }
+}
+
+// ✅ 使用系统间距
+VStack(spacing: .systemSpacing) { ... }  // iOS17+
+HStack(spacing: .systemSpacing) { ... }
+```
+
+## 🧩 实际应用示例
+
+### 完整的现代响应式视图
+```swift
+struct ModernWelcomeView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
     var body: some View {
-        GeometryReader { geometry in
-            Button(action: action) {
-                Text(title)
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, geometry.size.height * 0.02)
+        ScrollView {
+            VStack(spacing: adaptiveSpacing) {
+                Spacer(minLength: topSpacing)
+
+                welcomeIcon
+                welcomeText
+                actionButton
+                hintText
+
+                Spacer(minLength: bottomSpacing)
             }
-            .padding(.horizontal, geometry.size.width * 0.1)
+            .padding(.horizontal, horizontalPadding)
+            .frame(maxWidth: .infinity)
         }
+    }
+}
+
+// MARK: - Adaptive Properties
+private extension ModernWelcomeView {
+    var isCompact: Bool {
+        horizontalSizeClass == .compact || verticalSizeClass == .compact
+    }
+
+    var adaptiveSpacing: CGFloat { isCompact ? 16 : 24 }
+    var topSpacing: CGFloat { isCompact ? 20 : 40 }
+    var bottomSpacing: CGFloat { isCompact ? 20 : 40 }
+    var horizontalPadding: CGFloat { isCompact ? 20 : 40 }
+    var iconSize: CGFloat { isCompact ? 70 : 90 }
+}
+
+// MARK: - UI Components
+private extension ModernWelcomeView {
+    var welcomeIcon: some View {
+        Image("icon-home")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: iconSize, height: iconSize)
+            .shadow(radius: 10)
+    }
+
+    var welcomeText: some View {
+        Text("欢迎文字")
+            .font(.body)
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+            .multilineTextAlignment(.center)
+            .lineSpacing(4)
+    }
+
+    var actionButton: some View {
+        Button("开始") { }
+            .frame(maxWidth: isCompact ? 250 : 280)
+            .frame(height: 50)
+    }
+
+    var hintText: some View {
+        Text("提示文字")
+            .font(.caption)
+            .dynamicTypeSize(...DynamicTypeSize.large)
+            .multilineTextAlignment(.center)
     }
 }
 ```
 
-### 7. 测试检查清单
+## 🧪 测试与预览
+
+### Xcode预览配置
+```swift
+#Preview("iPhone") {
+    ModernWelcomeView()
+        .previewDevice("iPhone 15 Pro")
+}
+
+#Preview("iPad") {
+    ModernWelcomeView()
+        .previewDevice("iPad Pro (12.9-inch)")
+}
+
+#Preview("Dynamic Type") {
+    ModernWelcomeView()
+        .environment(\.dynamicTypeSize, .accessibility1)
+}
+```
+
+### 测试检查清单
+#### 必测项目
+- [ ] iPhone 15 Pro (标准)
+- [ ] iPhone 15 Pro Max (大屏)
+- [ ] iPad Pro 12.9" (平板)
+- [ ] 横竖屏切换
+- [ ] 动态字体大小调整
+- [ ] 分屏模式 (iPad)
 
 #### 动态类型测试
-- [ ] 在设置中调整文字大小，检查布局是否正常
-- [ ] 使用Xcode预览所有动态类型变体
-- [ ] 测试最大辅助功能文字大小
+- [ ] 设置 → 显示与亮度 → 文字大小
+- [ ] 测试最大辅助功能字体
+- [ ] 确保内容不被截断
 
-#### 设备适配测试
-- [ ] iPhone SE (最小屏幕)
-- [ ] iPhone 15 Pro (标准屏幕)
-- [ ] iPhone 15 Pro Max (最大屏幕)
-- [ ] iPad mini (最小iPad)
-- [ ] iPad Pro 12.9" (最大iPad)
+## ⚠️ 禁止事项
 
-#### 横竖屏测试
-- [ ] 所有设备方向的布局适配
-- [ ] 分屏模式下的iPad布局
-- [ ] 多窗口模式支持
+### 绝对禁止
+- ❌ 创建自定义设备适配工具类 (如 `DeviceAdaptation`)
+- ❌ 使用 `UIDevice.current` 检测设备类型
+- ❌ 手动计算屏幕尺寸和比例
+- ❌ 使用固定像素值 (如 `width: 350`)
+- ❌ 复杂的 `GeometryReader` 嵌套
+- ❌ 自定义文字高度缓存类
 
-### 8. 常见错误避免
+### 性能禁忌
+- ❌ 过度使用 `GeometryReader`
+- ❌ 在视图中进行复杂计算
+- ❌ 忽略 `@Environment` 的性能优势
 
-#### ❌ 错误做法
-- 使用固定字体大小
-- 使用绝对布局约束
-- 忽略动态类型支持
-- 只为单一设备设计
+## 📚 Apple官方文档
+- [Human Interface Guidelines - Layout](https://developer.apple.com/design/human-interface-guidelines/layout)
+- [SwiftUI Size Classes](https://developer.apple.com/documentation/swiftui/environmentvalues/horizontalsizeclass)
+- [Dynamic Type](https://developer.apple.com/documentation/uikit/uifont/scaling_fonts_automatically)
 
-#### ✅ 正确做法
-- 使用系统字体样式
-- 使用相对布局和百分比
-- 全面支持动态类型
-- 考虑所有设备尺寸
-
-### 9. 参考资源
-
-- [Apple Human Interface Guidelines - Typography](https://developer.apple.com/design/human-interface-guidelines/typography)
-- [WWDC 2024 - Get started with Dynamic Type](https://developer.apple.com/videos/play/wwdc2024/10074/)
-- [SF Pro Font Download](https://developer.apple.com/fonts/)
-- [iOS Font Size Guidelines](https://www.learnui.design/blog/ios-font-size-guidelines.html)
+**总结**: 这套规范基于iOS17+最新特性，摒弃了复杂的自定义适配方案，采用SwiftUI原生的Size Classes和Environment Values，实现简洁、高效、可维护的响应式设计。

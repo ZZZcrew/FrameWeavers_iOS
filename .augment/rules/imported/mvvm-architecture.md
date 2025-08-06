@@ -2,11 +2,11 @@
 type: "always_apply"
 ---
 
-# iOS MVVM 架构完整指南
+# iOS MVVM 架构和combine响应式编程指南
 
 ## 项目概述
 
-本指南适用于iOS17与iOS18，采用MVVM架构，专注于视频上传和连环画生成功能。我们只负责iOS App端逻辑，AI大模型后端由合作方负责。
+本指南适用于iOS17与iOS18，采用MVVM架构和combin响应式编程，专注于视频上传和连环画生成功能。我们只负责iOS App端逻辑，AI大模型后端由合作方负责。
 
 ## 职责范围
 
@@ -22,17 +22,6 @@ type: "always_apply"
 - 图像处理和风格化
 - 剧本和问题生成
 - 服务器端业务逻辑
-
-## 项目结构
-
-### 目录结构
-```
-Models/          // 数据模型
-ViewModels/      // 视图模型  
-Views/          // SwiftUI视图
-Services/       // 业务逻辑服务
-Utils/          // 工具类
-```
 
 ## MVVM 架构规范
 
@@ -55,6 +44,12 @@ Utils/          // 工具类
 - 数据绑定，向View提供格式化数据
 - 调用Model执行业务操作，订阅数据变化（Combine）
 - 错误与加载状态统一处理
+
+#### ViewModel响应式编程规范
+- **必须使用@Published**: 所有需要触发UI更新的属性都必须标记为`@Published`
+- **计算属性响应式**: 依赖`@Published`属性的计算属性会自动响应变化
+- **Combine订阅**: 使用`$property.sink`或`@Published`属性的组合来处理复杂数据流
+- **避免手动通知**: 不要手动调用`objectWillChange.send()`，依赖`@Published`自动机制
 
 ### 3. Views (视图)
 - 纯UI展示，不包含业务逻辑
@@ -87,12 +82,63 @@ Utils/          // 工具类
 // ✅ 正确：依赖注入
 .environment(ItemViewModel())
 
+// ✅ 正确：响应式ViewModel
+class ItemViewModel: ObservableObject {
+    @Published var items: [Item] = []
+    @Published var filteredItems: [DisplayItem] = []
+
+    private var cancellables = Set<AnyCancellable>()
+
+    init() {
+        $items
+            .map { items in
+                items.map { DisplayItem(from: $0) }
+            }
+            .assign(to: &$filteredItems)
+    }
+}
+
 // ❌ 错误：单例模式
 // static let shared = ItemViewModel() // 禁止
+
+// ❌ 错误：非响应式计算属性
+// var filteredItems: [DisplayItem] {
+//     return items.map { DisplayItem(from: $0) }
+// }
 ```
 
-## 数据流
+## 数据流与响应式编程
+
+### 基本数据流
 View → ViewModel → Service → Model
+
+### Combine响应式数据流
+```swift
+// ViewModel中的响应式数据处理
+class MyViewModel: ObservableObject {
+    @Published var sourceData: [DataModel] = []
+    @Published var processedData: [DisplayModel] = []
+
+    private var cancellables = Set<AnyCancellable>()
+
+    init() {
+        // 响应式数据转换
+        $sourceData
+            .map { data in
+                // 业务逻辑处理
+                return data.map { DisplayModel(from: $0) }
+            }
+            .assign(to: &$processedData)
+    }
+}
+```
+
+### 响应式编程最佳实践
+1. **数据源响应**: 使用`@Published`属性作为数据源
+2. **自动转换**: 通过`.map`、`.filter`等操作符处理数据
+3. **链式操作**: 使用`.assign(to:)`或`.sink`订阅结果
+4. **内存管理**: 使用`Set<AnyCancellable>`管理订阅生命周期
+5. **错误处理**: 使用`.catch`、`.replaceError`处理错误情况
 
 ## 禁止事项
 - 在View中直接处理业务逻辑
@@ -103,68 +149,6 @@ View → ViewModel → Service → Model
 - 在Model中包含业务逻辑
 - 在ViewModel中直接操作UI
 - 在View中直接访问数据库
-
-## 视频上传流程设计
-
-### 1. 权限请求流程
-- 相册访问权限请求
-- 网络权限状态检查
-
-### 2. 视频选择界面
-- 系统照片选择器（PhotosUI）
-- 视频时长验证（5-30分钟）
-- 实时预览和确认
-
-### 3. 上传状态管理
-- 上传进度实时显示
-- 网络错误处理
-- 取消上传功能
-- 后台上传支持
-
-### 4. 结果展示
-- 连环画阅读界面
-- 图片懒加载
-- 交互问题展示
-
-## 网络层设计
-
-### 核心功能
-- 与合作方API的HTTP通信
-- multipart/form-data上传格式
-- 上传进度跟踪
-
-### API使用规范
-- **上传端点**: 使用合作方提供的URL
-- **必需参数**: videoFile + deviceId
-- **响应格式**: 遵循README_iOS.md中的JSON结构
-
-## 本地存储设计
-
-### 核心功能
-- SwiftData持久化任务历史
-- 缓存生成的连环画数据
-
-## iOS实现要点
-
-- 充分利用iOS系统组件（PhotosPicker、ProgressView）
-- 适配不同屏幕尺寸（iPhone SE到iPad Pro）
-- 支持横竖屏切换
-- 集成系统分享功能
-
-## 性能优化建议
-
-- 细粒度绑定，避免多余视图刷新
-- 视频文件预处理（压缩、格式检查）
-- 合理使用异步与线程，优化渲染
-- 懒加载减少启动时间，高效列表展示
-- 内存警告处理
-
-## 用户交互设计
-
-- 直观的操作流程：选择→验证→上传→等待→查看
-- 清晰的视觉反馈：进度条、状态提示、错误处理
-- 流畅的动画过渡
-- 无障碍功能支持
 
 ## 技术栈
 
