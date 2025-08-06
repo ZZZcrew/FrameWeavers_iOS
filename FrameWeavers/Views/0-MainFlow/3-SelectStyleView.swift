@@ -33,24 +33,13 @@ struct StyleSelectionView<ViewModel: VideoUploadViewModel>: View {
                 .scaledToFill()
                 .ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: adaptiveSpacing) {
-                    Spacer(minLength: topSpacing)
-
-                    titleText
-
-                    Spacer(minLength: titleBottomSpacing)
-
-                    quadrantSelectionArea
-
-                    Spacer(minLength: buttonTopSpacing)
-
-                    startGenerationButton
-
-                    Spacer(minLength: bottomSpacing)
-                }
-                .padding(.horizontal, horizontalPadding)
-                .frame(maxWidth: .infinity)
+            // 基于Size Classes的现代响应式布局
+            if horizontalSizeClass == .compact && verticalSizeClass == .compact {
+                // 横屏紧凑模式 (iPhone横屏)
+                landscapeLayout
+            } else {
+                // 竖屏或iPad模式
+                portraitLayout
             }
         }
         .navigationTitle("")
@@ -65,22 +54,74 @@ struct StyleSelectionView<ViewModel: VideoUploadViewModel>: View {
 // MARK: - Adaptive Properties
 private extension StyleSelectionView {
     var isCompact: Bool {
-        horizontalSizeClass == .compact || verticalSizeClass == .compact
+        horizontalSizeClass == .compact
     }
 
-    var adaptiveSpacing: CGFloat { isCompact ? 16 : 24 }
-    var topSpacing: CGFloat { isCompact ? 20 : 40 }
-    var titleBottomSpacing: CGFloat { isCompact ? 30 : 50 }
-    var buttonTopSpacing: CGFloat { isCompact ? 40 : 60 }
-    var bottomSpacing: CGFloat { isCompact ? 20 : 40 }
-    var horizontalPadding: CGFloat { isCompact ? 20 : 40 }
-    var quadrantSize: CGFloat { isCompact ? 280 : 350 }
-    var buttonMaxWidth: CGFloat { isCompact ? 220 : 250 }
+    // 竖屏布局的属性
+    var portraitSpacing: CGFloat { isCompact ? 16 : 24 }
+    var portraitTopSpacing: CGFloat { isCompact ? 20 : 40 }
+    var portraitTitleBottomSpacing: CGFloat { isCompact ? 30 : 50 }
+    var portraitButtonTopSpacing: CGFloat { isCompact ? 40 : 60 }
+    var portraitBottomSpacing: CGFloat { isCompact ? 20 : 40 }
+    var portraitHorizontalPadding: CGFloat { isCompact ? 20 : 40 }
+    var portraitQuadrantSize: CGFloat { isCompact ? 280 : 350 }
+    var portraitButtonMaxWidth: CGFloat { isCompact ? 220 : 250 }
+
+    // 横屏布局的属性
+    var landscapeSpacing: CGFloat { 25 }
+    var landscapeHorizontalPadding: CGFloat { 20 }
+    var landscapeQuadrantSize: CGFloat { 180 }
+    var landscapeButtonMaxWidth: CGFloat { 160 }
 }
 
-// MARK: - UI Components
+// MARK: - Layout Components
 private extension StyleSelectionView {
-    var titleText: some View {
+    var portraitLayout: some View {
+        ScrollView {
+            VStack(spacing: portraitSpacing) {
+                Spacer(minLength: portraitTopSpacing)
+
+                portraitTitleText
+
+                Spacer(minLength: portraitTitleBottomSpacing)
+
+                portraitQuadrantArea
+
+                Spacer(minLength: portraitButtonTopSpacing)
+
+                portraitStartButton
+
+                Spacer(minLength: portraitBottomSpacing)
+            }
+            .padding(.horizontal, portraitHorizontalPadding)
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    var landscapeLayout: some View {
+        HStack(spacing: landscapeSpacing) {
+            VStack(spacing: 12) {
+                landscapeTitleText
+                landscapeQuadrantArea
+            }
+            .frame(maxWidth: .infinity)
+
+            VStack(spacing: 15) {
+                Spacer()
+                landscapeStartButton
+                Spacer()
+            }
+            .frame(width: 180)
+        }
+        .padding(.horizontal, landscapeHorizontalPadding)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+// MARK: - Portrait UI Components
+private extension StyleSelectionView {
+    var portraitTitleText: some View {
         Text("· 选择故事风格 ·")
             .font(.custom("STKaiti", size: 18))
             .dynamicTypeSize(...DynamicTypeSize.accessibility1)
@@ -88,24 +129,24 @@ private extension StyleSelectionView {
             .foregroundColor(Color(hex: "#2F2617"))
     }
 
-    var quadrantSelectionArea: some View {
+    var portraitQuadrantArea: some View {
         ZStack {
             Image("四象限")
                 .resizable()
                 .scaledToFit()
-                .frame(width: quadrantSize, height: quadrantSize)
+                .frame(width: portraitQuadrantSize, height: portraitQuadrantSize)
 
             // 使用动画图钉组件
             let pinIndex = viewModel.selectedStyle.isEmpty ? 1 : (storyStyles.firstIndex { $0.0 == viewModel.selectedStyle } ?? 1)
 
             AnimatedPinView(
                 currentIndex: pinIndex,
-                quadrantSize: quadrantSize,
+                quadrantSize: portraitQuadrantSize,
                 isAnimating: !viewModel.selectedStyle.isEmpty
             )
 
             // 响应式按钮位置
-            let buttonPositions = calculateButtonPositions(for: quadrantSize)
+            let buttonPositions = calculateButtonPositions(for: portraitQuadrantSize)
 
             ForEach(Array(storyStyles.enumerated()), id: \.offset) { index, style in
                 let styleKey = style.0
@@ -126,18 +167,84 @@ private extension StyleSelectionView {
                 .position(x: buttonPositions[index].x, y: buttonPositions[index].y)
             }
         }
-        .frame(width: quadrantSize, height: quadrantSize)
+        .frame(width: portraitQuadrantSize, height: portraitQuadrantSize)
     }
 
-    var startGenerationButton: some View {
+    var portraitStartButton: some View {
         NavigationLink {
             nextView
         } label: {
             Image("开始生成")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(maxWidth: buttonMaxWidth)
+                .frame(maxWidth: portraitButtonMaxWidth)
                 .frame(height: 50)
+        }
+        .disabled(viewModel.selectedStyle.isEmpty)
+        .opacity(viewModel.selectedStyle.isEmpty ? 0.6 : 1.0)
+    }
+}
+
+// MARK: - Landscape UI Components
+private extension StyleSelectionView {
+    var landscapeTitleText: some View {
+        Text("· 选择故事风格 ·")
+            .font(.custom("STKaiti", size: 16))
+            .dynamicTypeSize(...DynamicTypeSize.large)
+            .fontWeight(.bold)
+            .foregroundColor(Color(hex: "#2F2617"))
+    }
+
+    var landscapeQuadrantArea: some View {
+        ZStack {
+            Image("四象限")
+                .resizable()
+                .scaledToFit()
+                .frame(width: landscapeQuadrantSize, height: landscapeQuadrantSize)
+
+            // 使用动画图钉组件
+            let pinIndex = viewModel.selectedStyle.isEmpty ? 1 : (storyStyles.firstIndex { $0.0 == viewModel.selectedStyle } ?? 1)
+
+            AnimatedPinView(
+                currentIndex: pinIndex,
+                quadrantSize: landscapeQuadrantSize,
+                isAnimating: !viewModel.selectedStyle.isEmpty
+            )
+
+            // 响应式按钮位置
+            let buttonPositions = calculateButtonPositions(for: landscapeQuadrantSize)
+
+            ForEach(Array(storyStyles.enumerated()), id: \.offset) { index, style in
+                let styleKey = style.0
+                let styleText = style.1
+
+                Button(action: {
+                    viewModel.selectStyle(styleKey)
+                }) {
+                    Text(styleText)
+                        .font(.custom("WSQuanXing", size: 18))
+                        .dynamicTypeSize(...DynamicTypeSize.large)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(hex: "#855C23"))
+                        .opacity(viewModel.selectedStyle == styleKey ? 1.0 : 0.3)
+                        .minimumScaleFactor(0.7)
+                        .lineLimit(2)
+                }
+                .position(x: buttonPositions[index].x, y: buttonPositions[index].y)
+            }
+        }
+        .frame(width: landscapeQuadrantSize, height: landscapeQuadrantSize)
+    }
+
+    var landscapeStartButton: some View {
+        NavigationLink {
+            nextView
+        } label: {
+            Image("开始生成")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(maxWidth: landscapeButtonMaxWidth)
+                .frame(height: 35)
         }
         .disabled(viewModel.selectedStyle.isEmpty)
         .opacity(viewModel.selectedStyle.isEmpty ? 0.6 : 1.0)
