@@ -14,23 +14,27 @@ struct WelcomeView: View {
 
     // MARK: - Body
     var body: some View {
-        ScrollView {
-            VStack(spacing: adaptiveSpacing) {
-                Spacer(minLength: topSpacing)
+        VStack(spacing: 0) {
+            Spacer()
 
-                welcomeIcon
+            welcomeIcon
 
-                welcomeTextContent
+            Spacer()
 
-                videoSelectionButton
+            welcomeTextContent
 
-                hintText
+            Spacer()
 
-                Spacer(minLength: bottomSpacing)
-            }
-            .padding(.horizontal, horizontalPadding)
-            .frame(maxWidth: .infinity)
+            videoSelectionButton
+
+            Spacer()
+
+            hintText
+
+            Spacer()
         }
+        .padding(.horizontal, horizontalPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
         .fullScreenCover(isPresented: $showingSampleAlbums) {
@@ -65,18 +69,6 @@ private extension WelcomeView {
 private extension WelcomeView {
     var isCompact: Bool {
         horizontalSizeClass == .compact || verticalSizeClass == .compact
-    }
-
-    var adaptiveSpacing: CGFloat {
-        isCompact ? 16 : 24
-    }
-
-    var topSpacing: CGFloat {
-        isCompact ? 20 : 40
-    }
-
-    var bottomSpacing: CGFloat {
-        isCompact ? 20 : 40
     }
 
     var horizontalPadding: CGFloat {
