@@ -29,20 +29,29 @@ struct TypewriterView: View {
     }
     
     var body: some View {
-        VStack(alignment: .center, spacing: 0) {
-            HStack(spacing: 0) {
-                Text(displayedText)
-                    .lineSpacing(8) // 增加行间距
-                    .frame(maxWidth: .infinity, alignment: .center)
+        ZStack(alignment: .topLeading) {
+            // 透明占位符文本 - 固定布局
+            Text(fullText)
+                .lineSpacing(8)
+                .opacity(0) // 完全透明，只用于占位
+                .frame(maxWidth: .infinity, alignment: .center)
 
-                if showCursor {
-                    Text("|")
-                        .opacity(showCursorBlink ? 1 : 0)
-                        .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: showCursorBlink)
+            // 实际显示的打字机文本
+            VStack(alignment: .center, spacing: 0) {
+                HStack(spacing: 0) {
+                    Text(displayedText)
+                        .lineSpacing(8)
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                    if showCursor {
+                        Text("|")
+                            .opacity(showCursorBlink ? 1 : 0)
+                            .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: showCursorBlink)
+                    }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .top)
         }
-        .frame(maxWidth: .infinity, alignment: .top) // 顶部对齐，实现一行一行往下写的效果
         .onAppear {
             startTypewriterAnimation()
             if showCursor {
