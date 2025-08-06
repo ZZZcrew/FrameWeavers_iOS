@@ -306,6 +306,8 @@ private extension View {
 // ✅ 使用系统间距
 VStack(spacing: .systemSpacing) { ... }  // iOS17+
 HStack(spacing: .systemSpacing) { ... }
+
+// 详细的属性定义请参考"双布局系统最佳实践"章节
 ```
 
 ## 🔀 双布局系统最佳实践
@@ -387,100 +389,9 @@ private extension AdaptiveView {
 }
 ```
 
-## 🧩 实际应用示例
+## 🧪 测试检查清单
 
-### 完整的现代响应式视图
-```swift
-struct ModernWelcomeView: View {
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: adaptiveSpacing) {
-                Spacer(minLength: topSpacing)
-
-                welcomeIcon
-                welcomeText
-                actionButton
-                hintText
-
-                Spacer(minLength: bottomSpacing)
-            }
-            .padding(.horizontal, horizontalPadding)
-            .frame(maxWidth: .infinity)
-        }
-    }
-}
-
-// MARK: - Adaptive Properties
-private extension ModernWelcomeView {
-    var isCompact: Bool {
-        horizontalSizeClass == .compact || verticalSizeClass == .compact
-    }
-
-    var adaptiveSpacing: CGFloat { isCompact ? 16 : 24 }
-    var topSpacing: CGFloat { isCompact ? 20 : 40 }
-    var bottomSpacing: CGFloat { isCompact ? 20 : 40 }
-    var horizontalPadding: CGFloat { isCompact ? 20 : 40 }
-    var iconSize: CGFloat { isCompact ? 70 : 90 }
-}
-
-// MARK: - UI Components
-private extension ModernWelcomeView {
-    var welcomeIcon: some View {
-        Image("icon-home")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: iconSize, height: iconSize)
-            .shadow(radius: 10)
-    }
-
-    var welcomeText: some View {
-        Text("欢迎文字")
-            .font(.body)
-            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-            .multilineTextAlignment(.center)
-            .lineSpacing(4)
-    }
-
-    var actionButton: some View {
-        Button("开始") { }
-            .frame(maxWidth: isCompact ? 250 : 280)
-            .frame(height: 50)
-    }
-
-    var hintText: some View {
-        Text("提示文字")
-            .font(.caption)
-            .dynamicTypeSize(...DynamicTypeSize.large)
-            .multilineTextAlignment(.center)
-    }
-}
-```
-
-## 🧪 测试与预览
-
-### Xcode预览配置
-```swift
-#Preview("iPhone") {
-    ModernWelcomeView()
-        .previewDevice("iPhone 15 Pro")
-}
-
-#Preview("iPad") {
-    ModernWelcomeView()
-        .previewDevice("iPad Pro (12.9-inch)")
-}
-
-#Preview("Dynamic Type") {
-    ModernWelcomeView()
-        .environment(\.dynamicTypeSize, .accessibility1)
-}
-```
-
-### 测试检查清单
-#### 必测项目
+### 必测项目
 - [ ] iPhone 15 Pro (标准竖屏)
 - [ ] iPhone 15 Pro (横屏) - 重点测试
 - [ ] iPhone 15 Pro Max (大屏)
@@ -489,13 +400,13 @@ private extension ModernWelcomeView {
 - [ ] 动态字体大小调整
 - [ ] 分屏模式 (iPad)
 
-#### 横屏适配测试
+### 横屏适配测试
 - [ ] 所有内容都在屏幕内可见
 - [ ] 组件大小合适，不会过小
 - [ ] 布局美观，左右分布合理
 - [ ] 无需滚动即可看到所有内容
 
-#### 动态类型测试
+### 动态类型测试
 - [ ] 设置 → 显示与亮度 → 文字大小
 - [ ] 测试最大辅助功能字体
 - [ ] 确保内容不被截断
@@ -524,5 +435,3 @@ private extension ModernWelcomeView {
 - [Human Interface Guidelines - Layout](https://developer.apple.com/design/human-interface-guidelines/layout)
 - [SwiftUI Size Classes](https://developer.apple.com/documentation/swiftui/environmentvalues/horizontalsizeclass)
 - [Dynamic Type](https://developer.apple.com/documentation/uikit/uifont/scaling_fonts_automatically)
-
-**总结**: 这套规范基于iOS17+最新特性，摒弃了复杂的自定义适配方案，采用SwiftUI原生的Size Classes和Environment Values，实现简洁、高效、可维护的响应式设计。
