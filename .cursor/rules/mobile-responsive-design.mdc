@@ -319,17 +319,9 @@ private extension ModernWelcomeView {
 - ❌ 在视图中进行复杂计算
 - ❌ 忽略 `@Environment` 的性能优势
 
-## 📚 参考资源
-
-### Apple官方文档
+## 📚 Apple官方文档
 - [Human Interface Guidelines - Layout](https://developer.apple.com/design/human-interface-guidelines/layout)
 - [SwiftUI Size Classes](https://developer.apple.com/documentation/swiftui/environmentvalues/horizontalsizeclass)
 - [Dynamic Type](https://developer.apple.com/documentation/uikit/uifont/scaling_fonts_automatically)
-
-### WWDC视频
-- [WWDC 2023 - What's new in SwiftUI](https://developer.apple.com/videos/play/wwdc2023/10148/)
-- [WWDC 2023 - Build accessible apps with SwiftUI](https://developer.apple.com/videos/play/wwdc2023/10036/)
-
----
 
 **总结**: 这套规范基于iOS17+最新特性，摒弃了复杂的自定义适配方案，采用SwiftUI原生的Size Classes和Environment Values，实现简洁、高效、可维护的响应式设计。
