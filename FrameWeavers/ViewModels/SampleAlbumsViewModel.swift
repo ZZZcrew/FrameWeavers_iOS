@@ -32,102 +32,102 @@ class SampleAlbumsViewModel: ObservableObject {
                     ComicPanel(
                         panelNumber: 1,
                         imageUrl: "key_frame_00_styled",
-                        narration: "传说，在这座香气弥漫的山城，古老的群山与未来立下了一个约定。"
+                        narration: "有些心跳，与生俱来，随山川共鸣；有些心跳，是代码谱写的未来序曲。这里，是涪陵，一个能听见两种心跳的地方。"
                     ),
                     ComicPanel(
                         panelNumber: 2,
                         imageUrl: "key_frame_01_styled",
-                        narration: "而在时间的长河深处，一个崭新的世界正在被悄然构建，它不源于泥土，而生于光与代码。"
+                        narration: "未来并非遥远彼岸，而是眼前这条通透、洁净、充满无限可能的走廊。"
                     ),
                     ComicPanel(
                         panelNumber: 3,
                         imageUrl: "key_frame_02_styled",
-                        narration: "这里，日光信守着千年的诺言，水色青翠，染透了历史的衣褶。"
+                        narration: "然而，通向未来的路，始终踏在古老的土地上。每一级栈道，都记得风与时间的叮咛。"
                     ),
                     ComicPanel(
                         panelNumber: 4,
                         imageUrl: "key_frame_03_styled",
-                        narration: "每一条索道，都像一首被传唱的童谣，载着人们穿越云海，触碰时间的脉络。"
+                        narration: "在这里，光阴似乎放慢了脚步，让千年的亭台，与璀璨的星河，完成一场无声的对望。"
                     ),
                     ComicPanel(
                         panelNumber: 5,
                         imageUrl: "key_frame_04_styled",
-                        narration: "当夜幕降临，星辰是唯一的见证者，看这片土地如何在静默中，孕育着一场变革。"
+                        narration: "栈道静默，峡谷无言。它们仿佛在等待，等待一颗敢于探索未知的心，前来唤醒沉睡的诗篇。"
                     ),
                     ComicPanel(
                         panelNumber: 6,
                         imageUrl: "key_frame_05_styled",
-                        narration: "文化的传承，从未被遗忘，它化作基石，为即将到来的新生事物，铺就最坚实厚重的道路。"
+                        narration: "每一块石板，每一处飞檐，都承载着文化的重量，是这片土地不曾磨灭的灵魂印记。"
                     ),
                     ComicPanel(
                         panelNumber: 7,
                         imageUrl: "key_frame_06_styled",
-                        narration: "于是，想象力被赋予了形态，思想的电波绘成了穿越时光的云图。"
+                        narration: "它静静矗立，看云卷云舒，如同一只大山的眼睛，淡然见证着身边发生的一切奇迹。"
                     ),
                     ComicPanel(
                         panelNumber: 8,
                         imageUrl: "key_frame_07_styled",
-                        narration: "古老的栈道依然蜿蜒，它见证了过去，也引领着抵达未来的方向。"
+                        narration: "而另一双眼睛，正凝视着数据的深渊。在这里，人类的智慧，正试图赋予冰冷的机器以温度。"
                     ),
                     ComicPanel(
                         panelNumber: 9,
                         imageUrl: "key_frame_08_styled",
-                        narration: "传统的轮廓依然清晰，是这片土地永恒的注脚，也是新故事的序章。"
+                        narration: "出行的定义被重新改写。古老的山峦之间，流淌着无声、高效的未来脉络。"
                     ),
                     ComicPanel(
                         panelNumber: 10,
                         imageUrl: "key_frame_09_styled",
-                        narration: "在这宁静之下，一种截然不同的心跳声，开始与古老的山峦共鸣。"
+                        narration: "当科技的精度，遇见生活的温度，一杯咖啡便有了灵魂。这是代码的匠心，也是数据的温情。"
                     ),
                     ComicPanel(
                         panelNumber: 11,
                         imageUrl: "key_frame_10_styled",
-                        narration: "终于，在极致洁净的空间里，一个融合了科技与温度的造物，悄然诞生。"
+                        narration: "而自然，从不吝啬它的奇迹，用一场划破夜空的流星雨，回应着人类关于明天的梦想。"
                     ),
                     ComicPanel(
                         panelNumber: 12,
                         imageUrl: "key_frame_11_styled",
-                        narration: "它用精密的计算，复刻着手冲的艺术；用不知疲倦的专注，延续着咖啡的灵魂。"
+                        narration: "灯火，是人类在大地上点亮的繁星，与天上的银河遥相呼应，共同守护着这片土地的安宁。"
                     ),
                     ComicPanel(
                         panelNumber: 13,
                         imageUrl: "key_frame_12_styled",
-                        narration: "这便是约定的答案——当AI开始冲煮第一杯咖啡，千年的山魂便注入了全新的生命。"
+                        narration: "月光之下，城市的轮廓变得温柔。古老的传说与未来的诗篇，在此刻无声地交融。"
                     ),
                     ComicPanel(
                         panelNumber: 14,
                         imageUrl: "key_frame_13_styled",
-                        narration: "夜色中，咖啡馆的灯光，成为了山谷里最温暖的信标，等待着与每一颗探索的心同频共振。"
+                        narration: "每一条蜿蜒的道路，都是一次连接，连接着城市与山野，也连接着过去与现在。"
                     ),
                     ComicPanel(
                         panelNumber: 15,
                         imageUrl: "key_frame_14_styled",
-                        narration: "此刻，宇宙的壮丽与科技的奇迹在这片峡谷中交汇，谱写出新的乐章。"
+                        narration: "我们飞越雪山之巅，俯瞰大地的壮丽。人类探索的边界，早已超越了地平线。"
                     ),
                     ComicPanel(
                         panelNumber: 16,
                         imageUrl: "key_frame_15_styled",
-                        narration: "“六小龙”的传说，伴着月光，化作一双翅膀，飞翔在涪陵大地的上空。"
+                        narration: "但我们从未忘记，生命最初的形态。当一株新绿，破土于芯片之上，这，就是对未来最好的答案：生长，共生。"
                     ),
                     ComicPanel(
                         panelNumber: 17,
                         imageUrl: "key_frame_16_styled",
-                        narration: "捧起这杯咖啡，便是捧起了整片山河。你的心跳，将与这片土地的脉搏同频。"
+                        narration: "建筑不再是自然的闯入者，而是森林的一部分。这是科技对生命，最谦卑的致敬。"
                     ),
                     ComicPanel(
                         panelNumber: 18,
                         imageUrl: "key_frame_17_styled",
-                        narration: "从云端航线到林间小径，过去与未来在此交织，所有的足迹都将留下印记。"
+                        narration: "它们是没有体温的伙伴，却能读懂你的心事，陪伴你探索世界的每一个角落。"
                     ),
                     ComicPanel(
                         panelNumber: 19,
                         imageUrl: "key_frame_18_styled",
-                        narration: "山川发出最诚挚的邀请，炊烟与云雾，是写给世界最动人的诗篇。"
+                        narration: "最终，一切的宏大叙事，都回归到这间小小的咖啡馆，回归到这一杯手冲的专注与醇香。"
                     ),
                     ComicPanel(
                         panelNumber: 20,
                         imageUrl: "key_frame_19_styled",
-                        narration: "前方的路已经清晰——那是一条通往未来的栈道，它连接的不是两座山，而是传统与新生。"
+                        narration: "飞向云端，也扎根大地。芯跳不息，关于这里的故事，才刚刚开始。"
                     )
                 ],
                 finalQuestions: [
