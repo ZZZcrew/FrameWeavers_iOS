@@ -20,6 +20,7 @@ alwaysApply: true
 - ❌ **禁止**复杂的GeometryReader嵌套
 - ❌ **禁止**手动计算屏幕尺寸
 - ❌ **禁止**固定像素值布局
+- ❌ **禁止**错误使用ViewThatFits (详见横屏适配章节)
 
 ## 🏗️ 现代布局架构
 
@@ -108,7 +109,7 @@ Text("内容")
 
 // 简洁的响应式判断
 var isCompact: Bool {
-    horizontalSizeClass == .compact || verticalSizeClass == .compact
+    horizontalSizeClass == .compact
 }
 
 // 基于Size Classes的布局
@@ -126,6 +127,83 @@ var body: some View {
 - **iPad**: 主要使用 `.regular` 水平尺寸类
 - **分屏/多窗口**: 自动适配为 `.compact`
 - **横竖屏**: 通过 `verticalSizeClass` 判断
+
+## 🔄 横屏适配最佳实践
+
+### 横屏检测的正确方法
+```swift
+// ✅ 正确：基于Size Classes的横屏检测
+var isLandscape: Bool {
+    horizontalSizeClass == .compact && verticalSizeClass == .compact
+}
+
+// ❌ 错误：单独使用verticalSizeClass
+var isLandscape: Bool {
+    verticalSizeClass == .compact  // 不可靠
+}
+```
+
+### 横屏布局策略
+```swift
+// ✅ 推荐：双布局系统
+var body: some View {
+    if horizontalSizeClass == .compact && verticalSizeClass == .compact {
+        // iPhone横屏：使用HStack水平布局
+        landscapeLayout
+    } else {
+        // 竖屏或iPad：使用VStack垂直布局
+        portraitLayout
+    }
+}
+
+// 横屏布局：去除ScrollView，直接使用HStack
+var landscapeLayout: some View {
+    HStack(spacing: compactSpacing) {
+        VStack { /* 左侧内容 */ }
+        VStack { /* 右侧内容 */ }
+    }
+    .padding(.horizontal, compactPadding)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+}
+
+// 竖屏布局：使用ScrollView + VStack
+var portraitLayout: some View {
+    ScrollView {
+        VStack(spacing: regularSpacing) {
+            // 垂直排列的内容
+        }
+        .padding(.horizontal, regularPadding)
+    }
+}
+```
+
+### ViewThatFits使用注意事项
+```swift
+// ❌ 错误：ViewThatFits不适合横屏适配
+ViewThatFits(in: .vertical) {
+    portraitLayout
+    landscapeLayout
+}
+
+// ✅ 正确：ViewThatFits适合内容自适应
+ViewThatFits {
+    // 优先显示完整内容
+    HStack { icon; title; description; button }
+
+    // 空间不足时简化
+    VStack { icon; title; button }
+
+    // 最小布局
+    VStack { title; button }
+}
+```
+
+### 横屏适配原则
+1. **移除ScrollView**：横屏时通常不需要滚动
+2. **使用HStack**：水平排列主要内容
+3. **紧凑尺寸**：减小间距、字体、组件大小
+4. **固定高度**：使用`.frame(maxHeight: .infinity)`填满屏幕
+5. **简化内容**：必要时隐藏次要元素
 
 ## 🎨 现代布局组件
 
@@ -313,11 +391,14 @@ private extension ModernWelcomeView {
 - ❌ 使用固定像素值 (如 `width: 350`)
 - ❌ 复杂的 `GeometryReader` 嵌套
 - ❌ 自定义文字高度缓存类
+- ❌ 错误使用 `ViewThatFits(in: .vertical)` 进行横屏适配
+- ❌ 横屏时仍使用ScrollView导致内容超出屏幕
 
 ### 性能禁忌
 - ❌ 过度使用 `GeometryReader`
 - ❌ 在视图中进行复杂计算
 - ❌ 忽略 `@Environment` 的性能优势
+- ❌ 横屏时使用过大的组件尺寸
 
 ## 📚 Apple官方文档
 - [Human Interface Guidelines - Layout](https://developer.apple.com/design/human-interface-guidelines/layout)
