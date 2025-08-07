@@ -117,13 +117,17 @@ struct FilmstripView: View {
                             let imageIndex = index % currentImages.count
                             let displayImage = currentImages[imageIndex]
 
+                            // 简单直接的方法：只有前N个图片使用matchedGeometry（N=原始图片数量）
+                            // 这样确保每个图片ID只有一个源视图
+                            let shouldUseGeometry = index < currentImages.count
+
                             FilmFrameView(
                                 displayImage: displayImage,
                                 config: config,
                                 adaptiveHeight: adaptiveFilmstripHeight,
                                 onTapped: onImageTapped,
                                 namespace: namespace,
-                                shouldUseMatchedGeometry: index < currentImages.count // 只有第一轮的图片使用matchedGeometry
+                                shouldUseMatchedGeometry: shouldUseGeometry
                             )
                         }
                     }
