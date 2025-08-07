@@ -113,7 +113,8 @@ extension ProcessingView {
                 comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult,
                 customScrollSpeed: 50.0,
                 onImageTapped: { imageId in
-                    withAnimation(.easeInOut(duration: 0.8)) {
+                    // 使用HTML中的精确缓动函数
+                    withAnimation(.timingCurve(0.25, 0.46, 0.45, 0.94, duration: 0.4)) {
                         galleryViewModel.selectImage(imageId)
                     }
                 },
@@ -156,7 +157,8 @@ extension ProcessingView {
                     comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult,
                     customScrollSpeed: 50.0,
                     onImageTapped: { imageId in
-                        withAnimation(.easeInOut(duration: 0.8)) {
+                        // 使用HTML中的精确缓动函数
+                        withAnimation(.timingCurve(0.25, 0.46, 0.45, 0.94, duration: 0.4)) {
                             galleryViewModel.selectImage(imageId)
                         }
                     },

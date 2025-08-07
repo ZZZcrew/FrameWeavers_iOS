@@ -136,8 +136,8 @@ class ProcessingGalleryViewModel: ObservableObject {
         )
         isAnimating = true
 
-        // 动画完成后的处理
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+        // 动画完成后的处理（使用HTML中的0.4秒时长）
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             self.completeFlyingAnimation(for: imageId)
         }
     }

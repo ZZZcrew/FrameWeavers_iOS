@@ -12,6 +12,9 @@ struct PhotoStackView: View {
     let namespace: Namespace.ID
     let baseFrames: [String: BaseFrameData] // 基础帧数据映射
 
+    // MARK: - Animation State
+    @State private var newImageScale: Double = 0.0
+
     init(mainImageName: String,
          stackedImages: [String],
          namespace: Namespace.ID,
@@ -116,7 +119,16 @@ struct PhotoStackView: View {
             )
             .shadow(color: .black.opacity(0.2), radius: mainShadowRadius, y: 5)
             .rotationEffect(.degrees(1))
+            .scaleEffect(newImageScale)
             .zIndex(Double(stackedImages.count + 1))
+            .onChange(of: mainImageName) { _, _ in
+                // 当主图片变化时，触发弹性动画
+                triggerBounceAnimation()
+            }
+            .onAppear {
+                // 初始化时也触发动画
+                newImageScale = 1.0
+            }
 
             // 胶带
             Image("胶带")
@@ -128,6 +140,19 @@ struct PhotoStackView: View {
                 .zIndex(Double(stackedImages.count + 2))
         }
         .frame(height: containerHeight)
+    }
+
+    // MARK: - Animation Methods
+
+    /// 触发弹性动画效果
+    private func triggerBounceAnimation() {
+        // 先缩小到0
+        newImageScale = 0.0
+
+        // 然后用弹性动画放大到1.0，模拟HTML中的效果
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.6, blendDuration: 0)) {
+            newImageScale = 1.0
+        }
     }
 }
 
