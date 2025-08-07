@@ -4,15 +4,10 @@ import UIKit
 
 struct OpenResultsView: View {
     @Environment(\.dismiss) private var dismiss
-    let comicResult: ComicResult
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
-    // 检测设备方向 - 暂时不使用，保留以备将来使用
-    // private var isLandscape: Bool {
-    //     UIDevice.current.orientation.isLandscape ||
-    //     UIApplication.shared.connectedScenes
-    //         .compactMap { $0 as? UIWindowScene }
-    //         .first?.interfaceOrientation.isLandscape == true
-    // }
+    let comicResult: ComicResult
 
     var body: some View {
         ZStack {
@@ -22,24 +17,14 @@ struct OpenResultsView: View {
                 .scaledToFill()
                 .ignoresSafeArea()
 
-            GeometryReader { geometry in
-                // 强制使用竖屏布局
-                self.portraitLayout(geometry)
-
-                // 保留横屏布局代码以备将来使用
-                // if isLandscape {
-                //     // 横屏布局
-                //     self.landscapeLayout(geometry)
-                // } else {
-                //     // 竖屏布局
-                //     self.portraitLayout(geometry)
-                // }
+            if isLandscape {
+                landscapeLayout
+            } else {
+                portraitLayout
             }
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        // .navigationBarBackButtonHidden(false)
-        // .toolbarBackground(Color.clear, for: .navigationBar)
         .onAppear {
             // 强制竖屏显示
             AppDelegate.orientationLock = .portrait
@@ -55,8 +40,8 @@ struct OpenResultsView: View {
 extension OpenResultsView {
     /// 横屏布局
     @ViewBuilder
-    private func landscapeLayout(_ geometry: GeometryProxy) -> some View {
-        HStack(spacing: geometry.size.width * 0.04) {
+    private var landscapeLayout: some View {
+        HStack(spacing: landscapeSpacing) {
             // 左侧：图片区域
             VStack {
                 Spacer()
@@ -64,149 +49,166 @@ extension OpenResultsView {
                 if let firstPanel = comicResult.panels.first {
                     AsyncImageView(imageUrl: firstPanel.imageUrl)
                         .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: .infinity, maxHeight: geometry.size.height * 0.7)
-                } else {
-                    // 如果没有页面，显示默认封面
-                    Image("封面")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: .infinity, maxHeight: geometry.size.height * 0.7)
-                }
+                        .frame(maxWidth: .infinity, maxHeight: landscapeImageHeight)
+                } 
 
                 Spacer()
             }
-            .frame(width: geometry.size.width * 0.60)
-            .padding(.leading, geometry.size.width * 0.03)
+            .frame(maxWidth: .infinity)
 
             // 右侧：文本和按钮区域
-            VStack(spacing: 0) {
+            VStack(spacing: landscapeContentSpacing) {
                 Spacer()
 
                 // 显示连环画标题
                 Text(comicResult.title)
-                    .font(.custom("WSQuanXing", size: min(geometry.size.width * 0.03, 28)))
+                    .font(.custom("WSQuanXing", size: landscapeTitleSize))
+                    .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                     .fontWeight(.bold)
                     .foregroundColor(Color(hex: "#855C23"))
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
 
-                Spacer()
-                    .frame(maxHeight: geometry.size.height * 0.05)
-
                 // 显示故事摘要作为描述
                 Text(comicResult.summary ?? "暂无故事摘要")
-                    .font(.custom("STKaiti", size: min(geometry.size.width * 0.02, 18)))
+                    .font(.custom("STKaiti", size: landscapeDescriptionSize))
+                    .dynamicTypeSize(...DynamicTypeSize.large)
                     .fontWeight(.bold)
                     .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
                     .opacity(0.6)
                     .multilineTextAlignment(.center)
                     .lineLimit(4)
 
-                Spacer()
-                    .frame(maxHeight: geometry.size.height * 0.08)
-
                 NavigationLink {
                     ComicResultView(comicResult: comicResult)
                 } label: {
-                    ZStack {
-                        Image("翻开画册")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(
-                                width: min(geometry.size.width * 0.25, 240),
-                                height: min(geometry.size.height * 0.08, 45)
-                            )
-                    }
+                    Image("翻开画册")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: landscapeButtonWidth, height: landscapeButtonHeight)
                 }
 
                 Spacer()
             }
-            .frame(width: geometry.size.width * 0.30)
-            .padding(.trailing, geometry.size.width * 0.03)
+            .frame(width: landscapeContentWidth)
         }
+        .padding(.horizontal, landscapePadding)
+        .padding(.vertical, 10)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.vertical, geometry.size.height * 0.03)
     }
 
     /// 竖屏布局
     @ViewBuilder
-    private func portraitLayout(_ geometry: GeometryProxy) -> some View {
-        VStack(spacing: 0) {
-            // 顶部弹性空间 - 响应式
-            Spacer()
-                .frame(minHeight: geometry.size.height * 0.03, maxHeight: geometry.size.height * 0.08)
+    private var portraitLayout: some View {
+        VStack(spacing: portraitSpacing) {
+            // 顶部弹性空间
+            Spacer(minLength: portraitTopSpacing)
 
             // 图片区域
             if let firstPanel = comicResult.panels.first {
                 AsyncImageView(imageUrl: firstPanel.imageUrl)
                     .aspectRatio(contentMode: .fit)
-                    .frame(maxHeight: geometry.size.height * 0.35)
-                    .padding(.horizontal, geometry.size.width * 0.05)
-            } else {
-                // 如果没有页面，显示默认封面
-                Image("封面")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxHeight: geometry.size.height * 0.35)
-                    .padding(.horizontal, geometry.size.width * 0.05)
-            }
+                    .frame(maxHeight: portraitImageHeight)
+            } 
 
             // 图片和文本之间的弹性间距
-            Spacer()
-                .frame(
-                    minHeight: geometry.size.height * 0.02,
-                    maxHeight: geometry.size.height * 0.06
-                )
+            Spacer(minLength: portraitMiddleSpacing)
 
             // 文本区域
-            VStack(spacing: geometry.size.height * 0.02) {
+            VStack(spacing: portraitContentSpacing) {
                 // 显示连环画标题
                 Text(comicResult.title)
-                    .font(.custom("WSQuanXing", size: min(geometry.size.width * 0.07, 32)))
+                    .font(.custom("WSQuanXing", size: portraitTitleSize))
+                    .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                     .fontWeight(.bold)
                     .foregroundColor(Color(hex: "#855C23"))
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, geometry.size.width * 0.05)
 
                 // 显示故事摘要作为描述
                 Text(comicResult.summary ?? "暂无故事摘要")
-                    .font(.custom("STKaiti", size: min(geometry.size.width * 0.045, 20)))
+                    .font(.custom("STKaiti", size: portraitDescriptionSize))
+                    .dynamicTypeSize(...DynamicTypeSize.large)
                     .fontWeight(.bold)
                     .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
                     .opacity(0.6)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, geometry.size.width * 0.05)
                     .lineLimit(5)
-                    .lineSpacing(geometry.size.height * 0.005)
+                    .lineSpacing(4)
             }
 
             // 文本和按钮之间的弹性间距
-            Spacer()
-                .frame(
-                    minHeight: geometry.size.height * 0.03,
-                    maxHeight: geometry.size.height * 0.08
-                )
+            Spacer(minLength: portraitBottomSpacing)
 
             // 按钮区域
             NavigationLink {
                 ComicResultView(comicResult: comicResult)
             } label: {
-                ZStack {
-                    Image("翻开画册")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(
-                            width: min(geometry.size.width * 0.65, 280),
-                            height: min(geometry.size.height * 0.06, 52)
-                        )
-                }
+                Image("翻开画册")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: portraitButtonWidth, height: portraitButtonHeight)
             }
 
-            // 底部弹性空间 - 响应式
-            Spacer()
-                .frame(minHeight: geometry.size.height * 0.04, maxHeight: geometry.size.height * 0.1)
+            // 底部弹性空间
+            Spacer(minLength: portraitEndSpacing)
         }
-        .padding(.horizontal, geometry.size.width * 0.05)
-        .padding(.vertical, geometry.size.height * 0.02)
+        .padding(.horizontal, portraitPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+// MARK: - 响应式属性
+private extension OpenResultsView {
+    var isCompact: Bool {
+        horizontalSizeClass == .compact
+    }
+
+    var isLandscape: Bool {
+        verticalSizeClass == .compact
+    }
+
+    // 竖屏属性
+    var portraitSpacing: CGFloat { isCompact ? 16 : 24 }
+    var portraitTopSpacing: CGFloat { isCompact ? 20 : 40 }
+    var portraitMiddleSpacing: CGFloat { isCompact ? 20 : 30 }
+    var portraitBottomSpacing: CGFloat { isCompact ? 30 : 50 }
+    var portraitEndSpacing: CGFloat { isCompact ? 20 : 40 }
+    var portraitPadding: CGFloat { isCompact ? 20 : 40 }
+    var portraitContentSpacing: CGFloat { isCompact ? 16 : 20 }
+
+    var portraitImageHeight: CGFloat { isCompact ? 280 : 350 }
+    var portraitTitleSize: CGFloat { isCompact ? 28 : 32 }
+    var portraitDescriptionSize: CGFloat { isCompact ? 18 : 20 }
+    var portraitButtonWidth: CGFloat { isCompact ? 250 : 280 }
+    var portraitButtonHeight: CGFloat { isCompact ? 45 : 52 }
+
+    // 横屏属性 (根据设备差异化调整)
+    var landscapeSpacing: CGFloat {
+        horizontalSizeClass == .regular ? 40 : 30
+    }
+    var landscapePadding: CGFloat {
+        horizontalSizeClass == .regular ? 35 : 25
+    }
+    var landscapeContentSpacing: CGFloat {
+        horizontalSizeClass == .regular ? 20 : 15
+    }
+
+    var landscapeImageHeight: CGFloat {
+        horizontalSizeClass == .regular ? 300 : 250
+    }
+    var landscapeTitleSize: CGFloat {
+        horizontalSizeClass == .regular ? 26 : 24
+    }
+    var landscapeDescriptionSize: CGFloat {
+        horizontalSizeClass == .regular ? 18 : 16
+    }
+    var landscapeButtonWidth: CGFloat {
+        horizontalSizeClass == .regular ? 220 : 200
+    }
+    var landscapeButtonHeight: CGFloat {
+        horizontalSizeClass == .regular ? 40 : 35
+    }
+    var landscapeContentWidth: CGFloat {
+        horizontalSizeClass == .regular ? 280 : 240
     }
 }
