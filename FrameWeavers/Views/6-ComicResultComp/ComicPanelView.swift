@@ -98,8 +98,8 @@ private extension ComicPanelView {
 
                 Spacer()
 
-                // 占位符，保持页码居中
-                WatermarkLogoView().opacity(0)
+                // 水印logo
+                WatermarkLogoView()
             }
             .frame(maxWidth: .infinity)
             .frame(height: pageNumberAreaHeight)
