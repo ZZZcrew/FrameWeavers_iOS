@@ -161,9 +161,15 @@ extension ProcessingView {
         horizontalSizeClass == .compact
     }
 
-    /// 是否为横屏模式
+    /// 是否为横屏模式 - 更通用的检测逻辑
     private var isLandscape: Bool {
-        horizontalSizeClass == .compact && verticalSizeClass == .compact
+        // 方法1：主要基于verticalSizeClass检测
+        verticalSizeClass == .compact
+
+        // 备注：这样可以覆盖所有设备的横屏情况：
+        // - iPhone标准尺寸横屏：horizontalSizeClass=.compact, verticalSizeClass=.compact
+        // - iPhone Plus/Max横屏：horizontalSizeClass=.regular, verticalSizeClass=.compact
+        // - iPad横屏：根据分屏情况可能不同，但verticalSizeClass=.compact是可靠指标
     }
 
     // MARK: - 竖屏属性
@@ -176,13 +182,32 @@ extension ProcessingView {
     private var portraitPhotoStackHeight: CGFloat { isCompact ? 250 : 300 }
     private var portraitFilmstripHeight: CGFloat { isCompact ? 100 : 120 }
 
-    // MARK: - 横屏属性 (符合规范：充分利用水平空间)
-    private var landscapeSpacing: CGFloat { 40 }
-    private var landscapePadding: CGFloat { 30 }
-    private var landscapeContentSpacing: CGFloat { 25 }
-    private var landscapePhotoStackHeight: CGFloat { 220 } // 比竖屏compact稍大
-    private var landscapeFilmstripHeight: CGFloat { 90 }   // 比竖屏compact稍大
-    private var landscapeProgressAreaWidth: CGFloat { 280 }
+    // MARK: - 横屏属性 (符合规范：充分利用水平空间，适配不同设备)
+    private var landscapeSpacing: CGFloat {
+        // 根据水平尺寸类调整间距
+        horizontalSizeClass == .regular ? 50 : 40
+    }
+
+    private var landscapePadding: CGFloat {
+        horizontalSizeClass == .regular ? 40 : 30
+    }
+
+    private var landscapeContentSpacing: CGFloat {
+        horizontalSizeClass == .regular ? 30 : 25
+    }
+
+    private var landscapePhotoStackHeight: CGFloat {
+        // 大屏设备横屏时可以更大
+        horizontalSizeClass == .regular ? 250 : 220
+    }
+
+    private var landscapeFilmstripHeight: CGFloat {
+        horizontalSizeClass == .regular ? 100 : 90
+    }
+
+    private var landscapeProgressAreaWidth: CGFloat {
+        horizontalSizeClass == .regular ? 320 : 280
+    }
 }
 
 // MARK: - 事件处理扩展
