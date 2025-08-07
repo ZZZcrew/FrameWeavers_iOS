@@ -5,7 +5,11 @@ struct FlyingImageView: View {
     let flyingImageInfo: FlyingImageInfo?
     let namespace: Namespace.ID
     let baseFrames: [String: BaseFrameData]
-    
+
+    // MARK: - Environment
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
     init(flyingImageInfo: FlyingImageInfo?,
          namespace: Namespace.ID,
          baseFrames: [String: BaseFrameData] = [:]) {
@@ -13,7 +17,38 @@ struct FlyingImageView: View {
         self.namespace = namespace
         self.baseFrames = baseFrames
     }
-    
+
+    // MARK: - Adaptive Properties
+    private var isCompact: Bool {
+        horizontalSizeClass == .compact
+    }
+
+    private var isLandscape: Bool {
+        verticalSizeClass == .compact
+    }
+
+    /// 响应式圆角半径
+    private var adaptiveCornerRadius: CGFloat {
+        if isLandscape {
+            // 横屏时使用较小的圆角
+            return isCompact ? 6 : 8
+        } else {
+            // 竖屏时使用标准圆角
+            return isCompact ? 8 : 10
+        }
+    }
+
+    /// 响应式尺寸缩放因子
+    private var adaptiveScaleFactor: CGFloat {
+        if isLandscape {
+            // 横屏时稍微缩小以适应有限的垂直空间
+            return isCompact ? 0.9 : 0.95
+        } else {
+            // 竖屏时使用标准尺寸
+            return 1.0
+        }
+    }
+
     var body: some View {
         Group {
             if let info = flyingImageInfo {
@@ -26,7 +61,9 @@ struct FlyingImageView: View {
     @ViewBuilder
     private func flyingImageContent(for info: FlyingImageInfo) -> some View {
         let baseFrame = baseFrames[info.id]
-        
+        let adaptiveWidth = info.sourceFrame.width * adaptiveScaleFactor
+        let adaptiveHeight = info.sourceFrame.height * adaptiveScaleFactor
+
         if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
             // 使用基础帧数据的图片
             AsyncImage(url: url) { image in
@@ -34,15 +71,10 @@ struct FlyingImageView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fill)
             } placeholder: {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .overlay(
-                        ProgressView()
-                            .scaleEffect(0.5)
-                    )
+                loadingPlaceholder
             }
-            .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .frame(width: adaptiveWidth, height: adaptiveHeight)
+            .clipShape(RoundedRectangle(cornerRadius: adaptiveCornerRadius))
             .matchedGeometryEffect(id: info.id, in: namespace)
             .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
             .transition(.identity)
@@ -51,26 +83,43 @@ struct FlyingImageView: View {
             Image(info.id)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
-                .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .frame(width: adaptiveWidth, height: adaptiveHeight)
+                .clipShape(RoundedRectangle(cornerRadius: adaptiveCornerRadius))
                 .matchedGeometryEffect(id: info.id, in: namespace)
                 .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
                 .transition(.identity)
         } else {
             // 错误状态显示
-            Rectangle()
-                .fill(Color.orange.opacity(0.3))
-                .overlay(
-                    Text("URL无效")
-                        .font(.caption)
-                        .foregroundColor(.white)
-                )
-                .frame(width: info.sourceFrame.width, height: info.sourceFrame.height)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .matchedGeometryEffect(id: info.id, in: namespace)
-                .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
-                .transition(.identity)
+            errorPlaceholder(width: adaptiveWidth, height: adaptiveHeight, info: info)
         }
+    }
+
+    /// 加载中占位符
+    private var loadingPlaceholder: some View {
+        Rectangle()
+            .fill(Color.gray.opacity(0.3))
+            .overlay(
+                ProgressView()
+                    .scaleEffect(0.5)
+            )
+    }
+
+    /// 错误占位符
+    @ViewBuilder
+    private func errorPlaceholder(width: CGFloat, height: CGFloat, info: FlyingImageInfo) -> some View {
+        Rectangle()
+            .fill(Color.orange.opacity(0.3))
+            .overlay(
+                Text("URL无效")
+                    .font(.caption)
+                    .dynamicTypeSize(...DynamicTypeSize.large)
+                    .foregroundColor(.white)
+            )
+            .frame(width: width, height: height)
+            .clipShape(RoundedRectangle(cornerRadius: adaptiveCornerRadius))
+            .matchedGeometryEffect(id: info.id, in: namespace)
+            .position(x: info.sourceFrame.midX, y: info.sourceFrame.midY)
+            .transition(.identity)
     }
 }
 
@@ -113,20 +162,4 @@ struct FlyingImageController: View {
             galleryViewModel.triggerJumpAnimation(from: frames)
         }
     }
-}
-
-#Preview {
-    @Previewable @Namespace var previewNamespace
-    @Previewable @State var mockFlyingInfo = FlyingImageInfo(
-        id: "Image1",
-        sourceFrame: CGRect(x: 100, y: 100, width: 120, height: 80)
-    )
-    
-    return FlyingImageView(
-        flyingImageInfo: mockFlyingInfo,
-        namespace: previewNamespace,
-        baseFrames: [:]
-    )
-    .frame(width: 400, height: 300)
-    .background(Color.gray.opacity(0.1))
 }
