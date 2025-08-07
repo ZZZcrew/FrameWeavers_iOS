@@ -1,6 +1,7 @@
 import SwiftUI
+import UIKit
 
-/// 互动问题页面视图 - 符合MVVM架构和现代响应式设计规范，支持竖屏横屏响应式切换
+/// 互动问题页面视图 - 符合MVVM架构和现代响应式设计规范，强制横屏显示
 struct QuestionsView: View {
     // MARK: - Environment
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -19,18 +20,43 @@ struct QuestionsView: View {
                 .scaledToFill()
                 .ignoresSafeArea()
 
-            // 根据横竖屏切换布局
-            if isLandscape {
-                landscapeLayout
-            } else {
-                portraitLayout
-            }
+            // 强制横屏布局
+            landscapeLayout
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         // MARK: - 沉浸式体验
         // 1. 隐藏系统覆盖层（如Home Indicator）
         .persistentSystemOverlays(.hidden)
+        .onAppear {
+            // 强制横屏
+            forceLandscapeOrientation()
+        }
+        .onDisappear {
+            // 恢复默认方向设置
+            restoreDefaultOrientation()
+        }
+    }
+    
+    // MARK: - Private Methods
+    /// 强制横屏
+    private func forceLandscapeOrientation() {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .landscape))
+        }
+        
+        // 设置状态栏方向
+        UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
+    }
+    
+    /// 恢复默认方向
+    private func restoreDefaultOrientation() {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
+        }
+        
+        // 恢复状态栏方向
+        UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
     }
 }
 
@@ -59,35 +85,6 @@ private extension QuestionsView {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, landscapeOuterHorizontalPadding)
         .padding(.vertical, landscapeVerticalPadding)
-    }
-    
-    /// 竖屏布局 - 垂直排列布局
-    var portraitLayout: some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: portraitTopSpacing)
-            
-            // 问题内容区域
-            questionContentSection
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: portraitContentMinHeight)
-                .padding(.horizontal, portraitContentHorizontalPadding)
-
-            Spacer(minLength: portraitMiddleSpacing)
-            
-            // "完"字区域
-            completionSection
-                .frame(maxWidth: .infinity)
-                .frame(height: portraitCompletionAreaHeight)
-                .padding(.horizontal, portraitContentHorizontalPadding)
-            
-            Spacer(minLength: portraitBottomSpacing)
-            
-            // 底部水印logo
-            WatermarkLogoView()
-                .padding(.bottom, portraitWatermarkBottomPadding)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, portraitOuterHorizontalPadding)
     }
 }
 
@@ -130,36 +127,19 @@ private extension QuestionsView {
         horizontalSizeClass == .compact
     }
 
-    /// 是否为横屏模式
-    var isLandscape: Bool {
-        verticalSizeClass == .compact
-    }
-
     /// 自适应字体大小（用于问题内容）
     var adaptiveFontSize: CGFloat {
-        if isLandscape {
-            return horizontalSizeClass == .regular ? 20 : 18
-        } else {
-            return isCompact ? 18 : 20
-        }
+        return horizontalSizeClass == .regular ? 20 : 18
     }
 
     /// 完成标记字体大小
     var adaptiveCompletionFontSize: CGFloat {
-        if isLandscape {
-            return horizontalSizeClass == .regular ? 18 : 16
-        } else {
-            return isCompact ? 16 : 18
-        }
+        return horizontalSizeClass == .regular ? 18 : 16
     }
 
     /// 自适应行间距
     var adaptiveLineSpacing: CGFloat {
-        if isLandscape {
-            return horizontalSizeClass == .regular ? 10 : 8
-        } else {
-            return isCompact ? 8 : 10
-        }
+        return horizontalSizeClass == .regular ? 10 : 8
     }
     
     // MARK: - 横屏属性
@@ -199,47 +179,6 @@ private extension QuestionsView {
         horizontalSizeClass == .regular ? 15 : 12
     }
     
-    // MARK: - 竖屏属性
-    
-    /// 竖屏顶部间距
-    var portraitTopSpacing: CGFloat {
-        isCompact ? 30 : 50
-    }
-    
-    /// 竖屏中间间距
-    var portraitMiddleSpacing: CGFloat {
-        isCompact ? 30 : 40
-    }
-    
-    /// 竖屏底部间距
-    var portraitBottomSpacing: CGFloat {
-        isCompact ? 20 : 30
-    }
-
-    /// 竖屏内容最小高度
-    var portraitContentMinHeight: CGFloat {
-        isCompact ? 300 : 350
-    }
-
-    /// 竖屏内容水平边距
-    var portraitContentHorizontalPadding: CGFloat {
-        isCompact ? 30 : 40
-    }
-
-    /// 竖屏外层水平边距
-    var portraitOuterHorizontalPadding: CGFloat {
-        isCompact ? 20 : 30
-    }
-
-    /// 竖屏完成区域高度
-    var portraitCompletionAreaHeight: CGFloat {
-        isCompact ? 60 : 70
-    }
-    
-    /// 竖屏水印底部边距
-    var portraitWatermarkBottomPadding: CGFloat {
-        isCompact ? 20 : 25
-    }
 }
 
 // MARK: - Preview

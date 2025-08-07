@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// 连环画结果视图 - 遵循MVVM架构，只负责UI展示，支持竖屏横屏响应式切换
+/// 连环画结果视图 - 遵循MVVM架构，只负责UI展示，强制横屏显示
 struct ComicResultView: View {
     // MARK: - Environment
     @Environment(\.dismiss) private var dismiss
@@ -19,12 +19,8 @@ struct ComicResultView: View {
 
     var body: some View {
         ZStack {
-            // 根据横竖屏切换布局
-            if isLandscape {
-                landscapeLayout
-            } else {
-                portraitLayout
-            }
+            // 强制横屏布局
+            landscapeLayout
             
             // 阅读菜单栏 - 覆盖在内容之上
             ComicReaderMenuBar(
@@ -49,7 +45,34 @@ struct ComicResultView: View {
         .onAppear {
             // 初始隐藏菜单栏
             viewModel.isNavigationVisible = false
+            // 强制横屏
+            forceLandscapeOrientation()
         }
+        .onDisappear {
+            // 恢复默认方向设置
+            restoreDefaultOrientation()
+        }
+    }
+    
+    // MARK: - Private Methods
+    /// 强制横屏
+    private func forceLandscapeOrientation() {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .landscape))
+        }
+        
+        // 设置状态栏方向
+        UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
+    }
+    
+    /// 恢复默认方向
+    private func restoreDefaultOrientation() {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
+        }
+        
+        // 恢复状态栏方向
+        UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
     }
 }
 
@@ -72,24 +95,6 @@ private extension ComicResultView {
                 .ignoresSafeArea()
         }
     }
-    
-    /// 竖屏布局 - 适合手持阅读
-    var portraitLayout: some View {
-        VStack(spacing: 0) {
-            // 3D翻页内容区域
-            ComicPageController(
-                comicResult: comicResult,
-                viewModel: viewModel
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .background {
-            Image("背景单色")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-        }
-    }
 }
 
 // MARK: - Adaptive Properties
@@ -97,11 +102,6 @@ private extension ComicResultView {
     /// 是否为紧凑尺寸设备
     var isCompact: Bool {
         horizontalSizeClass == .compact
-    }
-
-    /// 是否为横屏模式
-    var isLandscape: Bool {
-        verticalSizeClass == .compact
     }
 }
 
