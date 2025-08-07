@@ -1,9 +1,14 @@
 import SwiftUI
 import UIKit
 
-/// 连环画结果视图 - 遵循MVVM架构，只负责UI展示
+/// 连环画结果视图 - 遵循MVVM架构，只负责UI展示，支持竖屏横屏响应式切换
 struct ComicResultView: View {
+    // MARK: - Environment
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    
+    // MARK: - Properties
     let comicResult: ComicResult
     @StateObject private var viewModel: ComicResultViewModel
 
@@ -14,21 +19,13 @@ struct ComicResultView: View {
 
     var body: some View {
         ZStack {
-            VStack(spacing: 0) {
-                // 3D翻页内容区域
-                ComicPageController(
-                    comicResult: comicResult,
-                    viewModel: viewModel
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // 根据横竖屏切换布局
+            if isLandscape {
+                landscapeLayout
+            } else {
+                portraitLayout
             }
-            .background {
-                Image("背景单色")
-                    .resizable()
-                    .scaledToFill()
-                    .ignoresSafeArea()
-            }
-
+            
             // 阅读菜单栏 - 覆盖在内容之上
             ComicReaderMenuBar(
                 isVisible: $viewModel.isNavigationVisible,
@@ -54,8 +51,62 @@ struct ComicResultView: View {
             viewModel.isNavigationVisible = false
         }
     }
+}
 
-    // MARK: - Private Methods
+// MARK: - Layout Components
+private extension ComicResultView {
+    /// 横屏布局 - 优化的翻页体验
+    var landscapeLayout: some View {
+        VStack(spacing: 0) {
+            // 3D翻页内容区域
+            ComicPageController(
+                comicResult: comicResult,
+                viewModel: viewModel
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .background {
+            Image("背景单色")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+        }
+    }
+    
+    /// 竖屏布局 - 适合手持阅读
+    var portraitLayout: some View {
+        VStack(spacing: 0) {
+            // 3D翻页内容区域
+            ComicPageController(
+                comicResult: comicResult,
+                viewModel: viewModel
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .background {
+            Image("背景单色")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+        }
+    }
+}
+
+// MARK: - Adaptive Properties
+private extension ComicResultView {
+    /// 是否为紧凑尺寸设备
+    var isCompact: Bool {
+        horizontalSizeClass == .compact
+    }
+
+    /// 是否为横屏模式
+    var isLandscape: Bool {
+        verticalSizeClass == .compact
+    }
+}
+
+// MARK: - Private Methods
+extension ComicResultView {
 
     /// 分享功能占位符
     private func showSharePlaceholder() {

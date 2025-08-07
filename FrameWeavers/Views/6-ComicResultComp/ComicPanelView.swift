@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 单独的漫画页面视图组件 - 横屏左右布局，符合MVVM架构和现代响应式设计规范
+/// 单独的漫画页面视图组件 - 支持竖屏横屏响应式布局，符合MVVM架构和现代响应式设计规范
 struct ComicPanelView: View {
     // MARK: - Environment
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -19,21 +19,55 @@ struct ComicPanelView: View {
                 .scaledToFill()
                 .ignoresSafeArea()
 
-            // 主要内容布局 - 移除嵌套GeometryReader，使用现代布局
-            HStack(spacing: adaptiveSpacing) {
-                // 左侧：图片区域
-                imageSection
-                    .frame(maxWidth: .infinity)
-                    .padding(.leading, horizontalPadding)
-
-                // 右侧：文本区域
-                textSection
-                    .frame(width: textAreaWidth)
-                    .padding(.trailing, horizontalPadding)
+            // 根据横竖屏切换布局
+            if isLandscape {
+                landscapeLayout
+            } else {
+                portraitLayout
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.vertical, verticalPadding)
         }
+    }
+}
+
+// MARK: - Layout Components
+private extension ComicPanelView {
+    /// 横屏布局 - 左右分栏
+    var landscapeLayout: some View {
+        HStack(spacing: landscapeSpacing) {
+            // 左侧：图片区域
+            imageSection
+                .frame(maxWidth: .infinity)
+                .padding(.leading, landscapeHorizontalPadding)
+
+            // 右侧：文本区域
+            landscapeTextSection
+                .frame(width: landscapeTextAreaWidth)
+                .padding(.trailing, landscapeHorizontalPadding)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.vertical, landscapeVerticalPadding)
+    }
+    
+    /// 竖屏布局 - 上下分栏
+    var portraitLayout: some View {
+        VStack(spacing: portraitSpacing) {
+            Spacer(minLength: portraitTopSpacing)
+            
+            // 上方：图片区域
+            imageSection
+                .frame(maxWidth: .infinity)
+                .frame(height: portraitImageHeight)
+                .padding(.horizontal, portraitHorizontalPadding)
+
+            Spacer(minLength: portraitMiddleSpacing)
+            
+            // 下方：文本区域
+            portraitTextSection
+                .padding(.horizontal, portraitHorizontalPadding)
+            
+            Spacer(minLength: portraitBottomSpacing)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -52,41 +86,41 @@ private extension ComicPanelView {
         }
     }
 
-    /// 文本区域组件
-    var textSection: some View {
+    /// 横屏文本区域组件
+    var landscapeTextSection: some View {
         VStack(spacing: 0) {
             // 文本内容区域 - "目"字上面的"口"
             VStack {
                 if let narration = panel.narration {
                     Text(narration)
-                        .font(.custom("STKaiti", size: adaptiveFontSize))
+                        .font(.custom("STKaiti", size: landscapeFontSize))
                         .dynamicTypeSize(...DynamicTypeSize.accessibility1) // 限制最大字体
                         .foregroundColor(Color(hex: "#2F2617"))
-                        .lineSpacing(adaptiveLineSpacing)
+                        .lineSpacing(landscapeLineSpacing)
                         .multilineTextAlignment(.center)
                         .lineLimit(nil)
                 } else {
                     // 如果没有叙述文本，显示占位符
-                    VStack(spacing: adaptiveIconSpacing) {
+                    VStack(spacing: landscapeIconSpacing) {
                         Image(systemName: "text.bubble")
-                            .font(.system(size: adaptiveIconSize))
+                            .font(.system(size: landscapeIconSize))
                             .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
                         Text("暂无文本描述")
-                            .font(.custom("STKaiti", size: adaptiveFontSize))
+                            .font(.custom("STKaiti", size: landscapeFontSize))
                             .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                             .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
                     }
                 }
             }
             .frame(maxWidth: .infinity)
-            .frame(minHeight: textContentMinHeight)
-            .padding(.horizontal, textHorizontalPadding)
-            .padding(.top, textTopPadding)
+            .frame(minHeight: landscapeTextContentMinHeight)
+            .padding(.horizontal, landscapeTextHorizontalPadding)
+            .padding(.top, landscapeTextTopPadding)
 
             // 页码区域 - "目"字下面的"口" - 改为VStack布局
             VStack(spacing: 8) {                
                 Text("· \(pageIndex + 1) ·")
-                    .font(.custom("STKaiti", size: adaptivePageNumberFontSize))
+                    .font(.custom("STKaiti", size: landscapePageNumberFontSize))
                     .dynamicTypeSize(...DynamicTypeSize.large) // 页码字体限制范围更小
                     .foregroundColor(Color(hex: "#2F2617"))
                 
@@ -94,8 +128,52 @@ private extension ComicPanelView {
                 WatermarkLogoView()
             }
             .frame(maxWidth: .infinity)
-            .frame(height: pageNumberAreaHeight)
-            .padding(.horizontal, textHorizontalPadding)
+            .frame(height: landscapePageNumberAreaHeight)
+            .padding(.horizontal, landscapeTextHorizontalPadding)
+        }
+    }
+    
+    /// 竖屏文本区域组件
+    var portraitTextSection: some View {
+        VStack(spacing: portraitTextSpacing) {
+            // 文本内容区域
+            VStack {
+                if let narration = panel.narration {
+                    Text(narration)
+                        .font(.custom("STKaiti", size: portraitFontSize))
+                        .dynamicTypeSize(...DynamicTypeSize.accessibility1) // 限制最大字体
+                        .foregroundColor(Color(hex: "#2F2617"))
+                        .lineSpacing(portraitLineSpacing)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(nil)
+                } else {
+                    // 如果没有叙述文本，显示占位符
+                    VStack(spacing: portraitIconSpacing) {
+                        Image(systemName: "text.bubble")
+                            .font(.system(size: portraitIconSize))
+                            .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
+                        Text("暂无文本描述")
+                            .font(.custom("STKaiti", size: portraitFontSize))
+                            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                            .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: portraitTextContentMinHeight)
+            .padding(.horizontal, portraitTextHorizontalPadding)
+
+            // 页码和水印区域
+            VStack(spacing: 8) {                
+                Text("· \(pageIndex + 1) ·")
+                    .font(.custom("STKaiti", size: portraitPageNumberFontSize))
+                    .dynamicTypeSize(...DynamicTypeSize.large)
+                    .foregroundColor(Color(hex: "#2F2617"))
+                
+                // 水印logo
+                WatermarkLogoView()
+            }
+            .frame(maxWidth: .infinity)
         }
     }
 }
@@ -111,71 +189,144 @@ private extension ComicPanelView {
     var isLandscape: Bool {
         verticalSizeClass == .compact
     }
-
-    /// 自适应间距
-    var adaptiveSpacing: CGFloat {
+    
+    // MARK: - 横屏属性
+    
+    /// 横屏间距
+    var landscapeSpacing: CGFloat {
         horizontalSizeClass == .regular ? 40 : 30
     }
 
-    /// 水平边距
-    var horizontalPadding: CGFloat {
+    /// 横屏水平边距
+    var landscapeHorizontalPadding: CGFloat {
         horizontalSizeClass == .regular ? 25 : 20
     }
 
-    /// 垂直边距
-    var verticalPadding: CGFloat {
+    /// 横屏垂直边距
+    var landscapeVerticalPadding: CGFloat {
         20
     }
 
-    /// 文本区域宽度 - 使用固定宽度替代geometry依赖
-    var textAreaWidth: CGFloat {
-        // 根据设备类型设置合理的固定宽度
-        return horizontalSizeClass == .regular ? 280 : 240
+    /// 横屏文本区域宽度
+    var landscapeTextAreaWidth: CGFloat {
+        horizontalSizeClass == .regular ? 280 : 240
     }
 
-    /// 自适应字体大小
-    var adaptiveFontSize: CGFloat {
-        horizontalSizeClass == .regular ? 18 : 16
-    }
-
-    /// 页码字体大小
-    var adaptivePageNumberFontSize: CGFloat {
-        horizontalSizeClass == .regular ? 17 : 16
-    }
-
-    /// 自适应行间距
-    var adaptiveLineSpacing: CGFloat {
-        horizontalSizeClass == .regular ? 8 : 6
-    }
-
-    /// 图标间距
-    var adaptiveIconSpacing: CGFloat {
-        horizontalSizeClass == .regular ? 15 : 12
-    }
-
-    /// 图标大小
-    var adaptiveIconSize: CGFloat {
-        horizontalSizeClass == .regular ? 35 : 30
-    }
-
-    /// 文本内容最小高度
-    var textContentMinHeight: CGFloat {
+    /// 横屏文本内容最小高度
+    var landscapeTextContentMinHeight: CGFloat {
         horizontalSizeClass == .regular ? 220 : 200
     }
 
-    /// 文本水平边距
-    var textHorizontalPadding: CGFloat {
+    /// 横屏文本水平边距
+    var landscapeTextHorizontalPadding: CGFloat {
         horizontalSizeClass == .regular ? 12 : 10
     }
 
-    /// 文本顶部边距
-    var textTopPadding: CGFloat {
+    /// 横屏文本顶部边距
+    var landscapeTextTopPadding: CGFloat {
         horizontalSizeClass == .regular ? 25 : 20
     }
 
-    /// 页码区域高度
-    var pageNumberAreaHeight: CGFloat {
+    /// 横屏页码区域高度
+    var landscapePageNumberAreaHeight: CGFloat {
         horizontalSizeClass == .regular ? 70 : 60
+    }
+    
+    /// 横屏页码字体大小
+    var landscapePageNumberFontSize: CGFloat {
+        horizontalSizeClass == .regular ? 17 : 16
+    }
+    
+    /// 横屏字体大小
+    var landscapeFontSize: CGFloat {
+        horizontalSizeClass == .regular ? 18 : 16
+    }
+
+    /// 横屏行间距
+    var landscapeLineSpacing: CGFloat {
+        horizontalSizeClass == .regular ? 8 : 6
+    }
+
+    /// 横屏图标间距
+    var landscapeIconSpacing: CGFloat {
+        horizontalSizeClass == .regular ? 15 : 12
+    }
+
+    /// 横屏图标大小
+    var landscapeIconSize: CGFloat {
+        horizontalSizeClass == .regular ? 35 : 30
+    }
+    
+    // MARK: - 竖屏属性
+    
+    /// 竖屏间距
+    var portraitSpacing: CGFloat {
+        isCompact ? 20 : 30
+    }
+
+    /// 竖屏顶部间距
+    var portraitTopSpacing: CGFloat {
+        isCompact ? 20 : 30
+    }
+    
+    /// 竖屏中间间距
+    var portraitMiddleSpacing: CGFloat {
+        isCompact ? 20 : 30
+    }
+    
+    /// 竖屏底部间距
+    var portraitBottomSpacing: CGFloat {
+        isCompact ? 20 : 30
+    }
+
+    /// 竖屏水平边距
+    var portraitHorizontalPadding: CGFloat {
+        isCompact ? 20 : 30
+    }
+
+    /// 竖屏图片高度
+    var portraitImageHeight: CGFloat {
+        isCompact ? 300 : 400
+    }
+
+    /// 竖屏字体大小
+    var portraitFontSize: CGFloat {
+        isCompact ? 16 : 18
+    }
+
+    /// 竖屏行间距
+    var portraitLineSpacing: CGFloat {
+        isCompact ? 6 : 8
+    }
+
+    /// 竖屏图标间距
+    var portraitIconSpacing: CGFloat {
+        isCompact ? 12 : 15
+    }
+
+    /// 竖屏图标大小
+    var portraitIconSize: CGFloat {
+        isCompact ? 30 : 35
+    }
+
+    /// 竖屏文本内容最小高度
+    var portraitTextContentMinHeight: CGFloat {
+        isCompact ? 120 : 150
+    }
+
+    /// 竖屏文本水平边距
+    var portraitTextHorizontalPadding: CGFloat {
+        isCompact ? 16 : 20
+    }
+
+    /// 竖屏页码字体大小
+    var portraitPageNumberFontSize: CGFloat {
+        isCompact ? 16 : 17
+    }
+    
+    /// 竖屏文本间距
+    var portraitTextSpacing: CGFloat {
+        isCompact ? 16 : 20
     }
 }
 
@@ -225,6 +376,34 @@ struct ComicPanelView_Previews: PreviewProvider {
             .previewInterfaceOrientation(.landscapeLeft)
             .environment(\.dynamicTypeSize, .accessibility1)
             .previewDisplayName("大字体测试")
+            
+            // iPhone 16 Pro Max 竖屏测试
+            ComicPanelView(
+                panel: ComicPanel(
+                    panelNumber: 1,
+                    imageUrl: "Image1",
+                    narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
+                ),
+                pageIndex: 0,
+                totalPages: 3
+            )
+            .previewDevice("iPhone 16 Pro Max")
+            .previewInterfaceOrientation(.portrait)
+            .previewDisplayName("iPhone 16 Pro Max - 竖屏")
+            
+            // iPad Pro 竖屏测试
+            ComicPanelView(
+                panel: ComicPanel(
+                    panelNumber: 1,
+                    imageUrl: "Image1",
+                    narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
+                ),
+                pageIndex: 0,
+                totalPages: 3
+            )
+            .previewDevice("iPad Pro (12.9-inch) (6th generation)")
+            .previewInterfaceOrientation(.portrait)
+            .previewDisplayName("iPad Pro - 竖屏")
         }
     }
 }
