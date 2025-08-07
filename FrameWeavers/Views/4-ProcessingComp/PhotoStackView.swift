@@ -7,7 +7,7 @@ struct PhotoStackView: View {
     @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     // MARK: - Properties
-    let mainImageName: String
+    @Binding var mainImageName: String
     let stackedImages: [String]
     let namespace: Namespace.ID
     let baseFrames: [String: BaseFrameData] // 基础帧数据映射
@@ -15,11 +15,11 @@ struct PhotoStackView: View {
     // MARK: - Animation State
     @State private var newImageScale: Double = 0.0
 
-    init(mainImageName: String,
+    init(mainImageName: Binding<String>,
          stackedImages: [String],
          namespace: Namespace.ID,
          baseFrames: [String: BaseFrameData] = [:]) {
-        self.mainImageName = mainImageName
+        self._mainImageName = mainImageName
         self.stackedImages = stackedImages
         self.namespace = namespace
         self.baseFrames = baseFrames
@@ -184,12 +184,14 @@ extension PhotoStackView {
 // MARK: - Preview
 struct PhotoStackView_Previews: PreviewProvider {
     @Namespace static var namespace
+    @State static var previewImageName1 = "Image1"
+    @State static var previewImageName2 = "Image2"
 
     static var previews: some View {
         VStack(spacing: 40) {
             // 预览1：基本状态
             PhotoStackView(
-                mainImageName: "Image1",
+                mainImageName: $previewImageName1,
                 stackedImages: [],
                 namespace: namespace,
                 baseFrames: [:]
@@ -198,7 +200,7 @@ struct PhotoStackView_Previews: PreviewProvider {
 
             // 预览2：有堆叠图片
             PhotoStackView(
-                mainImageName: "Image2",
+                mainImageName: $previewImageName2,
                 stackedImages: ["Image1", "Image3"],
                 namespace: namespace,
                 baseFrames: [:]

@@ -119,6 +119,37 @@ class ProcessingGalleryViewModel: ObservableObject {
         startFlyingAnimation(for: imageId)
     }
 
+    /// 直接设置当前图片ID（用于新的状态管理模式）
+    /// - Parameter imageId: 新的图片ID
+    func setCurrentImage(_ imageId: String) {
+        print("🖼️ ProcessingGalleryViewModel: 直接设置当前图片: \(imageId)")
+        
+        // 验证图片ID是否有效
+        let isValidId: Bool
+        if isUsingBaseFrames {
+            isValidId = baseFrames.contains { $0.id.uuidString == imageId }
+        } else if isExampleMode {
+            isValidId = !imageId.isEmpty
+        } else {
+            isValidId = false
+        }
+
+        guard isValidId else {
+            print("❌ 无效的图片ID: \(imageId)")
+            return
+        }
+
+        // 将当前主图片添加到堆叠中（如果不为空且不在堆叠中）
+        if !mainImageName.isEmpty && !stackedImages.contains(mainImageName) {
+            stackedImages.append(mainImageName)
+            print("📚 将当前主图片添加到堆叠: \(mainImageName)")
+        }
+
+        // 设置新的主图片
+        mainImageName = imageId
+        print("🖼️ 设置新的主图片: \(mainImageName)")
+    }
+
     /// 开始飞跃动画
     /// - Parameter imageId: 要飞跃的图片ID
     private func startFlyingAnimation(for imageId: String) {
