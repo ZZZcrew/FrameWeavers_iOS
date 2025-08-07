@@ -35,34 +35,8 @@ struct PhotoStackView: View {
                 let baseFrame = baseFrames[imageName]
 
                 ZStack {
-                    if let baseFrame = baseFrame, let url = baseFrame.thumbnailURL {
-                        AsyncImage(url: url) { image in
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.3))
-                                .overlay(
-                                    ProgressView()
-                                        .scaleEffect(0.5)
-                                )
-                        }
-                    } else if baseFrame == nil {
-                        // 只有在没有基础帧数据时才显示本地图片
-                        Image(imageName)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } else {
-                        // 有基础帧数据但URL无效时显示错误状态
-                        Rectangle()
-                            .fill(Color.orange.opacity(0.3))
-                            .overlay(
-                                Text("URL无效")
-                                    .font(.caption)
-                                    .foregroundColor(.white)
-                            )
-                    }
+                    AsyncImageView(imageUrl: getImageUrl(for: imageName), style: .minimal)
+                        .aspectRatio(contentMode: .fill)
                 }
                 .frame(width: cardWidth, height: cardHeight)
                 .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius))
@@ -78,38 +52,9 @@ struct PhotoStackView: View {
             // 主图卡片
             ZStack {
                 if !mainImageName.isEmpty {
-                    let mainBaseFrame = baseFrames[mainImageName]
-                    if let baseFrame = mainBaseFrame, let url = baseFrame.thumbnailURL {
-                        AsyncImage(url: url) { image in
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.3))
-                                .overlay(
-                                    ProgressView()
-                                        .scaleEffect(0.5)
-                                )
-                        }
+                    AsyncImageView(imageUrl: mainImageUrl, style: .minimal)
+                        .aspectRatio(contentMode: .fill)
                         .matchedGeometryEffect(id: "filmstrip_\(mainImageName)", in: namespace)
-                    } else if mainBaseFrame == nil {
-                        // 只有在没有基础帧数据时才显示本地图片
-                        Image(mainImageName)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .matchedGeometryEffect(id: "filmstrip_\(mainImageName)", in: namespace)
-                    } else {
-                        // 有基础帧数据但URL无效时显示错误状态
-                        Rectangle()
-                            .fill(Color.orange.opacity(0.3))
-                            .overlay(
-                                Text("URL无效")
-                                    .font(.caption)
-                                    .foregroundColor(.white)
-                            )
-                            .matchedGeometryEffect(id: "filmstrip_\(mainImageName)", in: namespace)
-                    }
                 }
             }
             .frame(width: cardWidth, height: cardHeight)
@@ -140,6 +85,22 @@ struct PhotoStackView: View {
                 .zIndex(Double(stackedImages.count + 2))
         }
         .frame(height: containerHeight)
+    }
+
+    // MARK: - Helper Methods
+
+    /// 获取主图片的URL字符串
+    private var mainImageUrl: String {
+        getImageUrl(for: mainImageName)
+    }
+
+    /// 获取指定图片的URL字符串
+    private func getImageUrl(for imageName: String) -> String {
+        if let baseFrame = baseFrames[imageName], let url = baseFrame.thumbnailURL {
+            return url.absoluteString
+        } else {
+            return imageName // 本地图片名称
+        }
     }
 
     // MARK: - Animation Methods

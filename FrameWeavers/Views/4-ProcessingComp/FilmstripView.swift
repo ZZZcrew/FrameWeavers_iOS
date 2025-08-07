@@ -193,98 +193,27 @@ struct FilmFrameView: View {
     let shouldUseMatchedGeometry: Bool
 
     var body: some View {
-        Group {
-            switch displayImage.imageSource {
-            case .local(let name):
-                localImageView(name: name)
-
-            case .remote(let url):
-                remoteImageView(url: url)
-            }
-        }
-        .frame(width: config.frameWidth, height: adaptiveHeight * 0.8) // 帧高度为胶片高度的80%
-        .clipShape(RoundedRectangle(cornerRadius: 4))
-        .if(shouldUseMatchedGeometry) { view in
-            view.matchedGeometryEffect(id: "filmstrip_\(displayImage.id)", in: namespace)
-        }
-        .onTapGesture {
-            onTapped?(displayImage.id)
-        }
-    }
-
-    /// 本地图片视图
-    @ViewBuilder
-    private func localImageView(name: String) -> some View {
-        Image(name)
-            .resizable()
+        AsyncImageView(imageUrl: imageUrl, style: .minimal)
             .aspectRatio(contentMode: .fill)
-    }
-
-    /// 远程图片视图
-    @ViewBuilder
-    private func remoteImageView(url: URL?) -> some View {
-        if let url = url {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                case .failure(_):
-                    // 真实模式下加载失败时显示错误占位符，不使用fallback
-                    errorPlaceholder
-                case .empty:
-                    loadingPlaceholder
-                @unknown default:
-                    loadingPlaceholder
-                }
+            .frame(width: config.frameWidth, height: adaptiveHeight * 0.8) // 帧高度为胶片高度的80%
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+            .if(shouldUseMatchedGeometry) { view in
+                view.matchedGeometryEffect(id: "filmstrip_\(displayImage.id)", in: namespace)
             }
-        } else {
-            errorPlaceholder
+            .onTapGesture {
+                onTapped?(displayImage.id)
+            }
+    }
+
+    /// 获取图片URL字符串
+    private var imageUrl: String {
+        switch displayImage.imageSource {
+        case .local(let name):
+            return name
+        case .remote(let url):
+            return url?.absoluteString ?? displayImage.fallbackName ?? ""
         }
     }
 
-    /// 加载中占位符
-    private var loadingPlaceholder: some View {
-        Rectangle()
-            .fill(Color.gray.opacity(0.3))
-            .overlay(
-                ProgressView()
-                    .scaleEffect(0.5)
-            )
-    }
 
-    /// 错误占位符
-    @ViewBuilder
-    private var errorPlaceholder: some View {
-        if let fallbackName = displayImage.fallbackName {
-            // 示例模式下可以使用fallback
-            Image(fallbackName)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-        } else {
-            // 显示错误提示
-            Rectangle()
-                .fill(Color.red.opacity(0.3))
-                .overlay(
-                    Text("加载失败")
-                        .font(.caption)
-                        .dynamicTypeSize(...DynamicTypeSize.large)
-                        .foregroundColor(.white)
-                )
-        }
-    }
-}
-
-// MARK: - View扩展
-extension View {
-    /// 条件性应用modifier
-    @ViewBuilder
-    func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
-        if condition {
-            transform(self)
-        } else {
-            self
-        }
-    }
 }

@@ -4,8 +4,27 @@ import UIKit
 /// 异步图片加载组件 - 支持本地和网络图片，符合MVVM架构
 struct AsyncImageView: View {
     let imageUrl: String
+    let style: PlaceholderStyle
     @State private var image: UIImage?
     @State private var isLoading = true
+
+    /// 占位符样式枚举
+    enum PlaceholderStyle {
+        case detailed  // 详细模式：显示文字和进度条
+        case minimal   // 简洁模式：只显示简单的占位符
+    }
+
+    /// 便利初始化器 - 默认使用详细模式
+    init(imageUrl: String) {
+        self.imageUrl = imageUrl
+        self.style = .detailed
+    }
+
+    /// 完整初始化器 - 可指定占位符样式
+    init(imageUrl: String, style: PlaceholderStyle) {
+        self.imageUrl = imageUrl
+        self.style = style
+    }
 
     var body: some View {
         Group {
@@ -13,38 +32,72 @@ struct AsyncImageView: View {
                 Image(uiImage: image)
                     .resizable()
             } else if isLoading {
-                // 加载中显示占位符
-                VStack {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                    Text("加载中...")
-                        .font(.custom("STKaiti", size: 12))
-                        .foregroundColor(Color(hex: "#2F2617"))
-                        .padding(.top, 8)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.gray.opacity(0.1))
+                loadingPlaceholder
             } else {
                 // 加载失败显示本地图片或占位符
                 if UIImage(named: imageUrl) != nil {
                     Image(imageUrl)
                         .resizable()
                 } else {
-                    VStack {
-                        Image(systemName: "photo")
-                            .font(.largeTitle)
-                            .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
-                        Text("图片加载失败")
-                            .font(.custom("STKaiti", size: 12))
-                            .foregroundColor(Color(hex: "#2F2617"))
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.gray.opacity(0.1))
+                    errorPlaceholder
                 }
             }
         }
         .onAppear {
             loadImage()
+        }
+    }
+
+    /// 加载中占位符
+    @ViewBuilder
+    private var loadingPlaceholder: some View {
+        switch style {
+        case .detailed:
+            VStack {
+                ProgressView()
+                    .scaleEffect(1.5)
+                Text("加载中...")
+                    .font(.custom("STKaiti", size: 12))
+                    .foregroundColor(Color(hex: "#2F2617"))
+                    .padding(.top, 8)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.gray.opacity(0.1))
+
+        case .minimal:
+            Rectangle()
+                .fill(Color.gray.opacity(0.3))
+                .overlay(
+                    ProgressView()
+                        .scaleEffect(0.5)
+                )
+        }
+    }
+
+    /// 错误占位符
+    @ViewBuilder
+    private var errorPlaceholder: some View {
+        switch style {
+        case .detailed:
+            VStack {
+                Image(systemName: "photo")
+                    .font(.largeTitle)
+                    .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
+                Text("图片加载失败")
+                    .font(.custom("STKaiti", size: 12))
+                    .foregroundColor(Color(hex: "#2F2617"))
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.gray.opacity(0.1))
+
+        case .minimal:
+            Rectangle()
+                .fill(Color.gray.opacity(0.3))
+                .overlay(
+                    Text("加载失败")
+                        .font(.caption)
+                        .foregroundColor(.white)
+                )
         }
     }
 
