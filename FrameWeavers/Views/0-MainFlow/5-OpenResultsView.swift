@@ -120,10 +120,10 @@ extension OpenResultsView {
             VStack(spacing: portraitContentSpacing) {
                 // 显示连环画标题
                 Text(comicResult.title)
-                    .font(.custom("WSQuanXing", size: portraitTitleSize))
+                    .font(.custom("STKaiti", size: portraitTitleSize))
                     .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                     .fontWeight(.bold)
-                    .foregroundColor(Color(hex: "#855C23"))
+                    .foregroundColor(Color(hex: "#2F2617"))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, portraitTextPadding)
 
