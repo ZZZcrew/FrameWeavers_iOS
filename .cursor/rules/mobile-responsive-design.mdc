@@ -50,7 +50,11 @@ struct ModernResponsiveView: View {
 // MARK: - Adaptive Properties
 private extension ModernResponsiveView {
     var isCompact: Bool {
-        horizontalSizeClass == .compact || verticalSizeClass == .compact
+        horizontalSizeClass == .compact
+    }
+
+    var isLandscape: Bool {
+        verticalSizeClass == .compact
     }
 
     var adaptiveSpacing: CGFloat { isCompact ? 16 : 24 }
@@ -107,48 +111,117 @@ Text("内容")
 @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 @Environment(\.verticalSizeClass) private var verticalSizeClass
 
-// 简洁的响应式判断
+// 设备尺寸判断
 var isCompact: Bool {
     horizontalSizeClass == .compact
 }
 
-// 基于Size Classes的布局
+// 横竖屏判断 (推荐用于布局切换)
+var isLandscape: Bool {
+    verticalSizeClass == .compact
+}
+```
+
+### 两种布局判断策略
+
+#### 1. 横竖屏导向布局 (推荐)
+```swift
+// ✅ 推荐：基于横竖屏的布局判断
+var body: some View {
+    if verticalSizeClass == .compact {
+        landscapeLayout  // 横屏模式 (所有设备)
+    } else {
+        portraitLayout   // 竖屏模式
+    }
+}
+```
+
+#### 2. 设备尺寸导向布局
+```swift
+// ✅ 适用场景：需要区分设备尺寸时
 var body: some View {
     if horizontalSizeClass == .compact {
         compactLayout    // iPhone竖屏、iPad分屏
     } else {
-        regularLayout    // iPad横屏、iPhone横屏
+        regularLayout    // iPad横屏、大屏iPhone横屏
     }
 }
 ```
 
 ### 设备适配策略
-- **iPhone**: 主要使用 `.compact` 水平尺寸类
+- **iPhone标准尺寸**: 竖屏 `horizontalSizeClass=.compact`，横屏 `horizontalSizeClass=.compact`
+- **iPhone大屏尺寸**: 竖屏 `horizontalSizeClass=.compact`，横屏 `horizontalSizeClass=.regular`
 - **iPad**: 主要使用 `.regular` 水平尺寸类
 - **分屏/多窗口**: 自动适配为 `.compact`
-- **横竖屏**: 通过 `verticalSizeClass` 判断
+- **横竖屏**: 通过 `verticalSizeClass == .compact` 判断横屏
+
+## 📱 设备差异化适配
+
+### 不同设备的Size Classes表现
+```swift
+// iPhone 14 Pro (标准尺寸)
+// 竖屏：horizontalSizeClass=.compact, verticalSizeClass=.regular
+// 横屏：horizontalSizeClass=.compact, verticalSizeClass=.compact
+
+// iPhone 14 Pro Max (大屏尺寸)
+// 竖屏：horizontalSizeClass=.compact, verticalSizeClass=.regular
+// 横屏：horizontalSizeClass=.regular, verticalSizeClass=.compact
+
+// iPad Pro
+// 竖屏：horizontalSizeClass=.regular, verticalSizeClass=.regular
+// 横屏：horizontalSizeClass=.regular, verticalSizeClass=.compact
+```
+
+### 设备差异化响应式属性
+```swift
+// ✅ 推荐：根据horizontalSizeClass进行设备差异化
+private var adaptiveSpacing: CGFloat {
+    if isLandscape {
+        // 横屏时根据设备调整
+        return horizontalSizeClass == .regular ? 40 : 30
+    } else {
+        // 竖屏时根据设备调整
+        return isCompact ? 16 : 24
+    }
+}
+
+private var adaptiveComponentSize: CGFloat {
+    if isLandscape {
+        // 大屏设备横屏时可以使用更大的组件
+        return horizontalSizeClass == .regular ? 280 : 240
+    } else {
+        return isCompact ? 200 : 250
+    }
+}
+```
 
 ## 🔄 横屏适配最佳实践
 
 ### 横屏检测的正确方法
 ```swift
-// ✅ 正确：基于Size Classes的横屏检测
+// ✅ 推荐：通用横屏检测 (适用于所有设备)
 var isLandscape: Bool {
-    horizontalSizeClass == .compact && verticalSizeClass == .compact
+    verticalSizeClass == .compact
 }
 
-// ❌ 错误：单独使用verticalSizeClass
+// ❌ 过时：过于严格的检测方法
 var isLandscape: Bool {
-    verticalSizeClass == .compact  // 不可靠
+    horizontalSizeClass == .compact && verticalSizeClass == .compact  // 只适用于标准iPhone
 }
+
+// 📱 设备差异说明：
+// - iPhone 14 Pro等标准设备横屏：horizontalSizeClass=.compact, verticalSizeClass=.compact
+// - iPhone 14 Pro Max等大屏设备横屏：horizontalSizeClass=.regular, verticalSizeClass=.compact
+// - iPad横屏：通常 horizontalSizeClass=.regular, verticalSizeClass=.compact
+// 因此使用 verticalSizeClass == .compact 是最可靠的横屏检测方法
 ```
 
 ### 横屏布局策略
 ```swift
-// ✅ 推荐：双布局系统
+// ✅ 推荐：通用双布局系统
 var body: some View {
-    if horizontalSizeClass == .compact && verticalSizeClass == .compact {
-        // iPhone横屏：使用HStack水平布局
+    if verticalSizeClass == .compact {
+        // 横屏模式：使用HStack水平布局 (适用于所有设备)
         landscapeLayout
     } else {
         // 竖屏或iPad：使用VStack垂直布局
@@ -289,7 +362,7 @@ ViewThatFits {
 private extension View {
     var isCompact: Bool { horizontalSizeClass == .compact }
     var isLandscape: Bool {
-        horizontalSizeClass == .compact && verticalSizeClass == .compact
+        verticalSizeClass == .compact  // 修正：使用统一的横屏检测
     }
 
     // 竖屏属性
@@ -297,10 +370,16 @@ private extension View {
     var portraitPadding: CGFloat { isCompact ? 20 : 40 }
     var portraitIconSize: CGFloat { isCompact ? 70 : 90 }
 
-    // 横屏属性 (可以比竖屏稍大)
-    var landscapeSpacing: CGFloat { 30 }
-    var landscapePadding: CGFloat { 25 }
-    var landscapeIconSize: CGFloat { 80 }  // 比竖屏compact(70)大
+    // 横屏属性 (根据设备差异化调整)
+    var landscapeSpacing: CGFloat {
+        horizontalSizeClass == .regular ? 40 : 30
+    }
+    var landscapePadding: CGFloat {
+        horizontalSizeClass == .regular ? 35 : 25
+    }
+    var landscapeIconSize: CGFloat {
+        horizontalSizeClass == .regular ? 90 : 80  // 大屏设备更大
+    }
 }
 
 // ✅ 使用系统间距
@@ -322,10 +401,10 @@ struct AdaptiveView: View {
         ZStack {
             backgroundImage
 
-            if horizontalSizeClass == .compact && verticalSizeClass == .compact {
-                landscapeLayout  // iPhone横屏
+            if verticalSizeClass == .compact {
+                landscapeLayout  // 横屏模式 (所有设备)
             } else {
-                portraitLayout   // 竖屏或iPad
+                portraitLayout   // 竖屏模式
             }
         }
     }
