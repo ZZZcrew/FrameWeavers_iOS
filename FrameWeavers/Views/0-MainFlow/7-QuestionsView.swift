@@ -8,7 +8,6 @@ struct QuestionsView: View {
 
     // MARK: - Properties
     let questions: [String]
-    let geometry: GeometryProxy
     let pageIndex: Int
     let totalPages: Int
 
@@ -151,52 +150,43 @@ struct QuestionsView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             // iPhone 16 Pro Max 横屏测试
-            GeometryReader { geometry in
-                QuestionsView(
-                    questions: [
-                        "你觉得小明为什么会选择\"阳光\"这个名字给小狗？",
-                        "如果你是小明，你会如何处理这只突然出现的流浪狗？",
-                        "这个故事告诉我们什么关于友谊和善良的道理？"
-                    ],
-                    geometry: geometry,
-                    pageIndex: 3,
-                    totalPages: 4
-                )
-            }
+            QuestionsView(
+                questions: [
+                    "你觉得小明为什么会选择\"阳光\"这个名字给小狗？",
+                    "如果你是小明，你会如何处理这只突然出现的流浪狗？",
+                    "这个故事告诉我们什么关于友谊和善良的道理？"
+                ],
+                pageIndex: 3,
+                totalPages: 4
+            )
             .previewDevice("iPhone 16 Pro Max")
             .previewInterfaceOrientation(.landscapeLeft)
             .previewDisplayName("iPhone 16 Pro Max - 横屏")
 
             // iPad Pro 横屏测试
-            GeometryReader { geometry in
-                QuestionsView(
-                    questions: [
-                        "你觉得小明为什么会选择\"阳光\"这个名字给小狗？",
-                        "如果你是小明，你会如何处理这只突然出现的流浪狗？",
-                        "这个故事告诉我们什么关于友谊和善良的道理？"
-                    ],
-                    geometry: geometry,
-                    pageIndex: 3,
-                    totalPages: 4
-                )
-            }
+            QuestionsView(
+                questions: [
+                    "你觉得小明为什么会选择\"阳光\"这个名字给小狗？",
+                    "如果你是小明，你会如何处理这只突然出现的流浪狗？",
+                    "这个故事告诉我们什么关于友谊和善良的道理？"
+                ],
+                pageIndex: 3,
+                totalPages: 4
+            )
             .previewDevice("iPad Pro (12.9-inch) (6th generation)")
             .previewInterfaceOrientation(.landscapeLeft)
             .previewDisplayName("iPad Pro - 横屏")
 
             // 动态字体测试
-            GeometryReader { geometry in
-                QuestionsView(
-                    questions: [
-                        "你觉得小明为什么会选择\"阳光\"这个名字给小狗？",
-                        "如果你是小明，你会如何处理这只突然出现的流浪狗？",
-                        "这个故事告诉我们什么关于友谊和善良的道理？"
-                    ],
-                    geometry: geometry,
-                    pageIndex: 3,
-                    totalPages: 4
-                )
-            }
+            QuestionsView(
+                questions: [
+                    "你觉得小明为什么会选择\"阳光\"这个名字给小狗？",
+                    "如果你是小明，你会如何处理这只突然出现的流浪狗？",
+                    "这个故事告诉我们什么关于友谊和善良的道理？"
+                ],
+                pageIndex: 3,
+                totalPages: 4
+            )
             .previewDevice("iPhone 16 Pro Max")
             .previewInterfaceOrientation(.landscapeLeft)
             .environment(\.dynamicTypeSize, .accessibility1)

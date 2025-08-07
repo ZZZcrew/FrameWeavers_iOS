@@ -5,7 +5,6 @@ import UIKit
 struct ComicPageController: UIViewControllerRepresentable {
     let comicResult: ComicResult
     @ObservedObject var viewModel: ComicResultViewModel
-    let geometry: GeometryProxy
     
     // 计算总页数
     private var totalPages: Int {
@@ -69,7 +68,6 @@ struct ComicPageController: UIViewControllerRepresentable {
                     panel: parent.comicResult.panels[index],
                     pageIndex: index,
                     totalPages: parent.totalPages,
-                    geometry: parent.geometry,
                     viewModel: parent.viewModel
                 )
             } else {
@@ -78,7 +76,6 @@ struct ComicPageController: UIViewControllerRepresentable {
                     questions: parent.comicResult.finalQuestions,
                     pageIndex: index,
                     totalPages: parent.totalPages,
-                    geometry: parent.geometry,
                     viewModel: parent.viewModel
                 )
             }
@@ -127,12 +124,10 @@ struct ComicPageController: UIViewControllerRepresentable {
 /// 基础视图控制器 - 提供公共属性和方法
 class ComicBaseViewController: UIViewController {
     let pageIndex: Int
-    let geometry: GeometryProxy
     weak var viewModel: ComicResultViewModel?
     
-    init(pageIndex: Int, geometry: GeometryProxy, viewModel: ComicResultViewModel) {
+    init(pageIndex: Int, viewModel: ComicResultViewModel) {
         self.pageIndex = pageIndex
-        self.geometry = geometry
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }

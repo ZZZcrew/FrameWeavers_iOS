@@ -8,7 +8,6 @@ struct ComicPanelView: View {
 
     // MARK: - Properties
     let panel: ComicPanel
-    let geometry: GeometryProxy
     let pageIndex: Int
     let totalPages: Int
 
@@ -128,12 +127,10 @@ private extension ComicPanelView {
         20
     }
 
-    /// 文本区域宽度
+    /// 文本区域宽度 - 使用固定宽度替代geometry依赖
     var textAreaWidth: CGFloat {
-        // 基于屏幕宽度的比例，但设置最小宽度
-        let screenWidth = geometry.size.width
-        let calculatedWidth = screenWidth * (horizontalSizeClass == .regular ? 0.35 : 0.30)
-        return max(120, calculatedWidth) // 确保最小宽度120
+        // 根据设备类型设置合理的固定宽度
+        return horizontalSizeClass == .regular ? 280 : 240
     }
 
     /// 自适应字体大小
@@ -187,52 +184,43 @@ struct ComicPanelView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             // iPhone 16 Pro Max 横屏测试
-            GeometryReader { geometry in
-                ComicPanelView(
-                    panel: ComicPanel(
-                        panelNumber: 1,
-                        imageUrl: "Image1",
-                        narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
-                    ),
-                    geometry: geometry,
-                    pageIndex: 0,
-                    totalPages: 3
-                )
-            }
+            ComicPanelView(
+                panel: ComicPanel(
+                    panelNumber: 1,
+                    imageUrl: "Image1",
+                    narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
+                ),
+                pageIndex: 0,
+                totalPages: 3
+            )
             .previewDevice("iPhone 16 Pro Max")
             .previewInterfaceOrientation(.landscapeLeft)
             .previewDisplayName("iPhone 16 Pro Max - 横屏")
 
             // iPad Pro 横屏测试
-            GeometryReader { geometry in
-                ComicPanelView(
-                    panel: ComicPanel(
-                        panelNumber: 1,
-                        imageUrl: "Image1",
-                        narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
-                    ),
-                    geometry: geometry,
-                    pageIndex: 0,
-                    totalPages: 3
-                )
-            }
+            ComicPanelView(
+                panel: ComicPanel(
+                    panelNumber: 1,
+                    imageUrl: "Image1",
+                    narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
+                ),
+                pageIndex: 0,
+                totalPages: 3
+            )
             .previewDevice("iPad Pro (12.9-inch) (6th generation)")
             .previewInterfaceOrientation(.landscapeLeft)
             .previewDisplayName("iPad Pro - 横屏")
 
             // 动态字体测试
-            GeometryReader { geometry in
-                ComicPanelView(
-                    panel: ComicPanel(
-                        panelNumber: 1,
-                        imageUrl: "Image1",
-                        narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
-                    ),
-                    geometry: geometry,
-                    pageIndex: 0,
-                    totalPages: 3
-                )
-            }
+            ComicPanelView(
+                panel: ComicPanel(
+                    panelNumber: 1,
+                    imageUrl: "Image1",
+                    narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
+                ),
+                pageIndex: 0,
+                totalPages: 3
+            )
             .previewDevice("iPhone 16 Pro Max")
             .previewInterfaceOrientation(.landscapeLeft)
             .environment(\.dynamicTypeSize, .accessibility1)

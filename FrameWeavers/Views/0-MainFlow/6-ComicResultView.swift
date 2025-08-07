@@ -13,38 +13,34 @@ struct ComicResultView: View {
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                VStack(spacing: 0) {
-                    // 3D翻页内容区域
-                    ComicPageController(
-                        comicResult: comicResult,
-                        viewModel: viewModel,
-                        geometry: geometry
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                .background {
-                    Image("背景单色")
-                        .resizable()
-                        .scaledToFill()
-                        .ignoresSafeArea()
-                }
-
-                // 阅读菜单栏 - 覆盖在内容之上
-                ComicReaderMenuBar(
-                    isVisible: $viewModel.isNavigationVisible,
-                    geometry: geometry,
-                    onShareTapped: {
-                        // 分享功能占位符 - 显示提示
-                        showSharePlaceholder()
-                    },
-                    onRecordTapped: {
-                        // 记录功能占位符 - 显示提示
-                        showRecordPlaceholder()
-                    }
+        ZStack {
+            VStack(spacing: 0) {
+                // 3D翻页内容区域
+                ComicPageController(
+                    comicResult: comicResult,
+                    viewModel: viewModel
                 )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .background {
+                Image("背景单色")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+            }
+
+            // 阅读菜单栏 - 覆盖在内容之上
+            ComicReaderMenuBar(
+                isVisible: $viewModel.isNavigationVisible,
+                onShareTapped: {
+                    // 分享功能占位符 - 显示提示
+                    showSharePlaceholder()
+                },
+                onRecordTapped: {
+                    // 记录功能占位符 - 显示提示
+                    showRecordPlaceholder()
+                }
+            )
         }
         .ignoresSafeArea()
         .navigationTitle("")
@@ -54,13 +50,6 @@ struct ComicResultView: View {
         // 1. 隐藏系统覆盖层（如Home Indicator）
         .persistentSystemOverlays(.hidden)
         .onAppear {
-            // 强制横屏显示
-            AppDelegate.orientationLock = .landscape
-            UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .landscape))
-            }
-
             // 初始隐藏菜单栏
             viewModel.isNavigationVisible = false
         }

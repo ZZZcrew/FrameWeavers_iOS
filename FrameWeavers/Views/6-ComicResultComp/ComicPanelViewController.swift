@@ -6,10 +6,10 @@ class ComicPanelViewController: ComicBaseViewController {
     let panel: ComicPanel
     let totalPages: Int
     
-    init(panel: ComicPanel, pageIndex: Int, totalPages: Int, geometry: GeometryProxy, viewModel: ComicResultViewModel) {
+    init(panel: ComicPanel, pageIndex: Int, totalPages: Int, viewModel: ComicResultViewModel) {
         self.panel = panel
         self.totalPages = totalPages
-        super.init(pageIndex: pageIndex, geometry: geometry, viewModel: viewModel)
+        super.init(pageIndex: pageIndex, viewModel: viewModel)
     }
     
     required init?(coder: NSCoder) {
@@ -22,11 +22,10 @@ class ComicPanelViewController: ComicBaseViewController {
     }
     
     private func setupView() {
-        // 创建SwiftUI视图并包装
+        // 创建SwiftUI视图并包装 - 移除geometry依赖
         let hostingController = UIHostingController(
             rootView: ComicPanelView(
                 panel: panel,
-                geometry: geometry,
                 pageIndex: pageIndex,
                 totalPages: totalPages
             )
@@ -58,10 +57,10 @@ class QuestionsViewController: ComicBaseViewController {
     let questions: [String]
     let totalPages: Int
     
-    init(questions: [String], pageIndex: Int, totalPages: Int, geometry: GeometryProxy, viewModel: ComicResultViewModel) {
+    init(questions: [String], pageIndex: Int, totalPages: Int, viewModel: ComicResultViewModel) {
         self.questions = questions
         self.totalPages = totalPages
-        super.init(pageIndex: pageIndex, geometry: geometry, viewModel: viewModel)
+        super.init(pageIndex: pageIndex, viewModel: viewModel)
     }
     
     required init?(coder: NSCoder) {
@@ -74,11 +73,10 @@ class QuestionsViewController: ComicBaseViewController {
     }
     
     private func setupView() {
-        // 创建SwiftUI视图并包装
+        // 创建SwiftUI视图并包装 - 移除geometry依赖
         let hostingController = UIHostingController(
             rootView: QuestionsView(
                 questions: questions,
-                geometry: geometry,
                 pageIndex: pageIndex,
                 totalPages: totalPages
             )

@@ -5,7 +5,6 @@ import SwiftUI
 struct ComicReaderMenuBar: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var isVisible: Bool
-    let geometry: GeometryProxy
     
     // 按钮动作
     let onShareTapped: () -> Void
@@ -89,23 +88,20 @@ struct ComicReaderMenuBar: View {
 // MARK: - Preview
 
 #Preview {
-    GeometryReader { geometry in
-        ZStack {
-            // 模拟背景
-            Color.brown.opacity(0.3)
-                .ignoresSafeArea()
-            
-            ComicReaderMenuBar(
-                isVisible: .constant(true),
-                geometry: geometry,
-                onShareTapped: {
-                    print("分享按钮被点击")
-                },
-                onRecordTapped: {
-                    print("记录按钮被点击")
-                }
-            )
-        }
+    ZStack {
+        // 模拟背景
+        Color.brown.opacity(0.3)
+            .ignoresSafeArea()
+        
+        ComicReaderMenuBar(
+            isVisible: .constant(true),
+            onShareTapped: {
+                print("分享按钮被点击")
+            },
+            onRecordTapped: {
+                print("记录按钮被点击")
+            }
+        )
     }
     .preferredColorScheme(.dark)
 }
