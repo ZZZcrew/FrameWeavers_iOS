@@ -10,6 +10,10 @@ class ProcessingGalleryViewModel: ObservableObject {
     @Published var isUsingBaseFrames: Bool = false // 是否使用基础帧
     @Published var isExampleMode: Bool = false // 是否为示例模式
 
+    // MARK: - 飞跃动画状态
+    @Published var flyingImageInfo: FlyingImageInfo? // 当前飞跃的图片信息
+    @Published var isAnimating: Bool = false // 是否正在执行动画
+
     let imageNames = ["Image1", "Image2", "Image3", "Image4"]
     private var cancellables = Set<AnyCancellable>() // Combine订阅管理
 
@@ -73,14 +77,14 @@ class ProcessingGalleryViewModel: ObservableObject {
 
     // 移除了 createLoadingPlaceholders 方法，现在由 FilmstripView 内部处理
 
-    /// 选择图片并传递到PhotoStackView
+    /// 选择图片并传递到PhotoStackView（带飞跃动画）
     /// - Parameter imageId: 选中的图片ID
     func selectImage(_ imageId: String) {
         print("🖱️ ProcessingGalleryViewModel: 用户选择图片: \(imageId)")
 
-        // 如果图片已经是主图片或已在堆叠中，跳过
-        if imageId == mainImageName || stackedImages.contains(imageId) {
-            print("⚠️ 图片已存在，跳过选择")
+        // 如果正在动画中或图片已经是主图片或已在堆叠中，跳过
+        if isAnimating || imageId == mainImageName || stackedImages.contains(imageId) {
+            print("⚠️ 图片已存在或正在动画中，跳过选择")
             return
         }
 
@@ -102,6 +106,47 @@ class ProcessingGalleryViewModel: ObservableObject {
             return
         }
 
+        // 开始飞跃动画
+        startFlyingAnimation(for: imageId)
+    }
+
+    /// 开始飞跃动画
+    /// - Parameter imageId: 要飞跃的图片ID
+    private func startFlyingAnimation(for imageId: String) {
+        print("🚀 开始飞跃动画: \(imageId)")
+
+        // 创建飞跃图片信息
+        let imageSource: ImageSource
+        let baseFrame: BaseFrameData?
+
+        if isUsingBaseFrames {
+            // 真实模式：使用基础帧数据
+            baseFrame = baseFrames.first { $0.id.uuidString == imageId }
+            imageSource = .remote(url: baseFrame?.thumbnailURL)
+        } else {
+            // 示例模式或默认模式：使用本地图片
+            baseFrame = nil
+            imageSource = .local(name: imageId)
+        }
+
+        flyingImageInfo = FlyingImageInfo(
+            id: imageId,
+            imageSource: imageSource,
+            baseFrame: baseFrame
+        )
+        isAnimating = true
+
+        // 动画完成后的处理
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            self.completeFlyingAnimation(for: imageId)
+        }
+    }
+
+    /// 完成飞跃动画
+    /// - Parameter imageId: 飞跃完成的图片ID
+    private func completeFlyingAnimation(for imageId: String) {
+        print("✅ 完成飞跃动画: \(imageId)")
+
         // 将当前主图片添加到堆叠中（如果不为空且不在堆叠中）
         if !mainImageName.isEmpty && !stackedImages.contains(mainImageName) {
             stackedImages.append(mainImageName)
@@ -111,6 +156,10 @@ class ProcessingGalleryViewModel: ObservableObject {
         // 设置新的主图片
         mainImageName = imageId
         print("🖼️ 设置新的主图片: \(mainImageName)")
+
+        // 清理动画状态
+        flyingImageInfo = nil
+        isAnimating = false
     }
 
 }

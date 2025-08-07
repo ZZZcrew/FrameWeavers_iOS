@@ -8,6 +8,7 @@ struct FilmstripView: View {
     let comicResult: ComicResult?  // 示例模式下的画册数据
     let customScrollSpeed: Double?  // 自定义滚动速度
     let onImageTapped: ((String) -> Void)?  // 图片点击回调
+    let namespace: Namespace.ID  // 用于matchedGeometryEffect
     @State private var scrollOffset: CGFloat = 0
 
     // MARK: - Environment
@@ -19,13 +20,15 @@ struct FilmstripView: View {
          config: FilmstripConfiguration = .default,
          comicResult: ComicResult? = nil,
          customScrollSpeed: Double? = nil,
-         onImageTapped: ((String) -> Void)? = nil) {
+         onImageTapped: ((String) -> Void)? = nil,
+         namespace: Namespace.ID) {
         self.baseFrames = baseFrames
         self.isExampleMode = isExampleMode
         self.config = config
         self.comicResult = comicResult
         self.customScrollSpeed = customScrollSpeed
         self.onImageTapped = onImageTapped
+        self.namespace = namespace
     }
 
     // MARK: - Adaptive Properties
@@ -118,7 +121,9 @@ struct FilmstripView: View {
                                 displayImage: displayImage,
                                 config: config,
                                 adaptiveHeight: adaptiveFilmstripHeight,
-                                onTapped: onImageTapped
+                                onTapped: onImageTapped,
+                                namespace: namespace,
+                                shouldUseMatchedGeometry: index < currentImages.count // 只有第一轮的图片使用matchedGeometry
                             )
                         }
                     }
@@ -180,6 +185,8 @@ struct FilmFrameView: View {
     let config: FilmstripConfiguration
     let adaptiveHeight: CGFloat
     let onTapped: ((String) -> Void)?
+    let namespace: Namespace.ID
+    let shouldUseMatchedGeometry: Bool
 
     var body: some View {
         Group {
@@ -193,6 +200,9 @@ struct FilmFrameView: View {
         }
         .frame(width: config.frameWidth, height: adaptiveHeight * 0.8) // 帧高度为胶片高度的80%
         .clipShape(RoundedRectangle(cornerRadius: 4))
+        .if(shouldUseMatchedGeometry) { view in
+            view.matchedGeometryEffect(id: "filmstrip_\(displayImage.id)", in: namespace)
+        }
         .onTapGesture {
             onTapped?(displayImage.id)
         }
@@ -258,6 +268,19 @@ struct FilmFrameView: View {
                         .dynamicTypeSize(...DynamicTypeSize.large)
                         .foregroundColor(.white)
                 )
+        }
+    }
+}
+
+// MARK: - View扩展
+extension View {
+    /// 条件性应用modifier
+    @ViewBuilder
+    func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
         }
     }
 }

@@ -89,13 +89,13 @@ struct PhotoStackView: View {
                                         .scaleEffect(0.5)
                                 )
                         }
-                        .matchedGeometryEffect(id: mainImageName, in: namespace)
+                        .matchedGeometryEffect(id: "filmstrip_\(mainImageName)", in: namespace)
                     } else if mainBaseFrame == nil {
                         // 只有在没有基础帧数据时才显示本地图片
                         Image(mainImageName)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .matchedGeometryEffect(id: mainImageName, in: namespace)
+                            .matchedGeometryEffect(id: "filmstrip_\(mainImageName)", in: namespace)
                     } else {
                         // 有基础帧数据但URL无效时显示错误状态
                         Rectangle()
@@ -105,7 +105,7 @@ struct PhotoStackView: View {
                                     .font(.caption)
                                     .foregroundColor(.white)
                             )
-                            .matchedGeometryEffect(id: mainImageName, in: namespace)
+                            .matchedGeometryEffect(id: "filmstrip_\(mainImageName)", in: namespace)
                     }
                 }
             }

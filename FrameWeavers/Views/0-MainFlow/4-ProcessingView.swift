@@ -11,6 +11,7 @@ struct ProcessingView: View {
     @ObservedObject var viewModel: VideoUploadViewModel
     @StateObject private var galleryViewModel = ProcessingGalleryViewModel()
     @Namespace private var galleryNamespace
+    @Namespace private var flyingAnimationNamespace
     @State private var navigateToResults = false
 
     var body: some View {
@@ -24,6 +25,9 @@ struct ProcessingView: View {
             } else {
                 portraitLayout
             }
+
+            // 飞跃动画层
+            flyingAnimationLayer
         }
         .onAppear {
             handleViewAppear()
@@ -72,6 +76,19 @@ extension ProcessingView {
             .ignoresSafeArea()
     }
 
+    /// 飞跃动画层
+    private var flyingAnimationLayer: some View {
+        Group {
+            if let flyingImageInfo = galleryViewModel.flyingImageInfo {
+                FlyingImageView(
+                    flyingImageInfo: flyingImageInfo,
+                    namespace: flyingAnimationNamespace
+                )
+                .zIndex(1000) // 确保在最上层
+            }
+        }
+    }
+
     /// 竖屏布局 - 使用现代响应式设计
     private var portraitLayout: some View {
         VStack(spacing: portraitSpacing) {
@@ -81,7 +98,7 @@ extension ProcessingView {
             PhotoStackView(
                 mainImageName: galleryViewModel.mainImageName,
                 stackedImages: galleryViewModel.stackedImages,
-                namespace: galleryNamespace,
+                namespace: flyingAnimationNamespace,
                 baseFrames: galleryViewModel.baseFrameDataMap
             )
             .frame(maxHeight: portraitPhotoStackHeight)
@@ -96,8 +113,11 @@ extension ProcessingView {
                 comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult,
                 customScrollSpeed: 50.0,
                 onImageTapped: { imageId in
-                    galleryViewModel.selectImage(imageId)
-                }
+                    withAnimation(.easeInOut(duration: 0.8)) {
+                        galleryViewModel.selectImage(imageId)
+                    }
+                },
+                namespace: flyingAnimationNamespace
             )
             .frame(maxHeight: portraitFilmstripHeight)
             
@@ -123,7 +143,7 @@ extension ProcessingView {
                 PhotoStackView(
                     mainImageName: galleryViewModel.mainImageName,
                     stackedImages: galleryViewModel.stackedImages,
-                    namespace: galleryNamespace,
+                    namespace: flyingAnimationNamespace,
                     baseFrames: galleryViewModel.baseFrameDataMap
                 )
                 .frame(maxHeight: landscapePhotoStackHeight)
@@ -136,8 +156,11 @@ extension ProcessingView {
                     comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult,
                     customScrollSpeed: 50.0,
                     onImageTapped: { imageId in
-                        galleryViewModel.selectImage(imageId)
-                    }
+                        withAnimation(.easeInOut(duration: 0.8)) {
+                            galleryViewModel.selectImage(imageId)
+                        }
+                    },
+                    namespace: flyingAnimationNamespace
                 )
                 .frame(maxHeight: landscapeFilmstripHeight)
             }
