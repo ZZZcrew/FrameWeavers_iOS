@@ -84,22 +84,15 @@ private extension ComicPanelView {
             .padding(.horizontal, textHorizontalPadding)
             .padding(.top, textTopPadding)
 
-            // 页码区域 - "目"字下面的"口"
-            HStack(spacing: 8) {
-                // 水印logo
-                WatermarkLogoView()
-
-                Spacer()
-                
+            // 页码区域 - "目"字下面的"口" - 改为VStack布局
+            VStack(spacing: 8) {                
                 Text("· \(pageIndex + 1) ·")
                     .font(.custom("STKaiti", size: adaptivePageNumberFontSize))
                     .dynamicTypeSize(...DynamicTypeSize.large) // 页码字体限制范围更小
                     .foregroundColor(Color(hex: "#2F2617"))
-
-                Spacer()
-
+                
                 // 水印logo
-                WatermarkLogoView().opacity(0)
+                WatermarkLogoView()
             }
             .frame(maxWidth: .infinity)
             .frame(height: pageNumberAreaHeight)
