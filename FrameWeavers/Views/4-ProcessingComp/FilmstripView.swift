@@ -9,6 +9,10 @@ struct FilmstripView: View {
     let customScrollSpeed: Double?  // 自定义滚动速度
     @State private var scrollOffset: CGFloat = 0
 
+    // MARK: - Environment
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
     init(baseFrames: [BaseFrameData] = [],
          isExampleMode: Bool = false,
          config: FilmstripConfiguration = .default,
@@ -19,6 +23,26 @@ struct FilmstripView: View {
         self.config = config
         self.comicResult = comicResult
         self.customScrollSpeed = customScrollSpeed
+    }
+
+    // MARK: - Adaptive Properties
+    private var isCompact: Bool {
+        horizontalSizeClass == .compact
+    }
+
+    private var isLandscape: Bool {
+        verticalSizeClass == .compact
+    }
+
+    /// 响应式胶片高度
+    private var adaptiveFilmstripHeight: CGFloat {
+        if isLandscape {
+            // 横屏时根据设备调整高度
+            return horizontalSizeClass == .regular ? 80 : 70
+        } else {
+            // 竖屏时根据设备调整高度
+            return isCompact ? 100 : 120
+        }
     }
 
     /// 计算实际显示的图片数据
@@ -72,10 +96,10 @@ struct FilmstripView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // 胶片背景 - 限制高度并作为背景层
+                // 胶片背景 - 使用响应式高度
                 Image("胶片")
                     .resizable(resizingMode: .tile)
-                    .frame(height: 100)
+                    .frame(height: adaptiveFilmstripHeight)
                     .clipped()
 
                 // 滚动的图片传送带
@@ -89,27 +113,28 @@ struct FilmstripView: View {
 
                             FilmFrameView(
                                 displayImage: displayImage,
-                                config: config
+                                config: config,
+                                adaptiveHeight: adaptiveFilmstripHeight
                             )
                         }
                     }
                 }
                 .offset(x: scrollOffset)
                 .onAppear {
-                    startScrolling()
+                    startScrolling(availableWidth: geometry.size.width)
                 }
                 .onChange(of: baseFrames) { _, _ in
                     // 当基础帧数据变化时，重新启动滚动动画
-                    restartScrolling()
+                    restartScrolling(availableWidth: geometry.size.width)
                 }
             }
         }
-        .frame(height: 100)
+        .frame(height: adaptiveFilmstripHeight)
         .clipped()
     }
 
     /// 启动传送带滚动动画
-    private func startScrolling() {
+    private func startScrolling(availableWidth: CGFloat) {
         let currentImages = actualDisplayImages
         guard !currentImages.isEmpty else { return }
 
@@ -117,20 +142,19 @@ struct FilmstripView: View {
         let totalWidth = itemWidth * CGFloat(config.repeatCount)  // 与显示逻辑保持一致
 
         // 从右侧开始显示，让用户立即看到胶片内容
-        let screenWidth = UIScreen.main.bounds.width
-        scrollOffset = screenWidth - totalWidth  // 从屏幕右侧开始显示
+        scrollOffset = availableWidth - totalWidth  // 从可用宽度右侧开始显示
 
         // 延迟启动动画，确保视图已完全渲染
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             let effectiveSpeed = customScrollSpeed ?? config.scrollSpeed
             withAnimation(.linear(duration: Double(totalWidth / effectiveSpeed)).repeatForever(autoreverses: false)) {
-                scrollOffset = screenWidth  // 向右滚动到屏幕右侧外完全消失
+                scrollOffset = availableWidth  // 向右滚动到可用宽度右侧外完全消失
             }
         }
     }
 
     /// 重启滚动动画 - 当数据变化时调用
-    private func restartScrolling() {
+    private func restartScrolling(availableWidth: CGFloat) {
         // 停止当前动画，重置到右侧起始位置
         let currentImages = actualDisplayImages
         guard !currentImages.isEmpty else { return }
@@ -138,14 +162,13 @@ struct FilmstripView: View {
         let itemWidth = config.frameWidth + config.frameSpacing
         let totalWidth = itemWidth * CGFloat(config.repeatCount)  // 保持与startScrolling一致
 
-        let screenWidth = UIScreen.main.bounds.width
         withAnimation(.linear(duration: 0)) {
-            scrollOffset = screenWidth - totalWidth  // 重置到右侧起始位置
+            scrollOffset = availableWidth - totalWidth  // 重置到右侧起始位置
         }
 
         // 重新启动滚动
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            startScrolling()
+            startScrolling(availableWidth: availableWidth)
         }
     }
 }
@@ -156,6 +179,7 @@ struct FilmstripView: View {
 struct FilmFrameView: View {
     let displayImage: DisplayImageData
     let config: FilmstripConfiguration
+    let adaptiveHeight: CGFloat
 
     var body: some View {
         Group {
@@ -167,7 +191,7 @@ struct FilmFrameView: View {
                 remoteImageView(url: url)
             }
         }
-        .frame(width: config.frameWidth, height: config.frameHeight)
+        .frame(width: config.frameWidth, height: adaptiveHeight * 0.8) // 帧高度为胶片高度的80%
         .clipShape(RoundedRectangle(cornerRadius: 4))
     }
 
@@ -223,6 +247,7 @@ struct FilmFrameView: View {
                 .overlay(
                     Text("加载失败")
                         .font(.caption)
+                        .dynamicTypeSize(...DynamicTypeSize.large)
                         .foregroundColor(.white)
                 )
         } else if let fallbackName = displayImage.fallbackName {
@@ -236,60 +261,9 @@ struct FilmFrameView: View {
                 .overlay(
                     Text("加载失败")
                         .font(.caption)
+                        .dynamicTypeSize(...DynamicTypeSize.large)
                         .foregroundColor(.white)
                 )
         }
     }
 }
-
-// MARK: - SwiftUI Preview
-struct FilmstripView_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack(spacing: 20) {
-            Text("胶片传送带预览")
-                .font(.title2)
-                .padding()
-
-            // 示例模式预览 - 使用默认配置
-            FilmstripView(
-                baseFrames: [],
-                isExampleMode: true,
-                config: .default,
-                comicResult: nil,
-                customScrollSpeed: 30.0
-            )
-            .background(Color.gray.opacity(0.1))
-
-            // 等待状态预览
-            FilmstripView(
-                baseFrames: [],
-                isExampleMode: false,
-                config: .default,
-                comicResult: nil,
-                customScrollSpeed: 50.0
-            )
-            .background(Color.gray.opacity(0.1))
-
-            // 单独预览胶片背景图片
-            Image("胶片")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(height: 120)
-                .previewLayout(.sizeThatFits)
-                .previewDisplayName("胶片背景（fit）")
-
-            Image("胶片")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(height: 100)
-                .clipped()
-                .previewLayout(.sizeThatFits)
-                .previewDisplayName("胶片背景（fill, clipped）")
-
-            Spacer()
-        }
-        .previewLayout(.sizeThatFits)
-        .previewDisplayName("胶片传送带")
-    }
-}
-
