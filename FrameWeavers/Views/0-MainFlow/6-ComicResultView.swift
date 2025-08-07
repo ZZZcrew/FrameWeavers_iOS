@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 /// 连环画结果视图 - 遵循MVVM架构，只负责UI展示，强制横屏显示
 struct ComicResultView: View {
@@ -46,34 +45,14 @@ struct ComicResultView: View {
             // 初始隐藏菜单栏
             viewModel.isNavigationVisible = false
             // 强制横屏
-            forceLandscapeOrientation()
+            OrientationManager.shared.forceLandscapeOrientation()
         }
         .onDisappear {
             // 恢复默认方向设置
-            restoreDefaultOrientation()
+            OrientationManager.shared.restoreDefaultOrientation()
         }
     }
     
-    // MARK: - Private Methods
-    /// 强制横屏
-    private func forceLandscapeOrientation() {
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .landscape))
-        }
-        
-        // 设置状态栏方向
-        UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
-    }
-    
-    /// 恢复默认方向
-    private func restoreDefaultOrientation() {
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
-        }
-        
-        // 恢复状态栏方向
-        UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
-    }
 }
 
 // MARK: - Layout Components
@@ -107,7 +86,6 @@ private extension ComicResultView {
 
 // MARK: - Private Methods
 extension ComicResultView {
-
     /// 分享功能占位符
     private func showSharePlaceholder() {
         print("分享功能占位符：将来可以实现分享连环画到社交媒体等功能")
