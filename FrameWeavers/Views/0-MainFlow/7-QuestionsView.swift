@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 /// 互动问题页面视图 - 符合MVVM架构和现代响应式设计规范，强制横屏显示
 struct QuestionsView: View {
@@ -30,33 +29,12 @@ struct QuestionsView: View {
         .persistentSystemOverlays(.hidden)
         .onAppear {
             // 强制横屏
-            forceLandscapeOrientation()
+            OrientationManager.shared.forceLandscapeOrientation()
         }
         .onDisappear {
             // 恢复默认方向设置
-            restoreDefaultOrientation()
+            OrientationManager.shared.restoreDefaultOrientation()
         }
-    }
-    
-    // MARK: - Private Methods
-    /// 强制横屏
-    private func forceLandscapeOrientation() {
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .landscape))
-        }
-        
-        // 设置状态栏方向
-        UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
-    }
-    
-    /// 恢复默认方向
-    private func restoreDefaultOrientation() {
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
-        }
-        
-        // 恢复状态栏方向
-        UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
     }
 }
 
