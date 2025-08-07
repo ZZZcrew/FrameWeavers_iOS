@@ -1,6 +1,7 @@
 import SwiftUI
+import UIKit
 
-/// 互动问题页面视图 - 纯UI展示，符合MVVM架构和现代响应式设计规范
+/// 互动问题页面视图 - 符合MVVM架构和现代响应式设计规范，强制横屏显示
 struct QuestionsView: View {
     // MARK: - Environment
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -12,12 +13,50 @@ struct QuestionsView: View {
     let totalPages: Int
 
     var body: some View {
-        // 根据横竖屏切换布局
-        if isLandscape {
+        ZStack {
+            // 背景图片
+            Image("背景单色")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+
+            // 强制横屏布局
             landscapeLayout
-        } else {
-            portraitLayout
         }
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        // MARK: - 沉浸式体验
+        // 1. 隐藏系统覆盖层（如Home Indicator）
+        .persistentSystemOverlays(.hidden)
+        .onAppear {
+            // 强制横屏
+            forceLandscapeOrientation()
+        }
+        .onDisappear {
+            // 恢复默认方向设置
+            restoreDefaultOrientation()
+        }
+    }
+    
+    // MARK: - Private Methods
+    /// 强制横屏
+    private func forceLandscapeOrientation() {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .landscape))
+        }
+        
+        // 设置状态栏方向
+        UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
+    }
+    
+    /// 恢复默认方向
+    private func restoreDefaultOrientation() {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
+        }
+        
+        // 恢复状态栏方向
+        UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
     }
 }
 
@@ -44,40 +83,8 @@ private extension QuestionsView {
                 .padding(.bottom, landscapeWatermarkBottomPadding)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipped() // 防止内容超出边界
         .padding(.horizontal, landscapeOuterHorizontalPadding)
         .padding(.vertical, landscapeVerticalPadding)
-    }
-    
-    /// 竖屏布局 - 上下分栏布局
-    var portraitLayout: some View {
-        VStack(spacing: portraitSpacing) {
-            Spacer(minLength: portraitTopSpacing)
-            
-            // 问题内容区域
-            questionContentSection
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: portraitContentMinHeight)
-                .padding(.horizontal, portraitContentHorizontalPadding)
-            
-            Spacer(minLength: portraitMiddleSpacing)
-            
-            // "完"字区域
-            completionSection
-                .frame(maxWidth: .infinity)
-                .frame(height: portraitCompletionAreaHeight)
-                .padding(.horizontal, portraitContentHorizontalPadding)
-            
-            Spacer(minLength: portraitBottomSpacing)
-            
-            // 底部水印logo
-            WatermarkLogoView()
-                .padding(.bottom, portraitWatermarkBottomPadding)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipped() // 防止内容超出边界
-        .padding(.horizontal, portraitOuterHorizontalPadding)
-        .padding(.vertical, portraitVerticalPadding)
     }
 }
 
@@ -100,7 +107,6 @@ private extension QuestionsView {
             .multilineTextAlignment(.center)
             .lineLimit(nil)
         }
-        .clipped() // 防止文本内容超出边界
     }
 
     /// 完成标记区域组件
@@ -119,11 +125,6 @@ private extension QuestionsView {
     /// 是否为紧凑尺寸设备
     var isCompact: Bool {
         horizontalSizeClass == .compact
-    }
-
-    /// 是否为横屏模式
-    var isLandscape: Bool {
-        verticalSizeClass == .compact
     }
 
     /// 自适应字体大小（用于问题内容）
@@ -176,58 +177,6 @@ private extension QuestionsView {
     /// 横屏水印底部边距
     var landscapeWatermarkBottomPadding: CGFloat {
         horizontalSizeClass == .regular ? 15 : 12
-    }
-    
-    // MARK: - 竖屏属性
-    
-    /// 竖屏间距
-    var portraitSpacing: CGFloat {
-        isCompact ? 20 : 30
-    }
-
-    /// 竖屏顶部间距
-    var portraitTopSpacing: CGFloat {
-        isCompact ? 20 : 30
-    }
-    
-    /// 竖屏中间间距
-    var portraitMiddleSpacing: CGFloat {
-        isCompact ? 20 : 30
-    }
-    
-    /// 竖屏底部间距
-    var portraitBottomSpacing: CGFloat {
-        isCompact ? 20 : 30
-    }
-
-    /// 竖屏内容最小高度
-    var portraitContentMinHeight: CGFloat {
-        isCompact ? 200 : 220
-    }
-
-    /// 竖屏内容水平边距
-    var portraitContentHorizontalPadding: CGFloat {
-        isCompact ? 20 : 30
-    }
-
-    /// 竖屏外层水平边距
-    var portraitOuterHorizontalPadding: CGFloat {
-        isCompact ? 20 : 30
-    }
-
-    /// 竖屏垂直边距
-    var portraitVerticalPadding: CGFloat {
-        isCompact ? 20 : 30
-    }
-
-    /// 竖屏完成区域高度
-    var portraitCompletionAreaHeight: CGFloat {
-        isCompact ? 60 : 70
-    }
-    
-    /// 竖屏水印底部边距
-    var portraitWatermarkBottomPadding: CGFloat {
-        isCompact ? 12 : 15
     }
     
 }
