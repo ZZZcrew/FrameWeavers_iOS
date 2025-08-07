@@ -22,7 +22,7 @@ class ComicPanelViewController: ComicBaseViewController {
     }
     
     private func setupView() {
-        // 创建SwiftUI视图并包装 - 移除geometry依赖
+        // 创建SwiftUI视图并包装
         let hostingController = UIHostingController(
             rootView: ComicPanelView(
                 panel: panel,
@@ -34,17 +34,20 @@ class ComicPanelViewController: ComicBaseViewController {
         // 设置透明背景
         hostingController.view.backgroundColor = UIColor.clear
         
+        // 关键修复：禁用UIHostingController的自动尺寸调整，防止尺寸异常
+        hostingController.sizingOptions = [.intrinsicContentSize]
+        
         addChild(hostingController)
         view.addSubview(hostingController.view)
         hostingController.didMove(toParent: self)
         
-        // 设置约束
+        // 设置约束 - 确保SwiftUI视图正确匹配父视图尺寸
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         
         // 添加点击手势
@@ -73,7 +76,7 @@ class QuestionsViewController: ComicBaseViewController {
     }
     
     private func setupView() {
-        // 创建SwiftUI视图并包装 - 移除geometry依赖
+        // 创建SwiftUI视图并包装
         let hostingController = UIHostingController(
             rootView: QuestionsView(
                 questions: questions,
@@ -85,17 +88,20 @@ class QuestionsViewController: ComicBaseViewController {
         // 设置透明背景
         hostingController.view.backgroundColor = UIColor.clear
         
+        // 关键修复：禁用UIHostingController的自动尺寸调整，防止尺寸异常
+        hostingController.sizingOptions = [.intrinsicContentSize]
+        
         addChild(hostingController)
         view.addSubview(hostingController.view)
         hostingController.didMove(toParent: self)
         
-        // 设置约束
+        // 设置约束 - 确保SwiftUI视图正确匹配父视图尺寸
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         
         // 添加点击手势

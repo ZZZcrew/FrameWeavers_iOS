@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 单独的漫画页面视图组件 - 支持竖屏横屏响应式布局，符合MVVM架构和现代响应式设计规范
+/// 单独的漫画页面视图组件 - 纯UI展示，符合MVVM架构和现代响应式设计规范
 struct ComicPanelView: View {
     // MARK: - Environment
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -12,19 +12,11 @@ struct ComicPanelView: View {
     let totalPages: Int
 
     var body: some View {
-        ZStack {
-            // 背景图片
-            Image("背景单色")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-
-            // 根据横竖屏切换布局
-            if isLandscape {
-                landscapeLayout
-            } else {
-                portraitLayout
-            }
+        // 根据横竖屏切换布局
+        if isLandscape {
+            landscapeLayout
+        } else {
+            portraitLayout
         }
     }
 }
@@ -45,6 +37,7 @@ private extension ComicPanelView {
                 .padding(.trailing, landscapeHorizontalPadding)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped() // 防止内容超出边界
         .padding(.vertical, landscapeVerticalPadding)
     }
     
@@ -68,6 +61,7 @@ private extension ComicPanelView {
             Spacer(minLength: portraitBottomSpacing)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped() // 防止内容超出边界
     }
 }
 
@@ -82,7 +76,8 @@ private extension ComicPanelView {
                     RoundedRectangle(cornerRadius: 0)
                         .stroke(Color(hex: "#2F2617"), lineWidth: 2)
                 )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity)
+                .clipped() // 防止图片超出边界
         }
     }
 
