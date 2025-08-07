@@ -182,19 +182,58 @@ private extension ComicPanelView {
 // MARK: - Preview
 struct ComicPanelView_Previews: PreviewProvider {
     static var previews: some View {
-        GeometryReader { geometry in
-            ComicPanelView(
-                panel: ComicPanel(
-                    panelNumber: 1,
-                    imageUrl: "Image1",
-                    narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
-                ),
-                geometry: geometry,
-                pageIndex: 0,
-                totalPages: 3
-            )
+        Group {
+            // iPhone 16 Pro Max 横屏测试
+            GeometryReader { geometry in
+                ComicPanelView(
+                    panel: ComicPanel(
+                        panelNumber: 1,
+                        imageUrl: "Image1",
+                        narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
+                    ),
+                    geometry: geometry,
+                    pageIndex: 0,
+                    totalPages: 3
+                )
+            }
+            .previewDevice("iPhone 16 Pro Max")
+            .previewInterfaceOrientation(.landscapeLeft)
+            .previewDisplayName("iPhone 16 Pro Max - 横屏")
+
+            // iPad Pro 横屏测试
+            GeometryReader { geometry in
+                ComicPanelView(
+                    panel: ComicPanel(
+                        panelNumber: 1,
+                        imageUrl: "Image1",
+                        narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
+                    ),
+                    geometry: geometry,
+                    pageIndex: 0,
+                    totalPages: 3
+                )
+            }
+            .previewDevice("iPad Pro (12.9-inch) (6th generation)")
+            .previewInterfaceOrientation(.landscapeLeft)
+            .previewDisplayName("iPad Pro - 横屏")
+
+            // 动态字体测试
+            GeometryReader { geometry in
+                ComicPanelView(
+                    panel: ComicPanel(
+                        panelNumber: 1,
+                        imageUrl: "Image1",
+                        narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
+                    ),
+                    geometry: geometry,
+                    pageIndex: 0,
+                    totalPages: 3
+                )
+            }
+            .previewDevice("iPhone 16 Pro Max")
+            .previewInterfaceOrientation(.landscapeLeft)
+            .environment(\.dynamicTypeSize, .accessibility1)
+            .previewDisplayName("大字体测试")
         }
-        .previewDevice("iPhone 14")
-        .previewInterfaceOrientation(.landscapeLeft)
     }
 }
