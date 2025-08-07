@@ -99,7 +99,7 @@ private extension ComicPanelView {
                 Spacer()
 
                 // 水印logo
-                WatermarkLogoView()
+                WatermarkLogoView().opacity(0)
             }
             .frame(maxWidth: .infinity)
             .frame(height: pageNumberAreaHeight)
