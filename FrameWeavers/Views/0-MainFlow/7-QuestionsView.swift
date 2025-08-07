@@ -34,6 +34,10 @@ struct QuestionsView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: completionAreaHeight)
                     .padding(.horizontal, contentHorizontalPadding)
+                
+                // 底部水印logo
+                WatermarkLogoView()
+                    .padding(.bottom, watermarkBottomPadding)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal, outerHorizontalPadding)
@@ -70,21 +74,11 @@ private extension QuestionsView {
 
     /// 完成标记区域组件
     var completionSection: some View {
-        HStack(spacing: 8) {
-            // 水印logo
-            WatermarkLogoView()
-
-            Spacer()
-            
+        VStack {
             Text("· 完 ·")
                 .font(.custom("STKaiti", size: adaptiveCompletionFontSize))
                 .dynamicTypeSize(...DynamicTypeSize.large) // 完字字体限制范围更小
                 .foregroundColor(Color(hex: "#2F2617"))
-
-            Spacer()
-
-            // 占位符，保持文本居中
-            WatermarkLogoView().opacity(0)
         }
     }
 }
@@ -144,6 +138,11 @@ private extension QuestionsView {
     /// 完成区域高度
     var completionAreaHeight: CGFloat {
         horizontalSizeClass == .regular ? 70 : 60
+    }
+    
+    /// 水印底部边距
+    var watermarkBottomPadding: CGFloat {
+        horizontalSizeClass == .regular ? 15 : 12
     }
 }
 
