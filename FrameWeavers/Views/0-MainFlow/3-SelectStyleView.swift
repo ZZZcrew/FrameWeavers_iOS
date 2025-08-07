@@ -69,7 +69,7 @@ private extension StyleSelectionView {
     var portraitButtonTopSpacing: CGFloat { isCompact ? 40 : 60 }
     var portraitBottomSpacing: CGFloat { isCompact ? 20 : 40 }
     var portraitHorizontalPadding: CGFloat { isCompact ? 20 : 40 }
-    var portraitQuadrantSize: CGFloat { isCompact ? 280 : 350 }
+    var portraitQuadrantSize: CGFloat { isCompact ? 380 : 480 }
     var portraitButtonMaxWidth: CGFloat { isCompact ? 220 : 250 }
 
     // 横屏布局的属性 - 根据设备差异化适配
@@ -80,7 +80,7 @@ private extension StyleSelectionView {
         horizontalSizeClass == .regular ? 35 : 25
     }
     var landscapeQuadrantSize: CGFloat {
-        horizontalSizeClass == .regular ? 280 : 240  // 大屏设备更大
+        horizontalSizeClass == .regular ? 380 : 340  // 大屏设备更大
     }
     var landscapeButtonMaxWidth: CGFloat {
         horizontalSizeClass == .regular ? 240 : 200  // 大屏设备更大

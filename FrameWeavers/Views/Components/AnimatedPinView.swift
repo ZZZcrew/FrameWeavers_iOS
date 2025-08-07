@@ -30,7 +30,7 @@ struct AnimatedPinView: View {
             Image("图钉")
                 .resizable()
                 .scaledToFit()
-                .frame(width: quadrantSize * 0.15, height: quadrantSize * 0.15)
+                .frame(width: quadrantSize * 0.14, height: quadrantSize * 0.14)
                 .scaleEffect(pinScale)
                 .rotationEffect(.degrees(pinRotation))
                 .offset(y: pinOffset)
@@ -76,16 +76,16 @@ struct AnimatedPinView: View {
             // 往右移动：增大X值
 
             // 左上象限 - 往下走一点点：减小 -size * 0.35 中的 0.35
-            (x: centerX - offsetX + quadrantSize * 0.43, y: centerY - offsetY - quadrantSize * 0.3),
+            (x: centerX - offsetX + quadrantSize * 0.42, y: centerY - offsetY - quadrantSize * 0.28),
 
             // 右上象限 - 往下、往左走一点点：减小 offsetX，减小 -size * 0.35 中的 0.35
-            (x: centerX + offsetX - quadrantSize * 0.05, y: centerY - offsetY - quadrantSize * 0.3),
+            (x: centerX + offsetX - quadrantSize * 0.06, y: centerY - offsetY - quadrantSize * 0.28),
 
             // 左下象限 - 往下走多一点点：增大 size * 0.2 中的 0.2
-            (x: centerX - offsetX + quadrantSize * 0.43, y: centerY + offsetY - quadrantSize * 0.08),
+            (x: centerX - offsetX + quadrantSize * 0.42, y: centerY + offsetY - quadrantSize * 0.07),
 
             // 右下象限 - 往上、往左走一点点：减小 offsetX，减小 size * 0.2 中的 0.2
-            (x: centerX + offsetX - quadrantSize * 0.05, y: centerY + offsetY - quadrantSize * 0.08)
+            (x: centerX + offsetX - quadrantSize * 0.06, y: centerY + offsetY - quadrantSize * 0.07)
         ]
     }
     
