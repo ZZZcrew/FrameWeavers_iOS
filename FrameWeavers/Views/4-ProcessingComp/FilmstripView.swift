@@ -103,10 +103,10 @@ struct FilmstripView: View {
                     .clipped()
 
                 // 滚动的图片传送带
+                let currentImages = actualDisplayImages
                 HStack(spacing: config.frameSpacing) {
                     // 重复图片以实现无限滚动
                     ForEach(0..<config.repeatCount, id: \.self) { index in
-                        let currentImages = actualDisplayImages
                         if !currentImages.isEmpty {
                             let imageIndex = index % currentImages.count
                             let displayImage = currentImages[imageIndex]
@@ -135,35 +135,30 @@ struct FilmstripView: View {
 
     /// 启动传送带滚动动画
     private func startScrolling(availableWidth: CGFloat) {
-        let currentImages = actualDisplayImages
-        guard !currentImages.isEmpty else { return }
+        guard !actualDisplayImages.isEmpty else { return }
 
         let itemWidth = config.frameWidth + config.frameSpacing
-        let totalWidth = itemWidth * CGFloat(config.repeatCount)  // 与显示逻辑保持一致
+        let totalWidth = itemWidth * CGFloat(config.repeatCount)
 
         // 从右侧开始显示，让用户立即看到胶片内容
-        scrollOffset = availableWidth - totalWidth  // 从可用宽度右侧开始显示
+        scrollOffset = availableWidth - totalWidth
 
         // 延迟启动动画，确保视图已完全渲染
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             let effectiveSpeed = customScrollSpeed ?? config.scrollSpeed
             withAnimation(.linear(duration: Double(totalWidth / effectiveSpeed)).repeatForever(autoreverses: false)) {
-                scrollOffset = availableWidth  // 向右滚动到可用宽度右侧外完全消失
+                scrollOffset = availableWidth
             }
         }
     }
 
     /// 重启滚动动画 - 当数据变化时调用
     private func restartScrolling(availableWidth: CGFloat) {
-        // 停止当前动画，重置到右侧起始位置
-        let currentImages = actualDisplayImages
-        guard !currentImages.isEmpty else { return }
+        guard !actualDisplayImages.isEmpty else { return }
 
-        let itemWidth = config.frameWidth + config.frameSpacing
-        let totalWidth = itemWidth * CGFloat(config.repeatCount)  // 保持与startScrolling一致
-
+        // 停止当前动画并重置位置
         withAnimation(.linear(duration: 0)) {
-            scrollOffset = availableWidth - totalWidth  // 重置到右侧起始位置
+            scrollOffset = availableWidth - (config.frameWidth + config.frameSpacing) * CGFloat(config.repeatCount)
         }
 
         // 重新启动滚动
@@ -240,22 +235,13 @@ struct FilmFrameView: View {
     /// 错误占位符
     @ViewBuilder
     private var errorPlaceholder: some View {
-        // 真实模式下不使用fallback，只显示错误提示
-        if displayImage.imageSource.isRemote {
-            Rectangle()
-                .fill(Color.red.opacity(0.3))
-                .overlay(
-                    Text("加载失败")
-                        .font(.caption)
-                        .dynamicTypeSize(...DynamicTypeSize.large)
-                        .foregroundColor(.white)
-                )
-        } else if let fallbackName = displayImage.fallbackName {
+        if let fallbackName = displayImage.fallbackName {
             // 示例模式下可以使用fallback
             Image(fallbackName)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
         } else {
+            // 显示错误提示
             Rectangle()
                 .fill(Color.red.opacity(0.3))
                 .overlay(
