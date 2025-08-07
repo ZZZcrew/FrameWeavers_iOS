@@ -31,12 +31,12 @@ private extension WatermarkLogoView {
     
     /// 自适应logo高度
     var adaptiveLogoHeight: CGFloat {
-        horizontalSizeClass == .regular ? 28 : 24
+        horizontalSizeClass == .regular ? 36 : 30
     }
     
     /// 自适应透明度
     var adaptiveOpacity: Double {
-        0.6
+        1.0
     }
 }
 
