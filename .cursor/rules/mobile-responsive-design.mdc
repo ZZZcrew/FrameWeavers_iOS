@@ -149,11 +149,9 @@ var body: some View {
 ```
 
 ### 设备适配策略
-- **iPhone标准尺寸**: 竖屏 `horizontalSizeClass=.compact`，横屏 `horizontalSizeClass=.compact`
-- **iPhone大屏尺寸**: 竖屏 `horizontalSizeClass=.compact`，横屏 `horizontalSizeClass=.regular`
-- **iPad**: 主要使用 `.regular` 水平尺寸类
+- **横竖屏判断**: 统一使用 `verticalSizeClass == .compact` 判断横屏
+- **设备尺寸判断**: 使用 `horizontalSizeClass == .compact` 判断紧凑尺寸
 - **分屏/多窗口**: 自动适配为 `.compact`
-- **横竖屏**: 通过 `verticalSizeClass == .compact` 判断横屏
 
 ## 📱 设备差异化适配
 
@@ -196,69 +194,6 @@ private var adaptiveComponentSize: CGFloat {
 ```
 
 ## 🔄 横屏适配最佳实践
-
-### 横屏检测的正确方法
-```swift
-// ✅ 推荐：通用横屏检测 (适用于所有设备)
-var isLandscape: Bool {
-    verticalSizeClass == .compact
-}
-
-// ❌ 过时：过于严格的检测方法
-var isLandscape: Bool {
-    horizontalSizeClass == .compact && verticalSizeClass == .compact  // 只适用于标准iPhone
-}
-
-// 📱 设备差异说明：
-// - iPhone 14 Pro等标准设备横屏：horizontalSizeClass=.compact, verticalSizeClass=.compact
-// - iPhone 14 Pro Max等大屏设备横屏：horizontalSizeClass=.regular, verticalSizeClass=.compact
-// - iPad横屏：通常 horizontalSizeClass=.regular, verticalSizeClass=.compact
-// 因此使用 verticalSizeClass == .compact 是最可靠的横屏检测方法
-```
-
-### 横屏布局策略
-```swift
-// ✅ 推荐：通用双布局系统
-var body: some View {
-    if verticalSizeClass == .compact {
-        // 横屏模式：使用HStack水平布局 (适用于所有设备)
-        landscapeLayout
-    } else {
-        // 竖屏或iPad：使用VStack垂直布局
-        portraitLayout
-    }
-}
-
-// 横屏布局：去除ScrollView，直接使用HStack
-var landscapeLayout: some View {
-    HStack(spacing: compactSpacing) {
-        VStack { /* 左侧内容 */ }
-        VStack { /* 右侧内容 */ }
-    }
-    .padding(.horizontal, compactPadding)
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-}
-
-// 竖屏布局：根据内容决定是否使用ScrollView
-var portraitLayout: some View {
-    // 如果内容适合屏幕，可以不使用ScrollView
-    VStack(spacing: regularSpacing) {
-        Spacer(minLength: topSpacing)
-        // 垂直排列的内容
-        Spacer(minLength: bottomSpacing)
-    }
-    .padding(.horizontal, regularPadding)
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-    // 或者使用ScrollView（内容较多时）
-    // ScrollView {
-    //     VStack(spacing: regularSpacing) {
-    //         // 垂直排列的内容
-    //     }
-    //     .padding(.horizontal, regularPadding)
-    // }
-}
-```
 
 ### ViewThatFits使用注意事项
 ```swift
@@ -361,9 +296,7 @@ ViewThatFits {
 // ✅ 基于Size Classes的响应式属性
 private extension View {
     var isCompact: Bool { horizontalSizeClass == .compact }
-    var isLandscape: Bool {
-        verticalSizeClass == .compact  // 修正：使用统一的横屏检测
-    }
+    var isLandscape: Bool { verticalSizeClass == .compact }
 
     // 竖屏属性
     var portraitSpacing: CGFloat { isCompact ? 16 : 24 }
@@ -385,8 +318,6 @@ private extension View {
 // ✅ 使用系统间距
 VStack(spacing: .systemSpacing) { ... }  // iOS17+
 HStack(spacing: .systemSpacing) { ... }
-
-// 详细的属性定义请参考"双布局系统最佳实践"章节
 ```
 
 ## 🔀 双布局系统最佳实践
@@ -460,11 +391,19 @@ private extension AdaptiveView {
     var portraitPadding: CGFloat { isCompact ? 20 : 40 }
     var portraitContentSize: CGFloat { isCompact ? 280 : 350 }
 
-    // 横屏属性
-    var landscapeSpacing: CGFloat { 30 }
-    var landscapePadding: CGFloat { 25 }
-    var landscapeContentSize: CGFloat { 240 }  // 比竖屏compact稍大
-    var landscapeButtonAreaWidth: CGFloat { 220 }
+    // 横屏属性 (根据设备差异化调整)
+    var landscapeSpacing: CGFloat {
+        horizontalSizeClass == .regular ? 40 : 30
+    }
+    var landscapePadding: CGFloat {
+        horizontalSizeClass == .regular ? 35 : 25
+    }
+    var landscapeContentSize: CGFloat {
+        horizontalSizeClass == .regular ? 280 : 240
+    }
+    var landscapeButtonAreaWidth: CGFloat {
+        horizontalSizeClass == .regular ? 260 : 220
+    }
 }
 ```
 
