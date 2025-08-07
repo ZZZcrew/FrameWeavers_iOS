@@ -1,7 +1,12 @@
 import SwiftUI
 
-/// 互动问题页面视图 - 符合MVVM架构，只负责UI展示
+/// 互动问题页面视图 - 符合MVVM架构和现代响应式设计规范，只负责UI展示
 struct QuestionsView: View {
+    // MARK: - Environment
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
+    // MARK: - Properties
     let questions: [String]
     let geometry: GeometryProxy
     let pageIndex: Int
@@ -15,47 +20,117 @@ struct QuestionsView: View {
                 .scaledToFill()
                 .ignoresSafeArea()
 
-            GeometryReader { geometry in
-                // 问题内容区域 - 使用全屏宽度
-                VStack(spacing: 0) {
-                    // 问题内容区域 - "目"字上面的"口"
-                    VStack {
-                        TypewriterView(
-                            text: questions.enumerated().map { index, question in
-                                "\(index + 1). \(question)"
-                            }.joined(separator: "\n\n"),
-                            typeSpeed: 0.10,
-                            showCursor: false
-                        )
-                        .font(.custom("STKaiti", size: 18))
-                        .foregroundColor(Color(hex: "#2F2617"))
-                        .lineSpacing(8)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(nil)
-                    }
+            // 主要内容布局 - 移除嵌套GeometryReader，使用现代布局
+            VStack(spacing: 0) {
+                // 问题内容区域 - "目"字上面的"口"
+                questionContentSection
                     .frame(maxWidth: .infinity)
-                    .frame(minHeight: 200) // 确保有足够高度
-                    .padding(.horizontal, 40) // 左右边距
-                    .padding(.top, 20)
+                    .frame(minHeight: contentMinHeight)
+                    .padding(.horizontal, contentHorizontalPadding)
+                    .padding(.top, contentTopPadding)
 
-                    // "完"字区域 - "目"字下面的"口"
-                    VStack {
-                        Text("· 完 ·")
-                            .font(.custom("STKaiti", size: 16))
-                            .foregroundColor(Color(hex: "#2F2617"))
-                    }
+                // "完"字区域 - "目"字下面的"口"
+                completionSection
                     .frame(maxWidth: .infinity)
-                    .frame(height: 60) // 固定完字区域高度
-                    .padding(.horizontal, 40)
-                }
-                .frame(maxWidth: .infinity) // 使用全屏宽度
-                .padding(.horizontal, 20) // 整体左右边距
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.vertical, 20)
+                    .frame(height: completionAreaHeight)
+                    .padding(.horizontal, contentHorizontalPadding)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.horizontal, outerHorizontalPadding)
+            .padding(.vertical, verticalPadding)
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - UI Components
+private extension QuestionsView {
+    /// 问题内容区域组件
+    var questionContentSection: some View {
+        VStack {
+            TypewriterView(
+                text: questions.enumerated().map { index, question in
+                    "\(index + 1). \(question)"
+                }.joined(separator: "\n\n"),
+                typeSpeed: 0.10,
+                showCursor: false
+            )
+            .font(.custom("STKaiti", size: adaptiveFontSize))
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1) // 限制最大字体
+            .foregroundColor(Color(hex: "#2F2617"))
+            .lineSpacing(adaptiveLineSpacing)
+            .multilineTextAlignment(.center)
+            .lineLimit(nil)
+        }
+    }
+
+    /// 完成标记区域组件
+    var completionSection: some View {
+        VStack {
+            Text("· 完 ·")
+                .font(.custom("STKaiti", size: adaptiveCompletionFontSize))
+                .dynamicTypeSize(...DynamicTypeSize.large) // 完字字体限制范围更小
+                .foregroundColor(Color(hex: "#2F2617"))
+        }
+    }
+}
+
+// MARK: - Adaptive Properties
+private extension QuestionsView {
+    /// 是否为紧凑尺寸设备
+    var isCompact: Bool {
+        horizontalSizeClass == .compact
+    }
+
+    /// 是否为横屏模式
+    var isLandscape: Bool {
+        verticalSizeClass == .compact
+    }
+
+    /// 自适应字体大小
+    var adaptiveFontSize: CGFloat {
+        horizontalSizeClass == .regular ? 20 : 18
+    }
+
+    /// 完成标记字体大小
+    var adaptiveCompletionFontSize: CGFloat {
+        horizontalSizeClass == .regular ? 18 : 16
+    }
+
+    /// 自适应行间距
+    var adaptiveLineSpacing: CGFloat {
+        horizontalSizeClass == .regular ? 10 : 8
+    }
+
+    /// 内容最小高度
+    var contentMinHeight: CGFloat {
+        horizontalSizeClass == .regular ? 220 : 200
+    }
+
+    /// 内容水平边距
+    var contentHorizontalPadding: CGFloat {
+        horizontalSizeClass == .regular ? 50 : 40
+    }
+
+    /// 内容顶部边距
+    var contentTopPadding: CGFloat {
+        horizontalSizeClass == .regular ? 25 : 20
+    }
+
+    /// 外层水平边距
+    var outerHorizontalPadding: CGFloat {
+        horizontalSizeClass == .regular ? 25 : 20
+    }
+
+    /// 垂直边距
+    var verticalPadding: CGFloat {
+        horizontalSizeClass == .regular ? 25 : 20
+    }
+
+    /// 完成区域高度
+    var completionAreaHeight: CGFloat {
+        horizontalSizeClass == .regular ? 70 : 60
     }
 }
 
