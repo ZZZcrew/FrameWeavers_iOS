@@ -94,13 +94,17 @@ extension ProcessingView {
         VStack(spacing: portraitSpacing) {
             Spacer(minLength: portraitTopSpacing)
 
-            // 图片堆叠区域
-            PhotoStackView(
-                mainImageName: galleryViewModel.mainImageName,
-                stackedImages: galleryViewModel.stackedImages,
-                namespace: flyingAnimationNamespace,
-                baseFrames: galleryViewModel.baseFrameDataMap
-            )
+            // 图片堆叠区域 - 只在有有效数据时显示
+            Group {
+                if galleryViewModel.hasValidData && !galleryViewModel.mainImageName.isEmpty {
+                    PhotoStackView(
+                        mainImageName: galleryViewModel.mainImageName,
+                        stackedImages: galleryViewModel.stackedImages,
+                        namespace: flyingAnimationNamespace,
+                        baseFrames: galleryViewModel.baseFrameDataMap
+                    )
+                }
+            }
             .frame(maxHeight: portraitPhotoStackHeight)
 
             Spacer(minLength: portraitMiddleSpacing)
@@ -140,13 +144,17 @@ extension ProcessingView {
         HStack(spacing: landscapeSpacing) {
             // 左侧：主要内容区域
             VStack(spacing: landscapeContentSpacing) {
-                // 图片堆叠区域 - 横屏时稍大
-                PhotoStackView(
-                    mainImageName: galleryViewModel.mainImageName,
-                    stackedImages: galleryViewModel.stackedImages,
-                    namespace: flyingAnimationNamespace,
-                    baseFrames: galleryViewModel.baseFrameDataMap
-                )
+                // 图片堆叠区域 - 横屏时稍大，只在有有效数据时显示
+                Group {
+                    if galleryViewModel.hasValidData && !galleryViewModel.mainImageName.isEmpty {
+                        PhotoStackView(
+                            mainImageName: galleryViewModel.mainImageName,
+                            stackedImages: galleryViewModel.stackedImages,
+                            namespace: flyingAnimationNamespace,
+                            baseFrames: galleryViewModel.baseFrameDataMap
+                        )
+                    }
+                }
                 .frame(maxHeight: landscapePhotoStackHeight)
 
                 // 胶片画廊区域 - 横屏时保持紧凑

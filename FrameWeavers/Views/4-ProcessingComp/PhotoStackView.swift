@@ -32,7 +32,6 @@ struct PhotoStackView: View {
                 let imageName = stackedImages[index]
                 let offset = CGFloat(index) * 3
                 let rotation = Double.random(in: -8...8)
-                let baseFrame = baseFrames[imageName]
 
                 ZStack {
                     AsyncImageView(imageUrl: getImageUrl(for: imageName), style: .minimal)

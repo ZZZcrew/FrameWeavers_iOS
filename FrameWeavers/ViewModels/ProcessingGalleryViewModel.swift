@@ -4,17 +4,17 @@ import Foundation
 
 /// 处理画廊的视图模型
 class ProcessingGalleryViewModel: ObservableObject {
-    @Published var mainImageName: String = "Image1"
+    @Published var mainImageName: String = "" // 初始为空，避免死数据
     @Published var stackedImages: [String] = [] // 已堆叠的图片列表
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
     @Published var isUsingBaseFrames: Bool = false // 是否使用基础帧
     @Published var isExampleMode: Bool = false // 是否为示例模式
+    @Published var hasValidData: Bool = false // 是否有有效数据
 
     // MARK: - 飞跃动画状态
     @Published var flyingImageInfo: FlyingImageInfo? // 当前飞跃的图片信息
     @Published var isAnimating: Bool = false // 是否正在执行动画
 
-    let imageNames = ["Image1", "Image2", "Image3", "Image4"]
     private var cancellables = Set<AnyCancellable>() // Combine订阅管理
 
     /// 基础帧数据映射，用于组件访问
@@ -32,8 +32,8 @@ class ProcessingGalleryViewModel: ObservableObject {
     }
 
     init() {
-        mainImageName = imageNames.first ?? ""
-        // 不再需要复杂的响应式数据流，FilmstripView 直接使用 baseFrames
+        // 初始化时不设置任何死数据，等待真实数据或示例数据
+        print("🎬 ProcessingGalleryViewModel: 初始化，等待真实数据...")
     }
 
     // 移除了复杂的响应式数据流，FilmstripView 现在直接使用 baseFrames 数据
@@ -44,12 +44,16 @@ class ProcessingGalleryViewModel: ObservableObject {
         baseFrames = frames
         isUsingBaseFrames = !frames.isEmpty
         isExampleMode = false  // 有真实数据时，退出示例模式
+        hasValidData = !frames.isEmpty
+
         if let firstFrame = frames.first {
             mainImageName = firstFrame.id.uuidString
             print("🖼️ 设置主图片为: \(mainImageName)")
             print("🔗 第一个基础帧URL: \(firstFrame.thumbnailURL?.absoluteString ?? "nil")")
+        } else {
+            mainImageName = "" // 没有数据时保持为空
         }
-        print("✅ isUsingBaseFrames: \(isUsingBaseFrames)")
+        print("✅ isUsingBaseFrames: \(isUsingBaseFrames), hasValidData: \(hasValidData)")
     }
 
     /// 设置为示例模式
@@ -57,16 +61,20 @@ class ProcessingGalleryViewModel: ObservableObject {
         print("🎭 ProcessingGalleryViewModel: 设置示例模式: \(isExample)")
         isExampleMode = isExample
         if isExample {
-            // 示例模式下优先使用画册的第一张图片，否则使用默认图片
+            // 示例模式下只使用画册数据，不使用死数据
             if let comicResult = comicResult, let firstPanel = comicResult.panels.first {
                 mainImageName = firstPanel.imageUrl
+                hasValidData = true
                 print("🖼️ 示例模式使用画册图片: \(mainImageName)")
             } else {
-                // 兜底：使用默认本地图片
-                mainImageName = imageNames.first ?? ""
-                print("🖼️ 示例模式使用默认图片: \(mainImageName)")
+                // 没有画册数据时保持为空，不显示死数据
+                mainImageName = ""
+                hasValidData = false
+                print("⚠️ 示例模式但无画册数据，保持空白")
             }
             isUsingBaseFrames = false
+        } else {
+            hasValidData = !baseFrames.isEmpty
         }
     }
 
@@ -97,8 +105,9 @@ class ProcessingGalleryViewModel: ObservableObject {
             // 示例模式：接受任何非空ID（因为可能来自画册数据）
             isValidId = !imageId.isEmpty
         } else {
-            // 默认模式：检查预设图片名称
-            isValidId = imageNames.contains(imageId)
+            // 没有有效数据时，不接受任何选择
+            isValidId = false
+            print("⚠️ 没有有效数据，拒绝图片选择")
         }
 
         guard isValidId else {

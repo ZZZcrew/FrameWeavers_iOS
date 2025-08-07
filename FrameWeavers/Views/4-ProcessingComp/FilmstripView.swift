@@ -64,14 +64,8 @@ struct FilmstripView: View {
                     )
                 }
             } else {
-                // 兜底：使用默认本地图片
-                return ["Image1", "Image2", "Image3", "Image4"].map { name in
-                    DisplayImageData(
-                        id: name,
-                        imageSource: .local(name: name),
-                        fallbackName: name
-                    )
-                }
+                // 示例模式但没有画册数据时，显示加载占位符
+                return createLoadingPlaceholders()
             }
         } else if !baseFrames.isEmpty {
             // 真实模式：使用基础帧数据
@@ -88,13 +82,13 @@ struct FilmstripView: View {
         }
     }
 
-    /// 创建加载占位符
+    /// 创建加载占位符 - 不使用死数据，显示真正的加载状态
     private func createLoadingPlaceholders() -> [DisplayImageData] {
         return (0..<4).map { index in
             DisplayImageData(
                 id: "loading_placeholder_\(index)",
-                imageSource: .local(name: "Image\(index + 1)"),
-                fallbackName: "Image\(index + 1)"
+                imageSource: .local(name: ""), // 空字符串，让AsyncImageView显示加载占位符
+                fallbackName: nil
             )
         }
     }
