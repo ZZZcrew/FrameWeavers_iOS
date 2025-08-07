@@ -70,11 +70,14 @@ private extension QuestionsView {
 
     /// 完成标记区域组件
     var completionSection: some View {
-        VStack {
+        VStack(spacing: 8) {
             Text("· 完 ·")
                 .font(.custom("STKaiti", size: adaptiveCompletionFontSize))
                 .dynamicTypeSize(...DynamicTypeSize.large) // 完字字体限制范围更小
                 .foregroundColor(Color(hex: "#2F2617"))
+            
+            // 水印logo
+            WatermarkLogoView()
         }
     }
 }
