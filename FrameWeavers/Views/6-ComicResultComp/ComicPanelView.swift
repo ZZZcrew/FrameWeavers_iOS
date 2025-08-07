@@ -91,8 +91,9 @@ private extension ComicPanelView {
                     .dynamicTypeSize(...DynamicTypeSize.large) // 页码字体限制范围更小
                     .foregroundColor(Color(hex: "#2F2617"))
                 
-                // 水印logo
-                WatermarkLogoView()
+                Image("水印logo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
             }
             .frame(maxWidth: .infinity)
             .frame(height: pageNumberAreaHeight)
