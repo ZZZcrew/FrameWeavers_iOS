@@ -26,12 +26,8 @@ struct OpenResultsView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            // 强制竖屏显示
-            AppDelegate.orientationLock = .portrait
-            UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
-            }
+            // 允许所有方向显示，支持横竖屏切换
+            AppDelegate.orientationLock = .all
         }
     }
 }
