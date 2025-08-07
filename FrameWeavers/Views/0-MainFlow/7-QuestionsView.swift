@@ -41,6 +41,9 @@ struct QuestionsView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        // MARK: - 沉浸式体验
+        // 1. 隐藏系统覆盖层（如Home Indicator）
+        .persistentSystemOverlays(.hidden)
     }
 }
 
