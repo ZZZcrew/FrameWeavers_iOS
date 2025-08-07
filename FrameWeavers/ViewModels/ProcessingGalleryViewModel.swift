@@ -5,8 +5,6 @@ import Foundation
 /// 处理画廊的视图模型
 class ProcessingGalleryViewModel: ObservableObject {
     @Published var mainImageName: String = "Image1"
-    @Published var flyingImageInfo: FlyingImageInfo?
-    @Published var hideSourceImageId: String?
     @Published var stackedImages: [String] = [] // 已堆叠的图片列表
     @Published var baseFrames: [BaseFrameData] = [] // 基础帧数据
     @Published var isUsingBaseFrames: Bool = false // 是否使用基础帧
@@ -75,56 +73,46 @@ class ProcessingGalleryViewModel: ObservableObject {
 
     // 移除了 createLoadingPlaceholders 方法，现在由 FilmstripView 内部处理
 
+    /// 选择图片并传递到PhotoStackView
+    /// - Parameter imageId: 选中的图片ID
+    func selectImage(_ imageId: String) {
+        print("🖱️ ProcessingGalleryViewModel: 用户选择图片: \(imageId)")
 
-    
-    /// 触发一次图片跳跃动画
-    func triggerJumpAnimation(from frames: [String: CGRect]) {
-        guard let centerImageId = findCenterImageId(from: frames),
-              frames["photoStackTarget"] != nil else { return }
-
-        // 如果图片已经在堆叠中，跳过
-        if centerImageId == mainImageName || stackedImages.contains(centerImageId) { return }
-
-        guard let sourceFrame = frames[centerImageId] else { return }
-
-        self.flyingImageInfo = FlyingImageInfo(id: centerImageId, sourceFrame: sourceFrame)
-        self.hideSourceImageId = centerImageId
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-            // 将当前主图片添加到堆叠中（如果不为空且不在堆叠中）
-            if !self.mainImageName.isEmpty && !self.stackedImages.contains(self.mainImageName) {
-                self.stackedImages.append(self.mainImageName)
-            }
-
-            // 设置新的主图片
-            self.mainImageName = centerImageId
-            self.flyingImageInfo = nil
-            self.hideSourceImageId = nil
+        // 如果图片已经是主图片或已在堆叠中，跳过
+        if imageId == mainImageName || stackedImages.contains(imageId) {
+            print("⚠️ 图片已存在，跳过选择")
+            return
         }
-    }
-    
-    /// 根据Frame信息计算当前在中心的图片ID
-    private func findCenterImageId(from frames: [String: CGRect]) -> String? {
-        let screenCenter = UIScreen.main.bounds.midX
-        var closestImageId: String?
-        var minDistance = CGFloat.infinity
 
-        // 过滤出有效的图片frame，并找到最接近屏幕中心的
-        for (id, frame) in frames {
-            // 确保frame不为零且图片名在列表中
-            let isValidId = isUsingBaseFrames ?
-                baseFrames.contains { $0.id.uuidString == id } :
-                imageNames.contains(id)
-            guard isValidId, frame != .zero else { continue }
-
-            let distance = abs(frame.midX - screenCenter)
-            if distance < minDistance {
-                minDistance = distance
-                closestImageId = id
-            }
+        // 验证图片ID是否有效
+        let isValidId: Bool
+        if isUsingBaseFrames {
+            // 真实模式：检查基础帧数据
+            isValidId = baseFrames.contains { $0.id.uuidString == imageId }
+        } else if isExampleMode {
+            // 示例模式：接受任何非空ID（因为可能来自画册数据）
+            isValidId = !imageId.isEmpty
+        } else {
+            // 默认模式：检查预设图片名称
+            isValidId = imageNames.contains(imageId)
         }
-        return closestImageId
+
+        guard isValidId else {
+            print("❌ 无效的图片ID: \(imageId), 模式: isUsingBaseFrames=\(isUsingBaseFrames), isExampleMode=\(isExampleMode)")
+            return
+        }
+
+        // 将当前主图片添加到堆叠中（如果不为空且不在堆叠中）
+        if !mainImageName.isEmpty && !stackedImages.contains(mainImageName) {
+            stackedImages.append(mainImageName)
+            print("📚 将当前主图片添加到堆叠: \(mainImageName)")
+        }
+
+        // 设置新的主图片
+        mainImageName = imageId
+        print("🖼️ 设置新的主图片: \(mainImageName)")
     }
+
 }
 
 

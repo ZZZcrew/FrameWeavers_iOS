@@ -94,7 +94,10 @@ extension ProcessingView {
                 isExampleMode: galleryViewModel.isExampleMode,
                 config: galleryViewModel.filmstripConfig,
                 comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult,
-                customScrollSpeed: 50.0
+                customScrollSpeed: 50.0,
+                onImageTapped: { imageId in
+                    galleryViewModel.selectImage(imageId)
+                }
             )
             .frame(maxHeight: portraitFilmstripHeight)
             
@@ -131,7 +134,10 @@ extension ProcessingView {
                     isExampleMode: galleryViewModel.isExampleMode,
                     config: galleryViewModel.filmstripConfig,
                     comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult,
-                    customScrollSpeed: 50.0
+                    customScrollSpeed: 50.0,
+                    onImageTapped: { imageId in
+                        galleryViewModel.selectImage(imageId)
+                    }
                 )
                 .frame(maxHeight: landscapeFilmstripHeight)
             }

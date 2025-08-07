@@ -11,8 +11,3 @@ struct FramePreferenceKey: PreferenceKey {
     }
 }
 
-/// 飞行图片的信息
-struct FlyingImageInfo: Identifiable {
-    let id: String
-    let sourceFrame: CGRect
-}

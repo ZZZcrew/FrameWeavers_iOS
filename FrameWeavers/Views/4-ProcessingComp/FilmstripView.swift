@@ -7,6 +7,7 @@ struct FilmstripView: View {
     let config: FilmstripConfiguration
     let comicResult: ComicResult?  // 示例模式下的画册数据
     let customScrollSpeed: Double?  // 自定义滚动速度
+    let onImageTapped: ((String) -> Void)?  // 图片点击回调
     @State private var scrollOffset: CGFloat = 0
 
     // MARK: - Environment
@@ -17,12 +18,14 @@ struct FilmstripView: View {
          isExampleMode: Bool = false,
          config: FilmstripConfiguration = .default,
          comicResult: ComicResult? = nil,
-         customScrollSpeed: Double? = nil) {
+         customScrollSpeed: Double? = nil,
+         onImageTapped: ((String) -> Void)? = nil) {
         self.baseFrames = baseFrames
         self.isExampleMode = isExampleMode
         self.config = config
         self.comicResult = comicResult
         self.customScrollSpeed = customScrollSpeed
+        self.onImageTapped = onImageTapped
     }
 
     // MARK: - Adaptive Properties
@@ -114,7 +117,8 @@ struct FilmstripView: View {
                             FilmFrameView(
                                 displayImage: displayImage,
                                 config: config,
-                                adaptiveHeight: adaptiveFilmstripHeight
+                                adaptiveHeight: adaptiveFilmstripHeight,
+                                onTapped: onImageTapped
                             )
                         }
                     }
@@ -175,6 +179,7 @@ struct FilmFrameView: View {
     let displayImage: DisplayImageData
     let config: FilmstripConfiguration
     let adaptiveHeight: CGFloat
+    let onTapped: ((String) -> Void)?
 
     var body: some View {
         Group {
@@ -188,6 +193,9 @@ struct FilmFrameView: View {
         }
         .frame(width: config.frameWidth, height: adaptiveHeight * 0.8) // 帧高度为胶片高度的80%
         .clipShape(RoundedRectangle(cornerRadius: 4))
+        .onTapGesture {
+            onTapped?(displayImage.id)
+        }
     }
 
     /// 本地图片视图
