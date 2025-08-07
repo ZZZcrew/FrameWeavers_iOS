@@ -1,35 +1,31 @@
 import SwiftUI
 
-/// 处理视图 - 遵循MVVM架构，只负责UI展示
+/// 处理视图 - 遵循MVVM架构，只负责UI展示，采用现代响应式设计
 struct ProcessingView: View {
+    // MARK: - Environment
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
+    // MARK: - Properties
     @ObservedObject var viewModel: VideoUploadViewModel
     @StateObject private var galleryViewModel = ProcessingGalleryViewModel()
     @Namespace private var galleryNamespace
-    @State private var navigateToResults = false // 添加导航状态
+    @State private var navigateToResults = false
 
     var body: some View {
         ZStack {
             // 背景图片
-            Image("背景单色")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
+            backgroundImage
 
-            GeometryReader { geometry in
-                // 强制竖屏布局
-                portraitLayout(geometry)
+            // 使用Size Classes进行响应式布局
+            if isLandscape {
+                landscapeLayout
+            } else {
+                portraitLayout
             }
         }
-
         .onAppear {
-            // 强制竖屏显示
-            AppDelegate.orientationLock = .portrait
-            UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
-            }
-
             handleViewAppear()
             // 检查是否为示例模式
             if let mockViewModel = viewModel as? MockVideoUploadViewModel, mockViewModel.isExampleMode {
@@ -62,86 +58,134 @@ struct ProcessingView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        // .navigationBarBackButtonHidden(false)
-        // .toolbarBackground(Color.clear, for: .navigationBar)
-        // .onDisappear {
-        //     // 离开时恢复支持所有方向
-        //     AppDelegate.orientationLock = .all
-        // }
     }
 }
 
-// MARK: - 布局扩展
+// MARK: - 响应式布局扩展
 extension ProcessingView {
 
-    /// 竖屏布局
-    @ViewBuilder
-    private func portraitLayout(_ geometry: GeometryProxy) -> some View {
-        VStack(spacing: 0) {
-            // 顶部弹性空间 - 响应式
-            Spacer()
-                .frame(
-                    minHeight: geometry.size.height * 0.02,
-                    maxHeight: geometry.size.height * 0.06
-                )
+    /// 背景图片
+    private var backgroundImage: some View {
+        Image("背景单色")
+            .resizable()
+            .scaledToFill()
+            .ignoresSafeArea()
+    }
+
+    /// 竖屏布局 - 使用现代响应式设计
+    private var portraitLayout: some View {
+        VStack(spacing: portraitSpacing) {
+            Spacer(minLength: portraitTopSpacing)
+
+            // 图片堆叠区域
+            PhotoStackView(
+                mainImageName: galleryViewModel.mainImageName,
+                stackedImages: galleryViewModel.stackedImages,
+                namespace: galleryNamespace,
+                baseFrames: galleryViewModel.baseFrameDataMap
+            )
+            .frame(maxHeight: portraitPhotoStackHeight)
+
+            Spacer(minLength: portraitMiddleSpacing)
 
             // 胶片画廊区域
-            VStack(spacing: geometry.size.height * 0.03) {
-                PhotoStackView(
-                    mainImageName: galleryViewModel.mainImageName,
-                    stackedImages: galleryViewModel.stackedImages,
-                    namespace: galleryNamespace,
-                    baseFrames: galleryViewModel.baseFrameDataMap
-                )
-                .frame(
-                    maxHeight: max(
-                        geometry.size.height * 0.32,
-                        min(geometry.size.height * 0.38, 300)
-                    )
-                )
-
-                FilmstripView(
-                    baseFrames: galleryViewModel.baseFrames,
-                    isExampleMode: galleryViewModel.isExampleMode,
-                    config: galleryViewModel.filmstripConfig,
-                    comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult,
-                    customScrollSpeed: 50.0  // 设置较慢的滚动速度
-                )
-                .frame(
-                    maxHeight: max(
-                        geometry.size.height * 0.18,
-                        min(geometry.size.height * 0.22, 180)
-                    )
-                )
-            }
-
-            // 中间弹性空间 - 响应式
-            Spacer()
-                .frame(
-                    minHeight: geometry.size.height * 0.03,
-                    maxHeight: geometry.size.height * 0.08
-                )
+            FilmstripView(
+                baseFrames: galleryViewModel.baseFrames,
+                isExampleMode: galleryViewModel.isExampleMode,
+                config: galleryViewModel.filmstripConfig,
+                comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult,
+                customScrollSpeed: 50.0
+            )
+            .frame(maxHeight: portraitFilmstripHeight)
+            
+            Spacer(minLength: portraitMiddleSpacing)
 
             // 进度显示区域
             ProcessingLoadingView(
                 progress: viewModel.uploadProgress,
                 status: viewModel.uploadStatus
             )
-            .padding(.horizontal, geometry.size.width * 0.05)
 
-            // 底部弹性空间 - 响应式
-            Spacer()
-                .frame(
-                    minHeight: geometry.size.height * 0.04,
-                    maxHeight: geometry.size.height * 0.1
-                )
+            Spacer(minLength: portraitBottomSpacing)
         }
-        .padding(.vertical, geometry.size.height * 0.02)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// 横屏布局 - 符合规范的简化水平布局
+    private var landscapeLayout: some View {
+        HStack(spacing: landscapeSpacing) {
+            // 左侧：主要内容区域
+            VStack(spacing: landscapeContentSpacing) {
+                // 图片堆叠区域 - 横屏时稍大
+                PhotoStackView(
+                    mainImageName: galleryViewModel.mainImageName,
+                    stackedImages: galleryViewModel.stackedImages,
+                    namespace: galleryNamespace,
+                    baseFrames: galleryViewModel.baseFrameDataMap
+                )
+                .frame(maxHeight: landscapePhotoStackHeight)
+
+                // 胶片画廊区域 - 横屏时保持紧凑
+                FilmstripView(
+                    baseFrames: galleryViewModel.baseFrames,
+                    isExampleMode: galleryViewModel.isExampleMode,
+                    config: galleryViewModel.filmstripConfig,
+                    comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult,
+                    customScrollSpeed: 50.0
+                )
+                .frame(maxHeight: landscapeFilmstripHeight)
+            }
+            .frame(maxWidth: .infinity)
+
+            // 右侧：进度显示区域
+            VStack(spacing: 15) {
+                Spacer()
+                ProcessingLoadingView(
+                    progress: viewModel.uploadProgress,
+                    status: viewModel.uploadStatus
+                )
+                Spacer()
+            }
+            .frame(width: landscapeProgressAreaWidth)
+        }
+        .padding(.horizontal, landscapePadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
-// MARK: - Subviews
+// MARK: - 响应式属性
+extension ProcessingView {
 
+    /// 是否为紧凑尺寸
+    private var isCompact: Bool {
+        horizontalSizeClass == .compact
+    }
+
+    /// 是否为横屏模式
+    private var isLandscape: Bool {
+        horizontalSizeClass == .compact && verticalSizeClass == .compact
+    }
+
+    // MARK: - 竖屏属性
+    private var portraitSpacing: CGFloat { isCompact ? 16 : 24 }
+    private var portraitTopSpacing: CGFloat { isCompact ? 20 : 40 }
+    private var portraitMiddleSpacing: CGFloat { isCompact ? 30 : 50 }
+    private var portraitBottomSpacing: CGFloat { isCompact ? 20 : 40 }
+    private var portraitPadding: CGFloat { isCompact ? 20 : 40 }
+    private var portraitGallerySpacing: CGFloat { isCompact ? 20 : 30 }
+    private var portraitPhotoStackHeight: CGFloat { isCompact ? 250 : 300 }
+    private var portraitFilmstripHeight: CGFloat { isCompact ? 100 : 120 }
+
+    // MARK: - 横屏属性 (符合规范：充分利用水平空间)
+    private var landscapeSpacing: CGFloat { 40 }
+    private var landscapePadding: CGFloat { 30 }
+    private var landscapeContentSpacing: CGFloat { 25 }
+    private var landscapePhotoStackHeight: CGFloat { 220 } // 比竖屏compact稍大
+    private var landscapeFilmstripHeight: CGFloat { 90 }   // 比竖屏compact稍大
+    private var landscapeProgressAreaWidth: CGFloat { 280 }
+}
+
+// MARK: - 事件处理扩展
 extension ProcessingView {
     // MARK: - 事件处理方法
 
