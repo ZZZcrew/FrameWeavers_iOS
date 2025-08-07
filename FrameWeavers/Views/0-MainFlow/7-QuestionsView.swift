@@ -53,7 +53,7 @@ private extension QuestionsView {
     var questionContentSection: some View {
         VStack {
             TypewriterView(
-                text: questions.enumerated().map { index, question in
+                text: questions.prefix(3).enumerated().map { index, question in
                     "\(index + 1). \(question)"
                 }.joined(separator: "\n\n"),
                 typeSpeed: 0.10,
