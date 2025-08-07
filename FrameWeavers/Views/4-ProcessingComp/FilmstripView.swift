@@ -7,7 +7,7 @@ struct FilmstripView: View {
     let config: FilmstripConfiguration
     let comicResult: ComicResult?  // 示例模式下的画册数据
     let customScrollSpeed: Double?  // 自定义滚动速度
-    @Binding var selectedImageId: String  // 选中的图片ID
+    let onImageTapped: ((String) -> Void)?  // 图片点击回调
     let namespace: Namespace.ID  // 用于matchedGeometryEffect
     @State private var scrollOffset: CGFloat = 0
 
@@ -20,14 +20,14 @@ struct FilmstripView: View {
          config: FilmstripConfiguration = .default,
          comicResult: ComicResult? = nil,
          customScrollSpeed: Double? = nil,
-         selectedImageId: Binding<String>,
+         onImageTapped: ((String) -> Void)? = nil,
          namespace: Namespace.ID) {
         self.baseFrames = baseFrames
         self.isExampleMode = isExampleMode
         self.config = config
         self.comicResult = comicResult
         self.customScrollSpeed = customScrollSpeed
-        self._selectedImageId = selectedImageId
+        self.onImageTapped = onImageTapped
         self.namespace = namespace
     }
 
@@ -119,7 +119,7 @@ struct FilmstripView: View {
                                 displayImage: displayImage,
                                 config: config,
                                 adaptiveHeight: adaptiveFilmstripHeight,
-                                selectedImageId: $selectedImageId,
+                                onTapped: onImageTapped,
                                 namespace: namespace,
                                 shouldUseMatchedGeometry: shouldUseGeometry
                             )
@@ -182,7 +182,7 @@ struct FilmFrameView: View {
     let displayImage: DisplayImageData
     let config: FilmstripConfiguration
     let adaptiveHeight: CGFloat
-    @Binding var selectedImageId: String
+    let onTapped: ((String) -> Void)?
     let namespace: Namespace.ID
     let shouldUseMatchedGeometry: Bool
 
@@ -195,7 +195,7 @@ struct FilmFrameView: View {
                 view.matchedGeometryEffect(id: "filmstrip_\(displayImage.id)", in: namespace)
             }
             .onTapGesture {
-                selectedImageId = displayImage.id
+                onTapped?(displayImage.id)
             }
     }
 

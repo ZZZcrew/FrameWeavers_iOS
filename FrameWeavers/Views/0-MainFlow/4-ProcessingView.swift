@@ -13,7 +13,6 @@ struct ProcessingView: View {
     @Namespace private var galleryNamespace
     @Namespace private var flyingAnimationNamespace
     @State private var navigateToResults = false
-    @State private var currentImageName: String = ""
 
     var body: some View {
         ZStack {
@@ -50,18 +49,6 @@ struct ProcessingView: View {
         }
         .onChange(of: viewModel.baseFrames) { _, newFrames in
             handleBaseFramesChange(newFrames)
-        }
-        .onChange(of: galleryViewModel.mainImageName) { _, newImageName in
-            // 同步galleryViewModel的mainImageName到currentImageName
-            if !newImageName.isEmpty {
-                currentImageName = newImageName
-            }
-        }
-        .onChange(of: currentImageName) { _, newImageName in
-            // 当currentImageName变化时，通知galleryViewModel
-            if !newImageName.isEmpty && newImageName != galleryViewModel.mainImageName {
-                galleryViewModel.setCurrentImage(newImageName)
-            }
         }
         // 添加导航逻辑
         .navigationDestination(isPresented: $navigateToResults) {
@@ -109,9 +96,9 @@ extension ProcessingView {
 
             // 图片堆叠区域 - 只在有有效数据时显示
             Group {
-                if galleryViewModel.hasValidData && !currentImageName.isEmpty {
+                if galleryViewModel.hasValidData && !galleryViewModel.mainImageName.isEmpty {
                     PhotoStackView(
-                        mainImageName: $currentImageName,
+                        mainImageName: galleryViewModel.mainImageName,
                         stackedImages: galleryViewModel.stackedImages,
                         namespace: flyingAnimationNamespace,
                         baseFrames: galleryViewModel.baseFrameDataMap
@@ -129,7 +116,12 @@ extension ProcessingView {
                 config: galleryViewModel.filmstripConfig,
                 comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult,
                 customScrollSpeed: 50.0,
-                selectedImageId: $currentImageName,
+                onImageTapped: { imageId in
+                    // 使用HTML中的精确缓动函数
+                    withAnimation(.timingCurve(0.25, 0.46, 0.45, 0.94, duration: 0.4)) {
+                        galleryViewModel.selectImage(imageId)
+                    }
+                },
                 namespace: flyingAnimationNamespace
             )
             .frame(maxHeight: portraitFilmstripHeight)
@@ -154,9 +146,9 @@ extension ProcessingView {
             VStack(spacing: landscapeContentSpacing) {
                 // 图片堆叠区域 - 横屏时稍大，只在有有效数据时显示
                 Group {
-                    if galleryViewModel.hasValidData && !currentImageName.isEmpty {
+                    if galleryViewModel.hasValidData && !galleryViewModel.mainImageName.isEmpty {
                         PhotoStackView(
-                            mainImageName: $currentImageName,
+                            mainImageName: galleryViewModel.mainImageName,
                             stackedImages: galleryViewModel.stackedImages,
                             namespace: flyingAnimationNamespace,
                             baseFrames: galleryViewModel.baseFrameDataMap
@@ -172,7 +164,12 @@ extension ProcessingView {
                     config: galleryViewModel.filmstripConfig,
                     comicResult: (viewModel as? MockVideoUploadViewModel)?.targetComicResult,
                     customScrollSpeed: 50.0,
-                    selectedImageId: $currentImageName,
+                    onImageTapped: { imageId in
+                        // 使用HTML中的精确缓动函数
+                        withAnimation(.timingCurve(0.25, 0.46, 0.45, 0.94, duration: 0.4)) {
+                            galleryViewModel.selectImage(imageId)
+                        }
+                    },
                     namespace: flyingAnimationNamespace
                 )
                 .frame(maxHeight: landscapeFilmstripHeight)
