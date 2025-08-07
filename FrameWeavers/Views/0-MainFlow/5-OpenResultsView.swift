@@ -68,6 +68,7 @@ extension OpenResultsView {
                     .foregroundColor(Color(hex: "#855C23"))
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
+                    .padding(.horizontal, landscapeTextPadding)
 
                 // 显示故事摘要作为描述
                 Text(comicResult.summary ?? "暂无故事摘要")
@@ -77,7 +78,8 @@ extension OpenResultsView {
                     .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
                     .opacity(0.6)
                     .multilineTextAlignment(.center)
-                    .lineLimit(4)
+                    .lineLimit(nil)
+                    .padding(.horizontal, landscapeTextPadding)
 
                 NavigationLink {
                     ComicResultView(comicResult: comicResult)
@@ -123,6 +125,7 @@ extension OpenResultsView {
                     .fontWeight(.bold)
                     .foregroundColor(Color(hex: "#855C23"))
                     .multilineTextAlignment(.center)
+                    .padding(.horizontal, portraitTextPadding)
 
                 // 显示故事摘要作为描述
                 Text(comicResult.summary ?? "暂无故事摘要")
@@ -132,8 +135,9 @@ extension OpenResultsView {
                     .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
                     .opacity(0.6)
                     .multilineTextAlignment(.center)
-                    .lineLimit(5)
+                    .lineLimit(nil)
                     .lineSpacing(4)
+                    .padding(.horizontal, portraitTextPadding)
             }
 
             // 文本和按钮之间的弹性间距
@@ -175,6 +179,7 @@ private extension OpenResultsView {
     var portraitEndSpacing: CGFloat { isCompact ? 20 : 40 }
     var portraitPadding: CGFloat { isCompact ? 20 : 40 }
     var portraitContentSpacing: CGFloat { isCompact ? 16 : 20 }
+    var portraitTextPadding: CGFloat { isCompact ? 16 : 24 }
 
     var portraitImageHeight: CGFloat { isCompact ? 280 : 350 }
     var portraitTitleSize: CGFloat { isCompact ? 28 : 32 }
@@ -191,6 +196,9 @@ private extension OpenResultsView {
     }
     var landscapeContentSpacing: CGFloat {
         horizontalSizeClass == .regular ? 20 : 15
+    }
+    var landscapeTextPadding: CGFloat {
+        horizontalSizeClass == .regular ? 16 : 12
     }
 
     var landscapeImageHeight: CGFloat {
