@@ -34,8 +34,8 @@ struct StyleSelectionView<ViewModel: VideoUploadViewModel>: View {
                 .ignoresSafeArea()
 
             // 基于Size Classes的现代响应式布局
-            if horizontalSizeClass == .compact && verticalSizeClass == .compact {
-                // 横屏紧凑模式 (iPhone横屏)
+            if verticalSizeClass == .compact {
+                // 横屏模式 (所有设备横屏)
                 landscapeLayout
             } else {
                 // 竖屏或iPad模式
@@ -57,6 +57,11 @@ private extension StyleSelectionView {
         horizontalSizeClass == .compact
     }
 
+    /// 是否为横屏模式 - 与其他视图保持一致
+    var isLandscape: Bool {
+        verticalSizeClass == .compact
+    }
+
     // 竖屏布局的属性
     var portraitSpacing: CGFloat { isCompact ? 16 : 24 }
     var portraitTopSpacing: CGFloat { isCompact ? 20 : 40 }
@@ -67,11 +72,22 @@ private extension StyleSelectionView {
     var portraitQuadrantSize: CGFloat { isCompact ? 280 : 350 }
     var portraitButtonMaxWidth: CGFloat { isCompact ? 220 : 250 }
 
-    // 横屏布局的属性 - 放大组件
-    var landscapeSpacing: CGFloat { 30 }
-    var landscapeHorizontalPadding: CGFloat { 25 }
-    var landscapeQuadrantSize: CGFloat { 240 }  // 从180增加到240
-    var landscapeButtonMaxWidth: CGFloat { 200 }  // 从160增加到200
+    // 横屏布局的属性 - 根据设备差异化适配
+    var landscapeSpacing: CGFloat {
+        horizontalSizeClass == .regular ? 40 : 30
+    }
+    var landscapeHorizontalPadding: CGFloat {
+        horizontalSizeClass == .regular ? 35 : 25
+    }
+    var landscapeQuadrantSize: CGFloat {
+        horizontalSizeClass == .regular ? 280 : 240  // 大屏设备更大
+    }
+    var landscapeButtonMaxWidth: CGFloat {
+        horizontalSizeClass == .regular ? 240 : 200  // 大屏设备更大
+    }
+    var landscapeButtonAreaWidth: CGFloat {
+        horizontalSizeClass == .regular ? 260 : 220  // 大屏设备更大的按钮区域
+    }
 }
 
 // MARK: - Layout Components
@@ -109,7 +125,7 @@ private extension StyleSelectionView {
                 landscapeStartButton
                 Spacer()
             }
-            .frame(width: 220)  // 增加按钮区域宽度
+            .frame(width: landscapeButtonAreaWidth)
         }
         .padding(.horizontal, landscapeHorizontalPadding)
         .padding(.vertical, 10)
