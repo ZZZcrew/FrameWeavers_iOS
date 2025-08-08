@@ -101,34 +101,27 @@ struct QuestionsLandscapeLayout: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     let questions: [String]
     var body: some View {
+        let layout = LayoutCalculator(horizontalSizeClass: horizontalSizeClass, verticalSizeClass: .compact).questionsLayout
         VStack(spacing: 0) {
             // 问题内容区域
             QuestionsContentTextView(questions: questions)
                 .frame(maxWidth: .infinity)
-                .frame(minHeight: landscapeContentMinHeight)
-                .padding(.horizontal, landscapeContentHorizontalPadding)
-                .padding(.top, landscapeContentTopPadding)
+                .frame(minHeight: layout.contentMinHeight)
+                .padding(.horizontal, layout.contentHorizontalPadding)
+                .padding(.top, layout.contentTopPadding)
 
             // "完"字区域
             QuestionsCompletionMarkView()
                 .frame(maxWidth: .infinity)
-                .frame(height: landscapeCompletionAreaHeight)
-                .padding(.horizontal, landscapeContentHorizontalPadding)
+                .frame(height: layout.completionAreaHeight)
+                .padding(.horizontal, layout.contentHorizontalPadding)
             
             // 底部水印logo
             WatermarkLogoView()
-                .padding(.bottom, landscapeWatermarkBottomPadding)
+                .padding(.bottom, layout.watermarkBottomPadding)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, landscapeOuterHorizontalPadding)
-        .padding(.vertical, landscapeVerticalPadding)
+        .padding(.horizontal, layout.outerHorizontalPadding)
+        .padding(.vertical, layout.verticalPadding)
     }
-    // 横屏自适应属性（与原实现保持一致）
-    private var landscapeContentMinHeight: CGFloat { horizontalSizeClass == .regular ? 220 : 200 }
-    private var landscapeContentHorizontalPadding: CGFloat { horizontalSizeClass == .regular ? 50 : 40 }
-    private var landscapeContentTopPadding: CGFloat { horizontalSizeClass == .regular ? 25 : 20 }
-    private var landscapeOuterHorizontalPadding: CGFloat { horizontalSizeClass == .regular ? 25 : 20 }
-    private var landscapeVerticalPadding: CGFloat { horizontalSizeClass == .regular ? 25 : 20 }
-    private var landscapeCompletionAreaHeight: CGFloat { horizontalSizeClass == .regular ? 70 : 60 }
-    private var landscapeWatermarkBottomPadding: CGFloat { horizontalSizeClass == .regular ? 15 : 12 }
 }

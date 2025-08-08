@@ -114,39 +114,41 @@ struct ComicPageFooterView: View {
 private extension ComicPanelView {
     /// 横屏布局 - 左右分栏
     var landscapeLayout: some View {
-        HStack(spacing: landscapeSpacing) {
+        let layout = LayoutCalculator(horizontalSizeClass: horizontalSizeClass, verticalSizeClass: verticalSizeClass).comicPanelLandscape
+        return HStack(spacing: layout.spacing) {
             // 左侧：图片区域
             ComicImageSectionView(imageUrl: panel.imageUrl)
                 .frame(maxWidth: .infinity)
-                .padding(.leading, landscapeHorizontalPadding)
+                .padding(.leading, layout.horizontalPadding)
 
             // 右侧：文本区域
             landscapeTextSection
-                .frame(width: landscapeTextAreaWidth)
-                .padding(.trailing, landscapeHorizontalPadding)
+                .frame(width: layout.textAreaWidth)
+                .padding(.trailing, layout.horizontalPadding)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.vertical, landscapeVerticalPadding)
+        .padding(.vertical, layout.verticalPadding)
     }
     
     /// 竖屏布局 - 上下分栏
     var portraitLayout: some View {
-        VStack(spacing: portraitSpacing) {
-            Spacer(minLength: portraitTopSpacing)
+        let layout = LayoutCalculator(horizontalSizeClass: horizontalSizeClass, verticalSizeClass: verticalSizeClass).comicPanelPortrait
+        return VStack(spacing: layout.spacing) {
+            Spacer(minLength: layout.topSpacing)
             
             // 上方：图片区域
             ComicImageSectionView(imageUrl: panel.imageUrl)
                 .frame(maxWidth: .infinity)
-                .frame(height: portraitImageHeight)
-                .padding(.horizontal, portraitHorizontalPadding)
+                .frame(height: layout.imageHeight)
+                .padding(.horizontal, layout.horizontalPadding)
 
-            Spacer(minLength: portraitMiddleSpacing)
+            Spacer(minLength: layout.middleSpacing)
             
             // 下方：文本区域
             portraitTextSection
-                .padding(.horizontal, portraitHorizontalPadding)
+                .padding(.horizontal, layout.horizontalPadding)
             
-            Spacer(minLength: portraitBottomSpacing)
+            Spacer(minLength: layout.bottomSpacing)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -158,50 +160,52 @@ private extension ComicPanelView {
 
     /// 横屏文本区域组件
     var landscapeTextSection: some View {
-        VStack(spacing: 0) {
+        let layout = LayoutCalculator(horizontalSizeClass: horizontalSizeClass, verticalSizeClass: verticalSizeClass).comicPanelLandscape
+        return VStack(spacing: 0) {
             // 文本内容区域 - "目"字上面的"口"
             ComicNarrationTextView(
                 narration: panel.narration,
-                fontSize: landscapeFontSize,
-                lineSpacing: landscapeLineSpacing,
-                iconSpacing: landscapeIconSpacing,
-                iconSize: landscapeIconSize
+                fontSize: layout.fontSize,
+                lineSpacing: layout.lineSpacing,
+                iconSpacing: layout.iconSpacing,
+                iconSize: layout.iconSize
             )
             .frame(maxWidth: .infinity)
-            .frame(minHeight: landscapeTextContentMinHeight)
-            .padding(.horizontal, landscapeTextHorizontalPadding)
-            .padding(.top, landscapeTextTopPadding)
+            .frame(minHeight: layout.textContentMinHeight)
+            .padding(.horizontal, layout.textHorizontalPadding)
+            .padding(.top, layout.textTopPadding)
 
             // 页码区域 - "目"字下面的"口" - 改为VStack布局
             ComicPageFooterView(
                 pageIndex: pageIndex,
-                pageNumberFontSize: landscapePageNumberFontSize,
+                pageNumberFontSize: layout.pageNumberFontSize,
                 isFontRestricted: true,
-                areaHeight: landscapePageNumberAreaHeight,
-                horizontalPadding: landscapeTextHorizontalPadding
+                areaHeight: layout.pageNumberAreaHeight,
+                horizontalPadding: layout.textHorizontalPadding
             )
         }
     }
     
     /// 竖屏文本区域组件
     var portraitTextSection: some View {
-        VStack(spacing: portraitTextSpacing) {
+        let layout = LayoutCalculator(horizontalSizeClass: horizontalSizeClass, verticalSizeClass: verticalSizeClass).comicPanelPortrait
+        return VStack(spacing: layout.textSpacing) {
             // 文本内容区域
             ComicNarrationTextView(
                 narration: panel.narration,
-                fontSize: portraitFontSize,
-                lineSpacing: portraitLineSpacing,
-                iconSpacing: portraitIconSpacing,
-                iconSize: portraitIconSize
+                fontSize: layout.fontSize,
+                lineSpacing: layout.lineSpacing,
+                iconSpacing: layout.iconSpacing,
+                iconSize: layout.iconSize
             )
             .frame(maxWidth: .infinity)
-            .frame(minHeight: portraitTextContentMinHeight)
-            .padding(.horizontal, portraitTextHorizontalPadding)
+            .frame(minHeight: layout.textContentMinHeight)
+            .padding(.horizontal, layout.textHorizontalPadding)
 
             // 页码和水印区域
             ComicPageFooterView(
                 pageIndex: pageIndex,
-                pageNumberFontSize: portraitPageNumberFontSize,
+                pageNumberFontSize: layout.pageNumberFontSize,
                 isFontRestricted: true,
                 areaHeight: nil,
                 horizontalPadding: nil
@@ -213,152 +217,8 @@ private extension ComicPanelView {
 
 // MARK: - Adaptive Properties
 private extension ComicPanelView {
-    /// 是否为紧凑尺寸设备
-    var isCompact: Bool {
-        horizontalSizeClass == .compact
-    }
-
     /// 是否为横屏模式
     var isLandscape: Bool {
         verticalSizeClass == .compact
-    }
-    
-    // MARK: - 横屏属性
-    
-    /// 横屏间距
-    var landscapeSpacing: CGFloat {
-        horizontalSizeClass == .regular ? 40 : 30
-    }
-
-    /// 横屏水平边距
-    var landscapeHorizontalPadding: CGFloat {
-        horizontalSizeClass == .regular ? 25 : 20
-    }
-
-    /// 横屏垂直边距
-    var landscapeVerticalPadding: CGFloat {
-        20
-    }
-
-    /// 横屏文本区域宽度
-    var landscapeTextAreaWidth: CGFloat {
-        horizontalSizeClass == .regular ? 280 : 240
-    }
-
-    /// 横屏文本内容最小高度
-    var landscapeTextContentMinHeight: CGFloat {
-        horizontalSizeClass == .regular ? 220 : 200
-    }
-
-    /// 横屏文本水平边距
-    var landscapeTextHorizontalPadding: CGFloat {
-        horizontalSizeClass == .regular ? 12 : 10
-    }
-
-    /// 横屏文本顶部边距
-    var landscapeTextTopPadding: CGFloat {
-        horizontalSizeClass == .regular ? 25 : 20
-    }
-
-    /// 横屏页码区域高度
-    var landscapePageNumberAreaHeight: CGFloat {
-        horizontalSizeClass == .regular ? 70 : 60
-    }
-    
-    /// 横屏页码字体大小
-    var landscapePageNumberFontSize: CGFloat {
-        horizontalSizeClass == .regular ? 17 : 16
-    }
-    
-    /// 横屏字体大小
-    var landscapeFontSize: CGFloat {
-        horizontalSizeClass == .regular ? 18 : 16
-    }
-
-    /// 横屏行间距
-    var landscapeLineSpacing: CGFloat {
-        horizontalSizeClass == .regular ? 8 : 6
-    }
-
-    /// 横屏图标间距
-    var landscapeIconSpacing: CGFloat {
-        horizontalSizeClass == .regular ? 15 : 12
-    }
-
-    /// 横屏图标大小
-    var landscapeIconSize: CGFloat {
-        horizontalSizeClass == .regular ? 35 : 30
-    }
-    
-    // MARK: - 竖屏属性
-    
-    /// 竖屏间距
-    var portraitSpacing: CGFloat {
-        isCompact ? 20 : 30
-    }
-
-    /// 竖屏顶部间距
-    var portraitTopSpacing: CGFloat {
-        isCompact ? 20 : 30
-    }
-    
-    /// 竖屏中间间距
-    var portraitMiddleSpacing: CGFloat {
-        isCompact ? 20 : 30
-    }
-    
-    /// 竖屏底部间距
-    var portraitBottomSpacing: CGFloat {
-        isCompact ? 20 : 30
-    }
-
-    /// 竖屏水平边距
-    var portraitHorizontalPadding: CGFloat {
-        isCompact ? 20 : 30
-    }
-
-    /// 竖屏图片高度
-    var portraitImageHeight: CGFloat {
-        isCompact ? 300 : 400
-    }
-
-    /// 竖屏字体大小
-    var portraitFontSize: CGFloat {
-        isCompact ? 16 : 18
-    }
-
-    /// 竖屏行间距
-    var portraitLineSpacing: CGFloat {
-        isCompact ? 6 : 8
-    }
-
-    /// 竖屏图标间距
-    var portraitIconSpacing: CGFloat {
-        isCompact ? 12 : 15
-    }
-
-    /// 竖屏图标大小
-    var portraitIconSize: CGFloat {
-        isCompact ? 30 : 35
-    }
-
-    /// 竖屏文本内容最小高度
-    var portraitTextContentMinHeight: CGFloat {
-        isCompact ? 120 : 150
-    }
-
-    /// 竖屏文本水平边距
-    var portraitTextHorizontalPadding: CGFloat {
-        isCompact ? 16 : 20
-    }
-
-    /// 竖屏页码字体大小
-    var portraitPageNumberFontSize: CGFloat {
-        isCompact ? 16 : 17
-    }
-    
-    /// 竖屏文本间距
-    var portraitTextSpacing: CGFloat {
-        isCompact ? 16 : 20
     }
 }
