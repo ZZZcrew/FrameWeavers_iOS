@@ -84,24 +84,3 @@ struct ComicReaderMenuBar: View {
         .accessibilityHint("记录阅读进度")
     }
 }
-
-// MARK: - Preview
-
-#Preview {
-    ZStack {
-        // 模拟背景
-        Color.brown.opacity(0.3)
-            .ignoresSafeArea()
-        
-        ComicReaderMenuBar(
-            isVisible: .constant(true),
-            onShareTapped: {
-                print("分享按钮被点击")
-            },
-            onRecordTapped: {
-                print("记录按钮被点击")
-            }
-        )
-    }
-    .preferredColorScheme(.dark)
-}
