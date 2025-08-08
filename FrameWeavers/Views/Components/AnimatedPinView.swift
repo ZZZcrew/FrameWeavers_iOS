@@ -6,6 +6,18 @@ struct AnimatedPinView: View {
     let quadrantSize: CGFloat
     let isAnimating: Bool
 
+    init(currentIndex: Int, quadrantSize: CGFloat, isAnimating: Bool) {
+        self.currentIndex = currentIndex
+        self.quadrantSize = quadrantSize
+        self.isAnimating = isAnimating
+
+        let positions = AnimatedPinView.computePinPositions(for: quadrantSize)
+        let initialPoint = CGPoint(x: positions[min(max(0, currentIndex), positions.count - 1)].x,
+                                   y: positions[min(max(0, currentIndex), positions.count - 1)].y)
+        self._animatedPosition = State(initialValue: initialPoint)
+        self._currentPositionIndex = State(initialValue: min(max(0, currentIndex), positions.count - 1))
+    }
+
     @State private var pinOffset: CGFloat = 0
     @State private var pinRotation: Double = 0
     @State private var pinScale: CGFloat = 1.0
@@ -43,49 +55,32 @@ struct AnimatedPinView: View {
                 )
         }
         .onChange(of: currentIndex) { oldValue, newValue in
-            if oldValue != newValue && hasAppeared {
+            if oldValue != newValue && hasAppeared && isAnimating {
                 startPinAnimation(from: oldValue, to: newValue)
             }
         }
         .onAppear {
-            // 初始化位置，但不立即播放动画
-            currentPositionIndex = currentIndex
-            animatedPosition = CGPoint(x: pinPositions[currentIndex].x, y: pinPositions[currentIndex].y)
-
-            if !hasAppeared {
-                hasAppeared = true
-                // 延迟播放初始动画，避免阻塞界面渲染
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    startInsertAnimation()
-                }
-            }
+            // 首次进入不进行任何动画，保持静止
+            hasAppeared = true
         }
     }
     
     /// 计算图钉的响应式位置
     private var pinPositions: [(x: CGFloat, y: CGFloat)] {
-        let offsetX = quadrantSize * 0.45  // 相对于中心的X偏移
-        let offsetY = quadrantSize * 0.1   // 相对于顶部的Y偏移
-        let centerX = quadrantSize * 0.5
-        let centerY = quadrantSize * 0.5
+        Self.computePinPositions(for: quadrantSize)
+    }
+
+    private static func computePinPositions(for size: CGFloat) -> [(x: CGFloat, y: CGFloat)] {
+        let offsetX = size * 0.45  // 相对于中心的X偏移
+        let offsetY = size * 0.1   // 相对于顶部的Y偏移
+        let centerX = size * 0.5
+        let centerY = size * 0.5
 
         return [
-            // 往下移动：增大Y值或减小负Y偏移
-            // 往上移动：减小Y值或增大负Y偏移
-            // 往左移动：减小X值
-            // 往右移动：增大X值
-
-            // 左上象限 - 往下走一点点：减小 -size * 0.35 中的 0.35
-            (x: centerX - offsetX + quadrantSize * 0.42, y: centerY - offsetY - quadrantSize * 0.28),
-
-            // 右上象限 - 往下、往左走一点点：减小 offsetX，减小 -size * 0.35 中的 0.35
-            (x: centerX + offsetX - quadrantSize * 0.06, y: centerY - offsetY - quadrantSize * 0.28),
-
-            // 左下象限 - 往下走多一点点：增大 size * 0.2 中的 0.2
-            (x: centerX - offsetX + quadrantSize * 0.42, y: centerY + offsetY - quadrantSize * 0.07),
-
-            // 右下象限 - 往上、往左走一点点：减小 offsetX，减小 size * 0.2 中的 0.2
-            (x: centerX + offsetX - quadrantSize * 0.06, y: centerY + offsetY - quadrantSize * 0.07)
+            (x: centerX - offsetX + size * 0.42, y: centerY - offsetY - size * 0.28),
+            (x: centerX + offsetX - size * 0.06, y: centerY - offsetY - size * 0.28),
+            (x: centerX - offsetX + size * 0.42, y: centerY + offsetY - size * 0.07),
+            (x: centerX + offsetX - size * 0.06, y: centerY + offsetY - size * 0.07)
         ]
     }
     
