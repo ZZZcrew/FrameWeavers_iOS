@@ -114,7 +114,7 @@ private extension ComicPanelView {
                 .padding(.leading, layout.horizontalPadding)
 
             // 右侧：文本区域
-            landscapeTextSection
+            textSection
                 .frame(width: layout.textAreaWidth)
                 .padding(.trailing, layout.horizontalPadding)
         }
@@ -137,7 +137,7 @@ private extension ComicPanelView {
             Spacer(minLength: layout.middleSpacing)
             
             // 下方：文本区域
-            portraitTextSection
+            textSection
                 .padding(.horizontal, layout.horizontalPadding)
             
             Spacer(minLength: layout.bottomSpacing)
@@ -146,59 +146,60 @@ private extension ComicPanelView {
     }
 
     // MARK: - UI Components
-    /// 横屏文本区域组件
-    var landscapeTextSection: some View {
-        let layout = LayoutCalculator(horizontalSizeClass: horizontalSizeClass, verticalSizeClass: verticalSizeClass).comicPanelLandscape
-        return VStack(spacing: 0) {
-            // 文本内容区域 - "目"字上面的"口"
-            ComicNarrationTextView(
-                narration: panel.narration,
-                fontSize: layout.fontSize,
-                lineSpacing: layout.lineSpacing,
-                iconSpacing: layout.iconSpacing,
-                iconSize: layout.iconSize
-            )
-            .frame(maxWidth: .infinity)
-            .frame(minHeight: layout.textContentMinHeight)
-            .padding(.horizontal, layout.textHorizontalPadding)
-            .padding(.top, layout.textTopPadding)
+    /// 文本区域组件（横竖屏自适应）
+    @ViewBuilder
+    var textSection: some View {
+        let calculator = LayoutCalculator(horizontalSizeClass: horizontalSizeClass, verticalSizeClass: verticalSizeClass)
+        if isLandscape {
+            let layout = calculator.comicPanelLandscape
+            VStack(spacing: 0) {
+                // 文本内容区域 - "目"字上面的"口"
+                ComicNarrationTextView(
+                    narration: panel.narration,
+                    fontSize: layout.fontSize,
+                    lineSpacing: layout.lineSpacing,
+                    iconSpacing: layout.iconSpacing,
+                    iconSize: layout.iconSize
+                )
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: layout.textContentMinHeight)
+                .padding(.horizontal, layout.textHorizontalPadding)
+                .padding(.top, layout.textTopPadding)
 
-            // 页码区域 - "目"字下面的"口" - 改为VStack布局
-            ComicPageFooterView(
-                pageIndex: pageIndex,
-                pageNumberFontSize: layout.pageNumberFontSize,
-                isFontRestricted: true,
-                areaHeight: layout.pageNumberAreaHeight,
-                horizontalPadding: layout.textHorizontalPadding
-            )
-        }
-    }
-    
-    /// 竖屏文本区域组件
-    var portraitTextSection: some View {
-        let layout = LayoutCalculator(horizontalSizeClass: horizontalSizeClass, verticalSizeClass: verticalSizeClass).comicPanelPortrait
-        return VStack(spacing: layout.textSpacing) {
-            // 文本内容区域
-            ComicNarrationTextView(
-                narration: panel.narration,
-                fontSize: layout.fontSize,
-                lineSpacing: layout.lineSpacing,
-                iconSpacing: layout.iconSpacing,
-                iconSize: layout.iconSize
-            )
-            .frame(maxWidth: .infinity)
-            .frame(minHeight: layout.textContentMinHeight)
-            .padding(.horizontal, layout.textHorizontalPadding)
+                // 页码区域 - "目"字下面的"口" - 改为VStack布局
+                ComicPageFooterView(
+                    pageIndex: pageIndex,
+                    pageNumberFontSize: layout.pageNumberFontSize,
+                    isFontRestricted: true,
+                    areaHeight: layout.pageNumberAreaHeight,
+                    horizontalPadding: layout.textHorizontalPadding
+                )
+            }
+        } else {
+            let layout = calculator.comicPanelPortrait
+            VStack(spacing: layout.textSpacing) {
+                // 文本内容区域
+                ComicNarrationTextView(
+                    narration: panel.narration,
+                    fontSize: layout.fontSize,
+                    lineSpacing: layout.lineSpacing,
+                    iconSpacing: layout.iconSpacing,
+                    iconSize: layout.iconSize
+                )
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: layout.textContentMinHeight)
+                .padding(.horizontal, layout.textHorizontalPadding)
 
-            // 页码和水印区域
-            ComicPageFooterView(
-                pageIndex: pageIndex,
-                pageNumberFontSize: layout.pageNumberFontSize,
-                isFontRestricted: true,
-                areaHeight: nil,
-                horizontalPadding: nil
-            )
-            .frame(maxWidth: .infinity)
+                // 页码和水印区域
+                ComicPageFooterView(
+                    pageIndex: pageIndex,
+                    pageNumberFontSize: layout.pageNumberFontSize,
+                    isFontRestricted: true,
+                    areaHeight: nil,
+                    horizontalPadding: nil
+                )
+                .frame(maxWidth: .infinity)
+            }
         }
     }
 
