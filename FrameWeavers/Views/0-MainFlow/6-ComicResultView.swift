@@ -17,7 +17,7 @@ struct ComicResultView: View {
                 comicResult: comicResult,
                 viewModel: viewModel
             )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // .frame(maxWidth: .infinity, maxHeight: .infinity)
             
             // 阅读菜单栏 - 覆盖在内容之上
             ComicReaderMenuBar(
@@ -30,5 +30,4 @@ struct ComicResultView: View {
         .navigationBarHidden(true) // 隐藏系统导航栏
         .forceLandscape()
     }
-    
 }
