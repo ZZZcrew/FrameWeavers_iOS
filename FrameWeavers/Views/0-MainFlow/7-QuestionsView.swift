@@ -42,60 +42,17 @@ struct QuestionsView: View {
 private extension QuestionsView {
     /// 横屏布局 - 居中对称布局
     var landscapeLayout: some View {
-        VStack(spacing: 0) {
-            // 问题内容区域
-            questionContentSection
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: landscapeContentMinHeight)
-                .padding(.horizontal, landscapeContentHorizontalPadding)
-                .padding(.top, landscapeContentTopPadding)
-
-            // "完"字区域
-            completionSection
-                .frame(maxWidth: .infinity)
-                .frame(height: landscapeCompletionAreaHeight)
-                .padding(.horizontal, landscapeContentHorizontalPadding)
-            
-            // 底部水印logo
-            WatermarkLogoView()
-                .padding(.bottom, landscapeWatermarkBottomPadding)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, landscapeOuterHorizontalPadding)
-        .padding(.vertical, landscapeVerticalPadding)
+        QuestionsLandscapeLayout(questions: questions)
     }
 }
 
 // MARK: - UI Components
 private extension QuestionsView {
     /// 问题内容区域组件
-    var questionContentSection: some View {
-        VStack {
-            TypewriterView(
-                text: questions.prefix(3).enumerated().map { index, question in
-                    "\(index + 1). \(question)"
-                }.joined(separator: "\n\n"),
-                typeSpeed: 0.10,
-                showCursor: false
-            )
-            .font(.custom("STKaiti", size: adaptiveFontSize))
-            .dynamicTypeSize(...DynamicTypeSize.accessibility1) // 限制最大字体
-            .foregroundColor(Color(hex: "#2F2617"))
-            .lineSpacing(adaptiveLineSpacing)
-            .multilineTextAlignment(.center)
-            .lineLimit(nil)
-        }
-    }
+    var questionContentSection: some View { QuestionsContentTextView(questions: questions) }
 
     /// 完成标记区域组件
-    var completionSection: some View {
-        VStack {
-            Text("· 完 ·")
-                .font(.custom("STKaiti", size: adaptiveCompletionFontSize))
-                .dynamicTypeSize(...DynamicTypeSize.large) // 完字字体限制范围更小
-                .foregroundColor(Color(hex: "#2F2617"))
-        }
-    }
+    var completionSection: some View { QuestionsCompletionMarkView() }
 }
 
 // MARK: - Adaptive Properties
@@ -159,80 +116,91 @@ private extension QuestionsView {
     
 }
 
-// MARK: - Preview
-struct QuestionsView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            // iPhone 16 Pro Max 横屏测试
-            QuestionsView(
-                questions: [
-                    "你觉得小明为什么会选择\"阳光\"这个名字给小狗？",
-                    "如果你是小明，你会如何处理这只突然出现的流浪狗？",
-                    "这个故事告诉我们什么关于友谊和善良的道理？"
-                ],
-                pageIndex: 3,
-                totalPages: 4
-            )
-            .previewDevice("iPhone 16 Pro Max")
-            .previewInterfaceOrientation(.landscapeLeft)
-            .previewDisplayName("iPhone 16 Pro Max - 横屏")
+// MARK: - Inline Components (embedded to reduce file count)
+// 将三个独立组件内嵌到此文件，避免跨文件引用同时降低文件数量
 
-            // iPad Pro 横屏测试
-            QuestionsView(
-                questions: [
-                    "你觉得小明为什么会选择\"阳光\"这个名字给小狗？",
-                    "如果你是小明，你会如何处理这只突然出现的流浪狗？",
-                    "这个故事告诉我们什么关于友谊和善良的道理？"
-                ],
-                pageIndex: 3,
-                totalPages: 4
-            )
-            .previewDevice("iPad Pro (12.9-inch) (6th generation)")
-            .previewInterfaceOrientation(.landscapeLeft)
-            .previewDisplayName("iPad Pro - 横屏")
+/// 问题内容文本组件 - 直接嵌入同文件，避免跨文件引用
+struct QuestionsContentTextView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    let questions: [String]
 
-            // 动态字体测试
-            QuestionsView(
-                questions: [
-                    "你觉得小明为什么会选择\"阳光\"这个名字给小狗？",
-                    "如果你是小明，你会如何处理这只突然出现的流浪狗？",
-                    "这个故事告诉我们什么关于友谊和善良的道理？"
-                ],
-                pageIndex: 3,
-                totalPages: 4
+    var body: some View {
+        VStack {
+            TypewriterView(
+                text: questions.prefix(3).enumerated().map { index, question in
+                    "\(index + 1). \(question)"
+                }.joined(separator: "\n\n"),
+                typeSpeed: 0.10,
+                showCursor: false
             )
-            .previewDevice("iPhone 16 Pro Max")
-            .previewInterfaceOrientation(.landscapeLeft)
-            .environment(\.dynamicTypeSize, .accessibility1)
-            .previewDisplayName("大字体测试")
-            
-            // iPhone 16 Pro Max 竖屏测试
-            QuestionsView(
-                questions: [
-                    "你觉得小明为什么会选择\"阳光\"这个名字给小狗？",
-                    "如果你是小明，你会如何处理这只突然出现的流浪狗？",
-                    "这个故事告诉我们什么关于友谊和善良的道理？"
-                ],
-                pageIndex: 3,
-                totalPages: 4
-            )
-            .previewDevice("iPhone 16 Pro Max")
-            .previewInterfaceOrientation(.portrait)
-            .previewDisplayName("iPhone 16 Pro Max - 竖屏")
-            
-            // iPad Pro 竖屏测试
-            QuestionsView(
-                questions: [
-                    "你觉得小明为什么会选择\"阳光\"这个名字给小狗？",
-                    "如果你是小明，你会如何处理这只突然出现的流浪狗？",
-                    "这个故事告诉我们什么关于友谊和善良的道理？"
-                ],
-                pageIndex: 3,
-                totalPages: 4
-            )
-            .previewDevice("iPad Pro (12.9-inch) (6th generation)")
-            .previewInterfaceOrientation(.portrait)
-            .previewDisplayName("iPad Pro - 竖屏")
+            .font(.custom("STKaiti", size: adaptiveFontSize))
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1) // 限制最大字体
+            .foregroundColor(Color(hex: "#2F2617"))
+            .lineSpacing(adaptiveLineSpacing)
+            .multilineTextAlignment(.center)
+            .lineLimit(nil)
         }
     }
+}
+
+private extension QuestionsContentTextView {
+    var adaptiveFontSize: CGFloat {
+        horizontalSizeClass == .regular ? 20 : 18
+    }
+    var adaptiveLineSpacing: CGFloat {
+        horizontalSizeClass == .regular ? 10 : 8
+    }
+}
+
+/// 完成标记组件
+struct QuestionsCompletionMarkView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    var body: some View {
+        VStack {
+            Text("· 完 ·")
+                .font(.custom("STKaiti", size: adaptiveCompletionFontSize))
+                .dynamicTypeSize(...DynamicTypeSize.large)
+                .foregroundColor(Color(hex: "#2F2617"))
+        }
+    }
+    private var adaptiveCompletionFontSize: CGFloat {
+        horizontalSizeClass == .regular ? 18 : 16
+    }
+}
+
+/// 横屏问题页布局容器
+struct QuestionsLandscapeLayout: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    let questions: [String]
+    var body: some View {
+        VStack(spacing: 0) {
+            // 问题内容区域
+            QuestionsContentTextView(questions: questions)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: landscapeContentMinHeight)
+                .padding(.horizontal, landscapeContentHorizontalPadding)
+                .padding(.top, landscapeContentTopPadding)
+
+            // "完"字区域
+            QuestionsCompletionMarkView()
+                .frame(maxWidth: .infinity)
+                .frame(height: landscapeCompletionAreaHeight)
+                .padding(.horizontal, landscapeContentHorizontalPadding)
+            
+            // 底部水印logo
+            WatermarkLogoView()
+                .padding(.bottom, landscapeWatermarkBottomPadding)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, landscapeOuterHorizontalPadding)
+        .padding(.vertical, landscapeVerticalPadding)
+    }
+    // 横屏自适应属性（与原实现保持一致）
+    private var landscapeContentMinHeight: CGFloat { horizontalSizeClass == .regular ? 220 : 200 }
+    private var landscapeContentHorizontalPadding: CGFloat { horizontalSizeClass == .regular ? 50 : 40 }
+    private var landscapeContentTopPadding: CGFloat { horizontalSizeClass == .regular ? 25 : 20 }
+    private var landscapeOuterHorizontalPadding: CGFloat { horizontalSizeClass == .regular ? 25 : 20 }
+    private var landscapeVerticalPadding: CGFloat { horizontalSizeClass == .regular ? 25 : 20 }
+    private var landscapeCompletionAreaHeight: CGFloat { horizontalSizeClass == .regular ? 70 : 60 }
+    private var landscapeWatermarkBottomPadding: CGFloat { horizontalSizeClass == .regular ? 15 : 12 }
 }
