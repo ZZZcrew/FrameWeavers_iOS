@@ -144,10 +144,8 @@ private extension ComicPanelView {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-}
 
-// MARK: - UI Components
-private extension ComicPanelView {
+    // MARK: - UI Components
     /// 横屏文本区域组件
     var landscapeTextSection: some View {
         let layout = LayoutCalculator(horizontalSizeClass: horizontalSizeClass, verticalSizeClass: verticalSizeClass).comicPanelLandscape
@@ -203,10 +201,8 @@ private extension ComicPanelView {
             .frame(maxWidth: .infinity)
         }
     }
-}
 
-// MARK: - Adaptive Properties
-private extension ComicPanelView {
+    // MARK: - Adaptive Properties
     /// 是否为横屏模式
     var isLandscape: Bool {
         verticalSizeClass == .compact
