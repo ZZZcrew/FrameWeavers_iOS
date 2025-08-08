@@ -110,9 +110,28 @@ class ComicGenerationService {
             let decoder = JSONDecoder()
             let response = try decoder.decode(ComicResultResponse.self, from: data)
             print("✅ ComicGenerationService: 解析结果响应成功")
+
+            // 🔍 添加原始JSON数据的调试输出
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("🔍 ComicGenerationService: 原始API响应JSON:")
+                // 只打印story_info部分，避免日志过长
+                if let storyInfoRange = jsonString.range(of: "\"story_info\"") {
+                    let storyInfoStart = storyInfoRange.lowerBound
+                    let searchRange = storyInfoStart..<jsonString.endIndex
+                    if let storyInfoEnd = jsonString.range(of: "},", range: searchRange)?.upperBound {
+                        let storyInfoJson = String(jsonString[storyInfoStart..<storyInfoEnd])
+                        print("   📖 story_info部分: \(storyInfoJson)")
+                    }
+                }
+            }
+
             return response
         } catch {
             print("❌ ComicGenerationService: 解析结果响应失败: \(error)")
+            // 打印原始数据以便调试
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("🔍 ComicGenerationService: 解析失败的原始JSON: \(jsonString)")
+            }
             throw NSError(domain: "ComicGenerationService", code: -3, userInfo: [NSLocalizedDescriptionKey: "解析结果响应失败: \(error.localizedDescription)"])
         }
     }
@@ -123,9 +142,18 @@ class ComicGenerationService {
             print("❌ ComicGenerationService: 没有成功的连环画数据")
             return nil
         }
-        
+
         let comicData = firstComic.comicData
         let storyInfo = comicData.storyInfo
+
+        // 🔍 添加详细的调试日志来分析字段映射
+        print("🔍 ComicGenerationService: 分析API返回的story_info字段:")
+        print("   📝 title: \(storyInfo.title)")
+        print("   📖 summary: \(storyInfo.summary)")
+        print("   🎭 overall_theme: \(storyInfo.overallTheme)")
+        print("   📹 video_name: \(storyInfo.videoName)")
+        print("   📅 creation_time: \(storyInfo.creationTime)")
+        print("   📊 total_pages: \(storyInfo.totalPages)")
         
         // 转换页面数据为ComicPanel
         let panels = comicData.pages.map { page in
@@ -142,11 +170,33 @@ class ComicGenerationService {
         // 转换互动问题
         let questions = comicData.interactiveQuestions.map { $0.question }
         
+        // 🔍 根据API文档分析，检查是否需要调整字段使用
+        // 如果summary字段包含的是主题描述而不是具体摘要，我们可能需要使用overall_theme
+        let actualSummary = storyInfo.summary
+        let actualTheme = storyInfo.overallTheme
+
+        print("🔍 ComicGenerationService: 字段内容分析:")
+        print("   📖 summary内容: '\(actualSummary)'")
+        print("   🎭 overall_theme内容: '\(actualTheme)'")
+
+        // 根据内容判断哪个更适合作为摘要显示
+        // 如果summary看起来像主题描述，则使用overall_theme作为摘要
+        let displaySummary: String
+        if actualSummary.contains("通过") && actualSummary.contains("展现") {
+            // 这种模式更像是主题描述，使用overall_theme作为摘要
+            displaySummary = actualTheme
+            print("⚠️ ComicGenerationService: 检测到summary字段包含主题描述，使用overall_theme作为摘要")
+        } else {
+            // 使用原始的summary字段
+            displaySummary = actualSummary
+            print("✅ ComicGenerationService: 使用原始summary字段作为摘要")
+        }
+
         return ComicResult(
             comicId: taskId,
             deviceId: DeviceIDGenerator.generateDeviceID(),
             title: storyInfo.title,  // 使用故事标题
-            summary: storyInfo.summary,  // 使用故事摘要
+            summary: displaySummary,  // 使用智能选择的摘要
             originalVideoTitle: storyInfo.videoName,  // 保留原始视频文件名
             creationDate: storyInfo.creationTime,
             panelCount: panels.count,

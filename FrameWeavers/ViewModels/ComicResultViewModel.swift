@@ -1,15 +1,17 @@
 import SwiftUI
+import Combine
 
 /// 连环画结果视图模型
 /// 负责管理连环画阅读的业务逻辑和状态
 class ComicResultViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var currentPage: Int = 0
-    @Published var isNavigationVisible: Bool = true
+    @Published var isNavigationVisible: Bool = false
     @Published var readingProgress: Double = 0.0
     
     // MARK: - Private Properties
     private let comicResult: ComicResult
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Computed Properties
     
@@ -48,16 +50,40 @@ class ComicResultViewModel: ObservableObject {
     init(comicResult: ComicResult) {
         self.comicResult = comicResult
         updateReadingProgress()
+        setupCombineBindings()
+    }
+    
+    // MARK: - Combine响应式绑定
+    
+    /// 设置Combine响应式数据流
+    private func setupCombineBindings() {
+        // 响应式更新阅读进度
+        $currentPage
+            .map { [weak self] page in
+                guard let self = self, self.totalPages > 0 else { return 0.0 }
+                return Double(page + 1) / Double(self.totalPages)
+            }
+            .assign(to: &$readingProgress)
     }
     
     // MARK: - Public Methods
     
+    /// 分享回调（占位实现，后续可接入分享SDK）
+    func shareTapped() {
+        print("分享功能占位符：将来可以实现分享连环画到社交媒体等功能")
+    }
+
+    /// 记录回调（占位实现，后续可接入阅读进度存储）
+    func recordTapped() {
+        print("记录功能占位符：将来可以实现阅读记录、书签等功能")
+    }
+
     /// 跳转到下一页
     func nextPage() {
         guard !isLastPage else { return }
         withAnimation(.easeInOut(duration: 0.3)) {
             currentPage += 1
-            updateReadingProgress()
+            // updateReadingProgress() - 现在由Combine自动响应更新
         }
     }
     
@@ -66,7 +92,7 @@ class ComicResultViewModel: ObservableObject {
         guard !isFirstPage else { return }
         withAnimation(.easeInOut(duration: 0.3)) {
             currentPage -= 1
-            updateReadingProgress()
+            // updateReadingProgress() - 现在由Combine自动响应更新
         }
     }
     
@@ -76,7 +102,7 @@ class ComicResultViewModel: ObservableObject {
         guard page >= 0 && page < totalPages else { return }
         withAnimation(.easeInOut(duration: 0.3)) {
             currentPage = page
-            updateReadingProgress()
+            // updateReadingProgress() - 现在由Combine自动响应更新
         }
     }
     

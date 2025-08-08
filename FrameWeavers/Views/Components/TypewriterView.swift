@@ -29,14 +29,26 @@ struct TypewriterView: View {
     }
     
     var body: some View {
-        HStack(spacing: 0) {
-            Text(displayedText)
+        ZStack(alignment: .topLeading) {
+            // 透明占位符文本 - 固定布局
+            Text(fullText)
+                .lineSpacing(8)
+                .opacity(0) // 完全透明，只用于占位
 
-            if showCursor {
-                Text("|")
-                    .opacity(showCursorBlink ? 1 : 0)
-                    .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: showCursorBlink)
+            // 实际显示的打字机文本
+            VStack(alignment: .center, spacing: 0) {
+                HStack(spacing: 0) {
+                    Text(displayedText)
+                        .lineSpacing(8)
+
+                    if showCursor {
+                        Text("|")
+                            .opacity(showCursorBlink ? 1 : 0)
+                            .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: showCursorBlink)
+                    }
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .top)
         }
         .onAppear {
             startTypewriterAnimation()
@@ -126,26 +138,3 @@ struct TypewriterView: View {
         onComplete?()
     }
 }
-
-// // MARK: - 预览
-// struct TypewriterView_Previews: PreviewProvider {
-//     static var previews: some View {
-//         TypewriterView(
-//             text: """
-//             有些记忆，
-//             沉在手机深处，
-//             无人翻阅，也无人倾听。
-//             我们捡起那些画面，
-//             像织布的人，
-//             一帧帧织成故事。
-//             """,
-//             typeSpeed: 0.08
-//         )
-//         .font(.custom("STKaiti", size: 16))
-//         .fontWeight(.bold)
-//         .multilineTextAlignment(.center)
-//         .foregroundColor(Color(hex: "#2F2617"))
-//         .lineSpacing(15)
-//         .padding()
-//     }
-// }

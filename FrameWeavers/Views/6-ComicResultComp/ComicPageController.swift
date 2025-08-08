@@ -5,7 +5,6 @@ import UIKit
 struct ComicPageController: UIViewControllerRepresentable {
     let comicResult: ComicResult
     @ObservedObject var viewModel: ComicResultViewModel
-    let geometry: GeometryProxy
     
     // 计算总页数
     private var totalPages: Int {
@@ -16,12 +15,15 @@ struct ComicPageController: UIViewControllerRepresentable {
         let pageViewController = UIPageViewController(
             transitionStyle: .pageCurl,
             navigationOrientation: .horizontal,
-            options: nil
+            options: [UIPageViewController.OptionsKey.spineLocation: UIPageViewController.SpineLocation.min.rawValue]
         )
-        
+
         pageViewController.dataSource = context.coordinator
         pageViewController.delegate = context.coordinator
-        
+
+        pageViewController.isDoubleSided = false
+        pageViewController.view.clipsToBounds = true
+
         // 设置初始页面
         let initialViewController = context.coordinator.createViewController(for: 0)
         pageViewController.setViewControllers(
@@ -29,7 +31,7 @@ struct ComicPageController: UIViewControllerRepresentable {
             direction: .forward,
             animated: false
         )
-        
+
         return pageViewController
     }
     
@@ -69,7 +71,6 @@ struct ComicPageController: UIViewControllerRepresentable {
                     panel: parent.comicResult.panels[index],
                     pageIndex: index,
                     totalPages: parent.totalPages,
-                    geometry: parent.geometry,
                     viewModel: parent.viewModel
                 )
             } else {
@@ -78,7 +79,6 @@ struct ComicPageController: UIViewControllerRepresentable {
                     questions: parent.comicResult.finalQuestions,
                     pageIndex: index,
                     totalPages: parent.totalPages,
-                    geometry: parent.geometry,
                     viewModel: parent.viewModel
                 )
             }
@@ -127,12 +127,10 @@ struct ComicPageController: UIViewControllerRepresentable {
 /// 基础视图控制器 - 提供公共属性和方法
 class ComicBaseViewController: UIViewController {
     let pageIndex: Int
-    let geometry: GeometryProxy
     weak var viewModel: ComicResultViewModel?
     
-    init(pageIndex: Int, geometry: GeometryProxy, viewModel: ComicResultViewModel) {
+    init(pageIndex: Int, viewModel: ComicResultViewModel) {
         self.pageIndex = pageIndex
-        self.geometry = geometry
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -156,5 +154,91 @@ class ComicBaseViewController: UIViewController {
     func setupTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         view.addGestureRecognizer(tapGesture)
+    }
+
+    /// 通用的 SwiftUI 嵌入方法，消除子类重复代码
+    func embedSwiftUIView<Content: View>(_ rootView: Content) {
+        let hostingController = UIHostingController(rootView: rootView)
+        hostingController.view.backgroundColor = UIColor.clear
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+        hostingController.didMove(toParent: self)
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+    }
+}
+
+/// 单个漫画页面视图控制器 - 直接在此文件中定义以便统一管理
+class ComicPanelViewController: ComicBaseViewController {
+    let panel: ComicPanel
+    let totalPages: Int
+    
+    init(panel: ComicPanel, pageIndex: Int, totalPages: Int, viewModel: ComicResultViewModel) {
+        self.panel = panel
+        self.totalPages = totalPages
+        super.init(pageIndex: pageIndex, viewModel: viewModel)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupView()
+    }
+    
+    private func setupView() {
+        // 创建SwiftUI视图并通用嵌入
+        embedSwiftUIView(
+            ComicPanelView(
+                panel: panel,
+                pageIndex: pageIndex,
+                totalPages: totalPages
+            )
+        )
+
+        // 添加点击手势
+        setupTapGesture()
+    }
+}
+
+/// 互动问题页面视图控制器 - 直接在此文件中定义
+class QuestionsViewController: ComicBaseViewController {
+    let questions: [String]
+    let totalPages: Int
+    
+    init(questions: [String], pageIndex: Int, totalPages: Int, viewModel: ComicResultViewModel) {
+        self.questions = questions
+        self.totalPages = totalPages
+        super.init(pageIndex: pageIndex, viewModel: viewModel)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupView()
+    }
+    
+    private func setupView() {
+        // 创建SwiftUI视图并通用嵌入
+        embedSwiftUIView(
+            QuestionsView(
+                questions: questions,
+                pageIndex: pageIndex,
+                totalPages: totalPages
+            )
+        )
+
+        // 添加点击手势
+        setupTapGesture()
     }
 }

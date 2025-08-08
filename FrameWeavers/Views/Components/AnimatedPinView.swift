@@ -6,6 +6,18 @@ struct AnimatedPinView: View {
     let quadrantSize: CGFloat
     let isAnimating: Bool
 
+    init(currentIndex: Int, quadrantSize: CGFloat, isAnimating: Bool) {
+        self.currentIndex = currentIndex
+        self.quadrantSize = quadrantSize
+        self.isAnimating = isAnimating
+
+        let positions = AnimatedPinView.computePinPositions(for: quadrantSize)
+        let initialPoint = CGPoint(x: positions[min(max(0, currentIndex), positions.count - 1)].x,
+                                   y: positions[min(max(0, currentIndex), positions.count - 1)].y)
+        self._animatedPosition = State(initialValue: initialPoint)
+        self._currentPositionIndex = State(initialValue: min(max(0, currentIndex), positions.count - 1))
+    }
+
     @State private var pinOffset: CGFloat = 0
     @State private var pinRotation: Double = 0
     @State private var pinScale: CGFloat = 1.0
@@ -30,7 +42,7 @@ struct AnimatedPinView: View {
             Image("图钉")
                 .resizable()
                 .scaledToFit()
-                .frame(width: quadrantSize * 0.15, height: quadrantSize * 0.15)
+                .frame(width: quadrantSize * 0.14, height: quadrantSize * 0.14)
                 .scaleEffect(pinScale)
                 .rotationEffect(.degrees(pinRotation))
                 .offset(y: pinOffset)
@@ -43,49 +55,32 @@ struct AnimatedPinView: View {
                 )
         }
         .onChange(of: currentIndex) { oldValue, newValue in
-            if oldValue != newValue && hasAppeared {
+            if oldValue != newValue && hasAppeared && isAnimating {
                 startPinAnimation(from: oldValue, to: newValue)
             }
         }
         .onAppear {
-            // 初始化位置，但不立即播放动画
-            currentPositionIndex = currentIndex
-            animatedPosition = CGPoint(x: pinPositions[currentIndex].x, y: pinPositions[currentIndex].y)
-
-            if !hasAppeared {
-                hasAppeared = true
-                // 延迟播放初始动画，避免阻塞界面渲染
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    startInsertAnimation()
-                }
-            }
+            // 首次进入不进行任何动画，保持静止
+            hasAppeared = true
         }
     }
     
     /// 计算图钉的响应式位置
     private var pinPositions: [(x: CGFloat, y: CGFloat)] {
-        let offsetX = quadrantSize * 0.45  // 相对于中心的X偏移
-        let offsetY = quadrantSize * 0.1   // 相对于顶部的Y偏移
-        let centerX = quadrantSize * 0.5
-        let centerY = quadrantSize * 0.5
+        Self.computePinPositions(for: quadrantSize)
+    }
+
+    private static func computePinPositions(for size: CGFloat) -> [(x: CGFloat, y: CGFloat)] {
+        let offsetX = size * 0.45  // 相对于中心的X偏移
+        let offsetY = size * 0.1   // 相对于顶部的Y偏移
+        let centerX = size * 0.5
+        let centerY = size * 0.5
 
         return [
-            // 往下移动：增大Y值或减小负Y偏移
-            // 往上移动：减小Y值或增大负Y偏移
-            // 往左移动：减小X值
-            // 往右移动：增大X值
-
-            // 左上象限 - 往下走一点点：减小 -size * 0.35 中的 0.35
-            (x: centerX - offsetX + quadrantSize * 0.43, y: centerY - offsetY - quadrantSize * 0.3),
-
-            // 右上象限 - 往下、往左走一点点：减小 offsetX，减小 -size * 0.35 中的 0.35
-            (x: centerX + offsetX - quadrantSize * 0.05, y: centerY - offsetY - quadrantSize * 0.3),
-
-            // 左下象限 - 往下走多一点点：增大 size * 0.2 中的 0.2
-            (x: centerX - offsetX + quadrantSize * 0.43, y: centerY + offsetY - quadrantSize * 0.08),
-
-            // 右下象限 - 往上、往左走一点点：减小 offsetX，减小 size * 0.2 中的 0.2
-            (x: centerX + offsetX - quadrantSize * 0.05, y: centerY + offsetY - quadrantSize * 0.08)
+            (x: centerX - offsetX + size * 0.42, y: centerY - offsetY - size * 0.28),
+            (x: centerX + offsetX - size * 0.06, y: centerY - offsetY - size * 0.28),
+            (x: centerX - offsetX + size * 0.42, y: centerY + offsetY - size * 0.07),
+            (x: centerX + offsetX - size * 0.06, y: centerY + offsetY - size * 0.07)
         ]
     }
     
@@ -97,16 +92,16 @@ struct AnimatedPinView: View {
         animationPhase = .pullOut
 
         // 第一阶段：拔出动画
-        withAnimation(.easeIn(duration: 0.15)) {
-            pinOffset = -12  // 向上拔出
-            pinRotation = Double.random(in: -5...5)  // 轻微摇摆
-            pinScale = 1.05   // 稍微放大
+        withAnimation(.easeOut(duration: 0.15)) {
+            pinOffset = -15  // 向上拔出
+            pinRotation = Double.random(in: -8...8)  // 轻微摇摆
+            pinScale = 1.08   // 稍微放大
         }
 
         withAnimation(.easeOut(duration: 0.1).delay(0.15)) {
-            pinOffset = -25  // 继续向上拔出
-            pinRotation = Double.random(in: -10...10)  // 更大摇摆
-            pinScale = 1.1
+            pinOffset = -30  // 继续向上拔出
+            pinRotation = Double.random(in: -15...15)  // 更大摇摆
+            pinScale = 1.15
             showShadow = false  // 隐藏阴影
         }
 
@@ -119,17 +114,17 @@ struct AnimatedPinView: View {
             let newPosition = CGPoint(x: pinPositions[newIndex].x, y: pinPositions[newIndex].y)
 
             // 同时进行位置移动和高度变化的动画
-            withAnimation(.easeInOut(duration: 1.2)) {  // 增加到1.2秒，让移动更慢更明显
+            withAnimation(.easeInOut(duration: 0.8)) {  // 缩短到0.8秒，让移动更流畅
                 animatedPosition = newPosition  // 平滑移动到新位置
-                pinOffset = -35  // 飞行到最高点
-                pinRotation = Double.random(in: -20...20)  // 飞行中的旋转
-                pinScale = 1.15  // 在空中时稍大
+                pinOffset = -40  // 飞行到最高点
+                pinRotation = Double.random(in: -25...25)  // 飞行中的旋转
+                pinScale = 1.2  // 在空中时稍大
             }
 
             // 更新内部位置索引
             currentPositionIndex = newIndex
 
-            try? await Task.sleep(nanoseconds: 1_200_000_000) // 1.2秒
+            try? await Task.sleep(nanoseconds: 800_000_000) // 0.8秒
 
             // 第三阶段：插入动画
             animationPhase = .insertDown
@@ -142,9 +137,10 @@ struct AnimatedPinView: View {
             }
 
             // 弹回效果
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            withAnimation(.interpolatingSpring(stiffness: 200, damping: 15)) {
                 pinOffset = 0
                 pinScale = 1.0
+                pinRotation = 0
             }
 
             try? await Task.sleep(nanoseconds: 300_000_000) // 0.3秒
@@ -162,26 +158,26 @@ struct AnimatedPinView: View {
     /// 初始插入动画 - 优化性能版本
     private func startInsertAnimation() {
         // 初始状态
-        pinOffset = -50
+        pinOffset = -60
         pinScale = 1.3
-        pinRotation = Double.random(in: -15...15)
+        pinRotation = Double.random(in: -20...20)
         showShadow = false
 
         // 使用Task替代多个DispatchQueue调用
         Task { @MainActor in
             // 快速下降
-            withAnimation(.easeIn(duration: 0.4)) {
-                pinOffset = -5
-                pinScale = 1.1
-                pinRotation = Double.random(in: -5...5)
+            withAnimation(.easeOut(duration: 0.3)) {
+                pinOffset = -10
+                pinScale = 1.15
+                pinRotation = Double.random(in: -10...10)
             }
 
             try? await Task.sleep(nanoseconds: 400_000_000) // 0.4秒
 
             // 插入冲击
-            withAnimation(.easeIn(duration: 0.1)) {
-                pinOffset = 3
-                pinScale = 0.9
+            withAnimation(.easeIn(duration: 0.08)) {
+                pinOffset = 5
+                pinScale = 0.85
                 pinRotation = 0
                 showShadow = true
             }
@@ -189,7 +185,7 @@ struct AnimatedPinView: View {
             try? await Task.sleep(nanoseconds: 100_000_000) // 0.1秒
 
             // 弹回到正确位置
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+            withAnimation(.interpolatingSpring(stiffness: 180, damping: 12)) {
                 pinOffset = 0
                 pinScale = 1.0
             }
