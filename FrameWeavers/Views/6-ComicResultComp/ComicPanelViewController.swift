@@ -22,31 +22,15 @@ class ComicPanelViewController: ComicBaseViewController {
     }
     
     private func setupView() {
-        // 创建SwiftUI视图并包装 - 移除geometry依赖
-        let hostingController = UIHostingController(
-            rootView: ComicPanelView(
+        // 创建SwiftUI视图并通用嵌入
+        embedSwiftUIView(
+            ComicPanelView(
                 panel: panel,
                 pageIndex: pageIndex,
                 totalPages: totalPages
             )
         )
-        
-        // 设置透明背景
-        hostingController.view.backgroundColor = UIColor.clear
-        
-        addChild(hostingController)
-        view.addSubview(hostingController.view)
-        hostingController.didMove(toParent: self)
-        
-        // 设置约束
-        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-        
+
         // 添加点击手势
         setupTapGesture()
     }
@@ -73,31 +57,15 @@ class QuestionsViewController: ComicBaseViewController {
     }
     
     private func setupView() {
-        // 创建SwiftUI视图并包装 - 移除geometry依赖
-        let hostingController = UIHostingController(
-            rootView: QuestionsView(
+        // 创建SwiftUI视图并通用嵌入
+        embedSwiftUIView(
+            QuestionsView(
                 questions: questions,
                 pageIndex: pageIndex,
                 totalPages: totalPages
             )
         )
-        
-        // 设置透明背景
-        hostingController.view.backgroundColor = UIColor.clear
-        
-        addChild(hostingController)
-        view.addSubview(hostingController.view)
-        hostingController.didMove(toParent: self)
-        
-        // 设置约束
-        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-        
+
         // 添加点击手势
         setupTapGesture()
     }
