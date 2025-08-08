@@ -4,7 +4,7 @@ import SwiftData
 struct SampleAlbumsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var viewModel = SampleAlbumsViewModel()
+    @State private var viewModel = SampleAlbumsViewModel()
 
     var body: some View {
         NavigationStack {
@@ -113,6 +113,8 @@ struct AlbumRowView: View {
     let isSampleAlbum: Bool
     let onDelete: (() -> Void)?
 
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+
     var body: some View {
         if let comicResult = comicResult {
             // 有内容的画册 - 可以点击
@@ -136,7 +138,7 @@ struct AlbumRowView: View {
     }
 
     private var albumRowContent: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: horizontalSizeClass == .compact ? 12 : 20) {
             // 封面图片
             Group {
                 if isRemoteImage {
@@ -154,7 +156,8 @@ struct AlbumRowView: View {
                         .aspectRatio(contentMode: .fill)
                 }
             }
-            .frame(width: 60, height: 80)
+            .frame(width: horizontalSizeClass == .compact ? 60 : 80, 
+                   height: horizontalSizeClass == .compact ? 80 : 100)
             .background(Color.gray.opacity(0.1))
             .cornerRadius(8)
             .clipped()
@@ -162,12 +165,12 @@ struct AlbumRowView: View {
             // 画册信息
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.custom("WSQuanXing", size: 16))
+                    .font(.custom("WSQuanXing", size: horizontalSizeClass == .compact ? 16 : 18))
                     .foregroundColor(Color(hex: "#2F2617"))
                     .lineLimit(1)
 
                 Text(description)
-                    .font(.custom("STKaiti", size: 14))
+                    .font(.custom("STKaiti", size: horizontalSizeClass == .compact ? 14 : 16))
                     .foregroundColor(Color(hex: "#855C23"))
                     .opacity(0.8)
                     .lineLimit(2)
