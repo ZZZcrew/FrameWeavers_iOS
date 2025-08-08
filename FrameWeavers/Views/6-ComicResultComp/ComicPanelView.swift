@@ -29,13 +29,131 @@ struct ComicPanelView: View {
     }
 }
 
+// MARK: - Inline Components (嵌入以减少文件数量)
+
+/// 漫画图片区组件 - 仅负责展示图片与边框
+struct ComicImageSectionView: View {
+    let imageUrl: String
+
+    var body: some View {
+        VStack {
+            AsyncImageView(imageUrl: imageUrl)
+                .aspectRatio(contentMode: .fit)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 0)
+                        .stroke(Color(hex: "#2F2617"), lineWidth: 2)
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+}
+
+/// 漫画叙述文本组件 - 仅负责展示叙述文本与占位
+struct ComicNarrationTextView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    let narration: String?
+    let fontSize: CGFloat
+    let lineSpacing: CGFloat
+    let iconSpacing: CGFloat
+    let iconSize: CGFloat
+
+    var body: some View {
+        VStack {
+            if let narration = narration {
+                Text(narration)
+                    .font(.custom("STKaiti", size: fontSize))
+                    .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                    .foregroundColor(Color(hex: "#2F2617"))
+                    .lineSpacing(lineSpacing)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(nil)
+            } else {
+                VStack(spacing: iconSpacing) {
+                    Image(systemName: "text.bubble")
+                        .font(.system(size: iconSize))
+                        .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
+                    Text("暂无文本描述")
+                        .font(.custom("STKaiti", size: fontSize))
+                        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                        .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
+                }
+            }
+        }
+    }
+}
+
+/// 漫画页脚组件 - 显示页码与水印
+struct ComicPageFooterView: View {
+    let pageIndex: Int
+    let pageNumberFontSize: CGFloat
+    let isFontRestricted: Bool
+    let areaHeight: CGFloat?
+    let horizontalPadding: CGFloat?
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text("· \(pageIndex + 1) ·")
+                .font(.custom("STKaiti", size: pageNumberFontSize))
+                .dynamicTypeSize(isFontRestricted ? ...DynamicTypeSize.large : ...DynamicTypeSize.accessibility1)
+                .foregroundColor(Color(hex: "#2F2617"))
+            WatermarkLogoView()
+        }
+        .frame(maxWidth: .infinity)
+        .if(areaHeight != nil) { view in
+            view.frame(height: areaHeight!)
+        }
+        .if(horizontalPadding != nil) { view in
+            view.padding(.horizontal, horizontalPadding!)
+        }
+    }
+}
+
+/// `ComicPanelView` 的自适应属性集合 - 仅封装尺寸与间距计算
+struct ComicPanelResponsiveProps {
+    let horizontalSizeClass: UserInterfaceSizeClass?
+    let verticalSizeClass: UserInterfaceSizeClass?
+
+    var isCompact: Bool { horizontalSizeClass == .compact }
+    var isLandscape: Bool { verticalSizeClass == .compact }
+
+    var landscapeSpacing: CGFloat { horizontalSizeClass == .regular ? 40 : 30 }
+    var landscapeHorizontalPadding: CGFloat { horizontalSizeClass == .regular ? 25 : 20 }
+    var landscapeVerticalPadding: CGFloat { 20 }
+    var landscapeTextAreaWidth: CGFloat { horizontalSizeClass == .regular ? 280 : 240 }
+    var landscapeTextContentMinHeight: CGFloat { horizontalSizeClass == .regular ? 220 : 200 }
+    var landscapeTextHorizontalPadding: CGFloat { horizontalSizeClass == .regular ? 12 : 10 }
+    var landscapeTextTopPadding: CGFloat { horizontalSizeClass == .regular ? 25 : 20 }
+    var landscapePageNumberAreaHeight: CGFloat { horizontalSizeClass == .regular ? 70 : 60 }
+    var landscapePageNumberFontSize: CGFloat { horizontalSizeClass == .regular ? 17 : 16 }
+    var landscapeFontSize: CGFloat { horizontalSizeClass == .regular ? 18 : 16 }
+    var landscapeLineSpacing: CGFloat { horizontalSizeClass == .regular ? 8 : 6 }
+    var landscapeIconSpacing: CGFloat { horizontalSizeClass == .regular ? 15 : 12 }
+    var landscapeIconSize: CGFloat { horizontalSizeClass == .regular ? 35 : 30 }
+
+    var portraitSpacing: CGFloat { isCompact ? 20 : 30 }
+    var portraitTopSpacing: CGFloat { isCompact ? 20 : 30 }
+    var portraitMiddleSpacing: CGFloat { isCompact ? 20 : 30 }
+    var portraitBottomSpacing: CGFloat { isCompact ? 20 : 30 }
+    var portraitHorizontalPadding: CGFloat { isCompact ? 20 : 30 }
+    var portraitImageHeight: CGFloat { isCompact ? 300 : 400 }
+    var portraitFontSize: CGFloat { isCompact ? 16 : 18 }
+    var portraitLineSpacing: CGFloat { isCompact ? 6 : 8 }
+    var portraitIconSpacing: CGFloat { isCompact ? 12 : 15 }
+    var portraitIconSize: CGFloat { isCompact ? 30 : 35 }
+    var portraitTextContentMinHeight: CGFloat { isCompact ? 120 : 150 }
+    var portraitTextHorizontalPadding: CGFloat { isCompact ? 16 : 20 }
+    var portraitPageNumberFontSize: CGFloat { isCompact ? 16 : 17 }
+    var portraitTextSpacing: CGFloat { isCompact ? 16 : 20 }
+}
+
 // MARK: - Layout Components
 private extension ComicPanelView {
     /// 横屏布局 - 左右分栏
     var landscapeLayout: some View {
         HStack(spacing: landscapeSpacing) {
             // 左侧：图片区域
-            imageSection
+            ComicImageSectionView(imageUrl: panel.imageUrl)
                 .frame(maxWidth: .infinity)
                 .padding(.leading, landscapeHorizontalPadding)
 
@@ -54,7 +172,7 @@ private extension ComicPanelView {
             Spacer(minLength: portraitTopSpacing)
             
             // 上方：图片区域
-            imageSection
+            ComicImageSectionView(imageUrl: panel.imageUrl)
                 .frame(maxWidth: .infinity)
                 .frame(height: portraitImageHeight)
                 .padding(.horizontal, portraitHorizontalPadding)
@@ -73,63 +191,32 @@ private extension ComicPanelView {
 
 // MARK: - UI Components
 private extension ComicPanelView {
-    /// 图片区域组件
-    var imageSection: some View {
-        VStack {
-            AsyncImageView(imageUrl: panel.imageUrl)
-                .aspectRatio(contentMode: .fit)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 0)
-                        .stroke(Color(hex: "#2F2617"), lineWidth: 2)
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-    }
+    // 图片区域已抽离为 `ComicImageSectionView`，保留此处空隙以便阅读
 
     /// 横屏文本区域组件
     var landscapeTextSection: some View {
         VStack(spacing: 0) {
             // 文本内容区域 - "目"字上面的"口"
-            VStack {
-                if let narration = panel.narration {
-                    Text(narration)
-                        .font(.custom("STKaiti", size: landscapeFontSize))
-                        .dynamicTypeSize(...DynamicTypeSize.accessibility1) // 限制最大字体
-                        .foregroundColor(Color(hex: "#2F2617"))
-                        .lineSpacing(landscapeLineSpacing)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(nil)
-                } else {
-                    // 如果没有叙述文本，显示占位符
-                    VStack(spacing: landscapeIconSpacing) {
-                        Image(systemName: "text.bubble")
-                            .font(.system(size: landscapeIconSize))
-                            .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
-                        Text("暂无文本描述")
-                            .font(.custom("STKaiti", size: landscapeFontSize))
-                            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-                            .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
-                    }
-                }
-            }
+            ComicNarrationTextView(
+                narration: panel.narration,
+                fontSize: landscapeFontSize,
+                lineSpacing: landscapeLineSpacing,
+                iconSpacing: landscapeIconSpacing,
+                iconSize: landscapeIconSize
+            )
             .frame(maxWidth: .infinity)
             .frame(minHeight: landscapeTextContentMinHeight)
             .padding(.horizontal, landscapeTextHorizontalPadding)
             .padding(.top, landscapeTextTopPadding)
 
             // 页码区域 - "目"字下面的"口" - 改为VStack布局
-            VStack(spacing: 8) {                
-                Text("· \(pageIndex + 1) ·")
-                    .font(.custom("STKaiti", size: landscapePageNumberFontSize))
-                    .dynamicTypeSize(...DynamicTypeSize.large) // 页码字体限制范围更小
-                    .foregroundColor(Color(hex: "#2F2617"))
-                
-                // 水印logo
-                WatermarkLogoView()
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: landscapePageNumberAreaHeight)
-            .padding(.horizontal, landscapeTextHorizontalPadding)
+            ComicPageFooterView(
+                pageIndex: pageIndex,
+                pageNumberFontSize: landscapePageNumberFontSize,
+                isFontRestricted: true,
+                areaHeight: landscapePageNumberAreaHeight,
+                horizontalPadding: landscapeTextHorizontalPadding
+            )
         }
     }
     
@@ -137,42 +224,25 @@ private extension ComicPanelView {
     var portraitTextSection: some View {
         VStack(spacing: portraitTextSpacing) {
             // 文本内容区域
-            VStack {
-                if let narration = panel.narration {
-                    Text(narration)
-                        .font(.custom("STKaiti", size: portraitFontSize))
-                        .dynamicTypeSize(...DynamicTypeSize.accessibility1) // 限制最大字体
-                        .foregroundColor(Color(hex: "#2F2617"))
-                        .lineSpacing(portraitLineSpacing)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(nil)
-                } else {
-                    // 如果没有叙述文本，显示占位符
-                    VStack(spacing: portraitIconSpacing) {
-                        Image(systemName: "text.bubble")
-                            .font(.system(size: portraitIconSize))
-                            .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
-                        Text("暂无文本描述")
-                            .font(.custom("STKaiti", size: portraitFontSize))
-                            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-                            .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
-                    }
-                }
-            }
+            ComicNarrationTextView(
+                narration: panel.narration,
+                fontSize: portraitFontSize,
+                lineSpacing: portraitLineSpacing,
+                iconSpacing: portraitIconSpacing,
+                iconSize: portraitIconSize
+            )
             .frame(maxWidth: .infinity)
             .frame(minHeight: portraitTextContentMinHeight)
             .padding(.horizontal, portraitTextHorizontalPadding)
 
             // 页码和水印区域
-            VStack(spacing: 8) {                
-                Text("· \(pageIndex + 1) ·")
-                    .font(.custom("STKaiti", size: portraitPageNumberFontSize))
-                    .dynamicTypeSize(...DynamicTypeSize.large)
-                    .foregroundColor(Color(hex: "#2F2617"))
-                
-                // 水印logo
-                WatermarkLogoView()
-            }
+            ComicPageFooterView(
+                pageIndex: pageIndex,
+                pageNumberFontSize: portraitPageNumberFontSize,
+                isFontRestricted: true,
+                areaHeight: nil,
+                horizontalPadding: nil
+            )
             .frame(maxWidth: .infinity)
         }
     }
@@ -327,83 +397,5 @@ private extension ComicPanelView {
     /// 竖屏文本间距
     var portraitTextSpacing: CGFloat {
         isCompact ? 16 : 20
-    }
-}
-
-// MARK: - Preview
-struct ComicPanelView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            // iPhone 16 Pro Max 横屏测试
-            ComicPanelView(
-                panel: ComicPanel(
-                    panelNumber: 1,
-                    imageUrl: "Image1",
-                    narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
-                ),
-                pageIndex: 0,
-                totalPages: 3
-            )
-            .previewDevice("iPhone 16 Pro Max")
-            .previewInterfaceOrientation(.landscapeLeft)
-            .previewDisplayName("iPhone 16 Pro Max - 横屏")
-
-            // iPad Pro 横屏测试
-            ComicPanelView(
-                panel: ComicPanel(
-                    panelNumber: 1,
-                    imageUrl: "Image1",
-                    narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
-                ),
-                pageIndex: 0,
-                totalPages: 3
-            )
-            .previewDevice("iPad Pro (12.9-inch) (6th generation)")
-            .previewInterfaceOrientation(.landscapeLeft)
-            .previewDisplayName("iPad Pro - 横屏")
-
-            // 动态字体测试
-            ComicPanelView(
-                panel: ComicPanel(
-                    panelNumber: 1,
-                    imageUrl: "Image1",
-                    narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
-                ),
-                pageIndex: 0,
-                totalPages: 3
-            )
-            .previewDevice("iPhone 16 Pro Max")
-            .previewInterfaceOrientation(.landscapeLeft)
-            .environment(\.dynamicTypeSize, .accessibility1)
-            .previewDisplayName("大字体测试")
-            
-            // iPhone 16 Pro Max 竖屏测试
-            ComicPanelView(
-                panel: ComicPanel(
-                    panelNumber: 1,
-                    imageUrl: "Image1",
-                    narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
-                ),
-                pageIndex: 0,
-                totalPages: 3
-            )
-            .previewDevice("iPhone 16 Pro Max")
-            .previewInterfaceOrientation(.portrait)
-            .previewDisplayName("iPhone 16 Pro Max - 竖屏")
-            
-            // iPad Pro 竖屏测试
-            ComicPanelView(
-                panel: ComicPanel(
-                    panelNumber: 1,
-                    imageUrl: "Image1",
-                    narration: "在一个阳光明媚的早晨，小明背着书包走在上学的路上。他哼着小曲，心情格外愉快，因为今天是他的生日。"
-                ),
-                pageIndex: 0,
-                totalPages: 3
-            )
-            .previewDevice("iPad Pro (12.9-inch) (6th generation)")
-            .previewInterfaceOrientation(.portrait)
-            .previewDisplayName("iPad Pro - 竖屏")
-        }
     }
 }
