@@ -320,6 +320,48 @@ VStack(spacing: .systemSpacing) { ... }  // iOS17+
 HStack(spacing: .systemSpacing) { ... }
 ```
 
+## 🧩 父子布局职责（父容器掌控尺寸）
+
+### 原则
+- **父容器负责空间分配与拉伸**：页面/区块级容器（如 `VStack`、`HStack`、`ZStack`）决定是否使用 `.frame(maxWidth: .infinity, maxHeight: .infinity)`、固定宽度或高度、以及外层 `padding`。
+- **子视图尽量不主动抢占空间**：子组件避免在内部使用 `.frame(maxWidth: .infinity, maxHeight: .infinity)` 抢占父容器空间，也避免固定宽高去“布局”父容器。
+
+### 子视图不应该
+- 在组件内部使用通用拉伸 `.frame(maxWidth: .infinity, maxHeight: .infinity)` 让自己占满父容器。
+- 固定宽高去驱动整体布局（除非组件自身语义需要最小/最大限度，例如占位的最小高度）。
+- 通过过多 `.frame` 叠加制造与父容器相冲突的约束。
+
+### 更应该让父视图做
+- 在父容器内，对需要铺满或分栏的子项设置 `.frame(maxWidth: .infinity, maxHeight: .infinity)` 或明确的宽/高。
+- 父容器统一处理外边距与对齐；子组件只处理内容样式（如 `.aspectRatio(contentMode: .fit)`、内部 `padding`、必要的 `minHeight`）。
+- 需要横屏子项填满高度时，在父层对该子项加 `.frame(maxHeight: .infinity)`，而不是在子组件内部加。
+
+### 示例
+```swift
+// ❌ 子视图内部不应抢占父容器尺寸
+struct ImageCard: View {
+    var body: some View {
+        AsyncImage(/* ... */)
+            .aspectRatio(contentMode: .fit)
+            // .frame(maxWidth: .infinity, maxHeight: .infinity) // 避免在子组件内部拉满
+    }
+}
+
+// ✅ 由父视图决定拉伸/分配空间
+HStack {
+    ImageCard()
+        .frame(maxWidth: .infinity, maxHeight: .infinity) // 父层控制
+
+    TextPanel()
+        .frame(width: 260)
+}
+.frame(maxWidth: .infinity, maxHeight: .infinity) // 页面级容器控制
+```
+
+### 例外说明
+- 组件是页面级/区块级容器本身时，可在内部使用铺满策略（如欢迎页的根容器）。
+- 子组件语义需要“稳定性”时可设置 `minHeight` 或 `ideal` 尺寸，避免视觉跳动，但不应随意固定绝对宽高。
+
 ## 🔀 双布局系统最佳实践
 
 ### 完整的双布局实现
