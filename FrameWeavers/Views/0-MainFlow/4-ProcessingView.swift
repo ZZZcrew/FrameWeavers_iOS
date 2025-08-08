@@ -103,7 +103,7 @@ extension ProcessingView {
                     baseFrames: galleryViewModel.baseFrameDataMap
                 )
             }
-            // .frame(maxHeight: portraitPhotoStackHeight)
+            .frame(maxHeight: portraitPhotoStackHeight)
 
             Spacer(minLength: portraitMiddleSpacing)
 

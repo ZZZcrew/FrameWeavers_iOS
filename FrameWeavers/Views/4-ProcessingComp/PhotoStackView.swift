@@ -133,27 +133,27 @@ extension PhotoStackView {
     private var cardWidth: CGFloat {
         if isLandscape {
             // 横屏时根据水平尺寸类调整
-            return horizontalSizeClass == .regular ? 320 : 280
+            return horizontalSizeClass == .regular ? 380 : 340
         } else {
-            return isCompact ? 260 : 320  // 竖屏时根据设备调整
+            return isCompact ? 300 : 380  // 竖屏时根据设备调整
         }
     }
 
     private var cardHeight: CGFloat {
         if isLandscape {
             // 横屏时根据水平尺寸类调整
-            return horizontalSizeClass == .regular ? 200 : 180
+            return horizontalSizeClass == .regular ? 260 : 230
         } else {
-            return isCompact ? 170 : 210  // 竖屏时根据设备调整
+            return isCompact ? 200 : 260  // 竖屏时根据设备调整
         }
     }
 
     private var containerHeight: CGFloat {
         if isLandscape {
             // 横屏时根据水平尺寸类调整
-            return horizontalSizeClass == .regular ? 250 : 220
+            return horizontalSizeClass == .regular ? 300 : 270
         } else {
-            return isCompact ? 200 : 250  // 竖屏时根据设备调整
+            return isCompact ? 240 : 300  // 竖屏时根据设备调整
         }
     }
 
@@ -164,19 +164,19 @@ extension PhotoStackView {
     // MARK: - 胶带响应式属性
     private var tapeWidth: CGFloat {
         if isLandscape {
-            return 220
+            return 260
         } else {
-            return isCompact ? 180 : 200
+            return isCompact ? 220 : 240
         }
     }
 
-    private var tapeHeight: CGFloat { isCompact ? 40 : 50 }
+    private var tapeHeight: CGFloat { isCompact ? 50 : 60 }
 
     private var tapeOffsetY: CGFloat {
         if isLandscape {
-            return -90
+            return -110
         } else {
-            return isCompact ? -85 : -100
+            return isCompact ? -100 : -120
         }
     }
 }

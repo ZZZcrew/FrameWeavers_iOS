@@ -59,10 +59,6 @@ struct FlyingImageView: View {
         1.0 - (0.2 * animationProgress) // 从1.0到0.8
     }
 
-
-    
-
-
     // MARK: - Animation Logic
 
     /// 开始复合动画效果
