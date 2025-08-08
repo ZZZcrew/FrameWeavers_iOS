@@ -27,21 +27,32 @@ struct QuestionsView: View {
     }
 }
 
-// MARK: - Layout Components
 private extension QuestionsView {
-    /// 横屏布局 - 居中对称布局
+    /// 横屏布局
     var landscapeLayout: some View {
-        QuestionsLandscapeLayout(questions: questions)
+        let layout = LayoutCalculator(horizontalSizeClass: horizontalSizeClass, verticalSizeClass: .compact).questionsLayout
+        return VStack(spacing: 0) {
+            // 问题内容区域
+            QuestionsContentTextView(questions: questions)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: layout.contentMinHeight)
+                .padding(.horizontal, layout.contentHorizontalPadding)
+                .padding(.top, layout.contentTopPadding)
+
+            // "完"字区域
+            QuestionsCompletionMarkView()
+                .frame(maxWidth: .infinity)
+                .frame(height: layout.completionAreaHeight)
+                .padding(.horizontal, layout.contentHorizontalPadding)
+
+            // 底部水印logo
+            WatermarkLogoView()
+                .padding(.bottom, layout.watermarkBottomPadding)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, layout.outerHorizontalPadding)
+        .padding(.vertical, layout.verticalPadding)
     }
-}
-
-// MARK: - UI Components
-private extension QuestionsView {
-    /// 问题内容区域组件
-    var questionContentSection: some View { QuestionsContentTextView(questions: questions) }
-
-    /// 完成标记区域组件
-    var completionSection: some View { QuestionsCompletionMarkView() }
 }
 
 /// 问题内容文本组件
@@ -90,35 +101,5 @@ struct QuestionsCompletionMarkView: View {
     }
     private var adaptiveCompletionFontSize: CGFloat {
         horizontalSizeClass == .regular ? 18 : 16
-    }
-}
-
-/// 横屏问题页布局容器
-struct QuestionsLandscapeLayout: View {
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    let questions: [String]
-    var body: some View {
-        let layout = LayoutCalculator(horizontalSizeClass: horizontalSizeClass, verticalSizeClass: .compact).questionsLayout
-        VStack(spacing: 0) {
-            // 问题内容区域
-            QuestionsContentTextView(questions: questions)
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: layout.contentMinHeight)
-                .padding(.horizontal, layout.contentHorizontalPadding)
-                .padding(.top, layout.contentTopPadding)
-
-            // "完"字区域
-            QuestionsCompletionMarkView()
-                .frame(maxWidth: .infinity)
-                .frame(height: layout.completionAreaHeight)
-                .padding(.horizontal, layout.contentHorizontalPadding)
-            
-            // 底部水印logo
-            WatermarkLogoView()
-                .padding(.bottom, layout.watermarkBottomPadding)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, layout.outerHorizontalPadding)
-        .padding(.vertical, layout.verticalPadding)
     }
 }
