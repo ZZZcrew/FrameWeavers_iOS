@@ -58,16 +58,12 @@ extension OpenResultsView {
                                 .foregroundColor(Color(hex: "#B30305"))
                                 .multilineTextAlignment(.center)
                                 .padding(.bottom, 40)
-                                // 硬描边（外描边，权重约 3）通过多个零半径阴影模拟 + 柔和发光
-                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 1, y: 0)
-                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -1, y: 0)
-                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0, y: 1)
-                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0, y: -1)
-                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0.707, y: 0.707)
-                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -0.707, y: -0.707)
-                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0.707, y: -0.707)
-                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -0.707, y: 0.707)
-                                .shadow(color: Color(hex: "#CEB899"), radius: 1)
+                                // 硬描边（外描边）通过四个方向的零半径阴影模拟 + 柔和发光
+                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 2, y: 0)
+                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -2, y: 0)
+                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0, y: 2)
+                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0, y: -2)
+                                .shadow(color: Color(hex: "#CEB899"), radius: 2)
                         }
                         .frame(maxWidth: .infinity, maxHeight: landscapeImageHeight)
                     }
@@ -144,16 +140,12 @@ extension OpenResultsView {
                             .foregroundColor(Color(hex: "#B30305"))
                             .multilineTextAlignment(.center)
                             .padding(.bottom, 30)
-                            // 硬描边（外描边，权重约 3）通过多个零半径阴影模拟 + 柔和发光
-                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 1, y: 0)
-                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -1, y: 0)
-                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0, y: 1)
-                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0, y: -1)
-                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0.707, y: 0.707)
-                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -0.707, y: -0.707)
-                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0.707, y: -0.707)
-                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -0.707, y: 0.707)
-                            .shadow(color: Color(hex: "#CEB899"), radius: 1)
+                            // 硬描边（外描边）通过四个方向的零半径阴影模拟 + 柔和发光
+                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 2, y: 0)
+                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -2, y: 0)
+                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0, y: 2)
+                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0, y: -2)
+                            .shadow(color: Color(hex: "#CEB899"), radius: 2)
                     }
                     .frame(maxWidth: .infinity, maxHeight: landscapeImageHeight)
                 }
