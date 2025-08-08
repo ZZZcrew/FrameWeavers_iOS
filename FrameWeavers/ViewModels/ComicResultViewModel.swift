@@ -68,6 +68,16 @@ class ComicResultViewModel: ObservableObject {
     
     // MARK: - Public Methods
     
+    /// 分享回调（占位实现，后续可接入分享SDK）
+    func shareTapped() {
+        print("分享功能占位符：将来可以实现分享连环画到社交媒体等功能")
+    }
+
+    /// 记录回调（占位实现，后续可接入阅读进度存储）
+    func recordTapped() {
+        print("记录功能占位符：将来可以实现阅读记录、书签等功能")
+    }
+
     /// 跳转到下一页
     func nextPage() {
         guard !isLastPage else { return }
