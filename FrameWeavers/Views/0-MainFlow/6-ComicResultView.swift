@@ -1,12 +1,7 @@
 import SwiftUI
 
-/// 连环画结果视图 - 遵循MVVM架构，只负责UI展示，强制横屏显示
-struct ComicResultView: View {
-    // MARK: - Environment
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
-    
+/// 连环画结果视图 - 遵循MVVM架构，职责仅为组合UI与横屏控制
+struct ComicResultView: View {    
     // MARK: - Properties
     let comicResult: ComicResult
     @StateObject private var viewModel: ComicResultViewModel
@@ -29,11 +24,8 @@ struct ComicResultView: View {
             )
         }
         .ignoresSafeArea()
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
         .navigationBarHidden(true) // 隐藏系统导航栏
         .forceLandscape()
-        .onAppear { viewModel.isNavigationVisible = false }
     }
     
 }

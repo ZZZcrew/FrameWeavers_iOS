@@ -6,7 +6,7 @@ import Combine
 class ComicResultViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var currentPage: Int = 0
-    @Published var isNavigationVisible: Bool = true
+    @Published var isNavigationVisible: Bool = false
     @Published var readingProgress: Double = 0.0
     
     // MARK: - Private Properties
