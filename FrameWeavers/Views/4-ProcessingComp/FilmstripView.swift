@@ -190,7 +190,6 @@ struct FilmFrameView: View {
         AsyncImageView(imageUrl: imageUrl, style: .minimal)
             .aspectRatio(contentMode: .fill)
             .frame(width: config.frameWidth, height: adaptiveHeight * 0.8) // 帧高度为胶片高度的80%
-            .clipShape(RoundedRectangle(cornerRadius: 4))
             .if(shouldUseMatchedGeometry) { view in
                 view.matchedGeometryEffect(id: "filmstrip_\(displayImage.id)", in: namespace)
             }
@@ -208,6 +207,4 @@ struct FilmFrameView: View {
             return url?.absoluteString ?? displayImage.fallbackName ?? ""
         }
     }
-
-
 }
