@@ -75,7 +75,7 @@ struct ComicNarrationTextView: View {
     }
 }
 
-/// 漫画页脚组件 - 显示页码与水印
+/// 漫画页脚组件 - 显示页码
 struct ComicPageFooterView: View {
     let pageIndex: Int
     let pageNumberFontSize: CGFloat
@@ -84,14 +84,11 @@ struct ComicPageFooterView: View {
     let horizontalPadding: CGFloat?
 
     var body: some View {
-        VStack(spacing: 8) {
-            Text("· \(pageIndex + 1) ·")
-                .font(.custom("STKaiti", size: pageNumberFontSize))
-                .dynamicTypeSize(isFontRestricted ? ...DynamicTypeSize.large : ...DynamicTypeSize.accessibility1)
-                .foregroundColor(Color(hex: "#2F2617"))
-            WatermarkLogoView()
-        }
-        .frame(maxWidth: .infinity)
+        Text("· \(pageIndex + 1) ·")
+            .font(.custom("STKaiti", size: pageNumberFontSize))
+            .dynamicTypeSize(isFontRestricted ? ...DynamicTypeSize.large : ...DynamicTypeSize.accessibility1)
+            .foregroundColor(Color(hex: "#2F2617"))
+            .frame(maxWidth: .infinity)
         .if(areaHeight != nil) { view in
             view.frame(height: areaHeight!)
         }
@@ -104,22 +101,29 @@ struct ComicPageFooterView: View {
 
 // MARK: - Layout Components
 private extension ComicPanelView {
-    /// 横屏布局 - 左右分栏
+    /// 横屏布局 - 左右分栏（底部显示水印，随页面内容一起）
     var landscapeLayout: some View {
         let layout = LayoutCalculator(horizontalSizeClass: horizontalSizeClass, verticalSizeClass: verticalSizeClass).comicPanelLandscape
-        return HStack(spacing: layout.spacing) {
-            // 左侧：图片区域
-            ComicImageSectionView(imageUrl: panel.imageUrl)
-                .frame(maxWidth: .infinity)
-                .padding(.leading, layout.horizontalPadding)
+        return VStack(spacing: 0) {
+            HStack(spacing: layout.spacing) {
+                // 左侧：图片区域
+                ComicImageSectionView(imageUrl: panel.imageUrl)
+                    .frame(maxWidth: .infinity)
+                    .padding(.leading, layout.horizontalPadding)
 
-            // 右侧：文本区域
-            textSection
-                .frame(width: layout.textAreaWidth)
-                .padding(.trailing, layout.horizontalPadding)
+                // 右侧：文本区域
+                textSection
+                    .frame(width: layout.textAreaWidth)
+                    .padding(.trailing, layout.horizontalPadding)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.vertical, layout.verticalPadding)
+
+            // 底部水印，使用与 QuestionsView 相似的 padding 值，随页面一起翻动
+            WatermarkLogoView()
+                .padding(.bottom, horizontalSizeClass == .regular ? 15 : 12)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.vertical, layout.verticalPadding)
     }
     
     /// 竖屏布局 - 上下分栏
