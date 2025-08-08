@@ -124,7 +124,7 @@ struct AnimatedPinView: View {
             // 更新内部位置索引
             currentPositionIndex = newIndex
 
-            try? await Task.sleep(nanoseconds: 1_200_000_000) // 1.2秒
+            try? await Task.sleep(nanoseconds: 800_000_000) // 0.8秒
 
             // 第三阶段：插入动画
             animationPhase = .insertDown
