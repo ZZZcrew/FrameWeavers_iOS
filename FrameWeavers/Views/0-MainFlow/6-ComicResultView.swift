@@ -50,11 +50,11 @@ private extension ComicResultView {
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background {
-            Image("背景单色")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-        }
+        // .background {
+        //     Image("背景单色")
+        //         .resizable()
+        //         .scaledToFill()
+        //         .ignoresSafeArea()
+        // }
     }
 }
