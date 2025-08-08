@@ -136,7 +136,11 @@ private extension ComicPanelView {
             // 下方：文本区域
             textSection
                 .padding(.horizontal, layout.horizontalPadding)
-            
+
+            // 底部水印（竖屏同样显示）
+            WatermarkLogoView()
+                .padding(.bottom, horizontalSizeClass == .regular ? 15 : 12)
+
             Spacer(minLength: layout.bottomSpacing)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
