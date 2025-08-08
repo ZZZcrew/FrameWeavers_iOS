@@ -34,13 +34,11 @@ struct ComicResultView: View {
 private extension ComicResultView {
     /// 横屏布局 - 优化的翻页体验
     var landscapeLayout: some View {
-        VStack(spacing: 0) {
-            // 3D翻页内容区域
-            ComicPageController(
-                comicResult: comicResult,
-                viewModel: viewModel
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
+        // 3D翻页内容区域
+        ComicPageController(
+            comicResult: comicResult,
+            viewModel: viewModel
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
