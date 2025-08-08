@@ -24,14 +24,8 @@ struct ComicResultView: View {
             // 阅读菜单栏 - 覆盖在内容之上
             ComicReaderMenuBar(
                 isVisible: $viewModel.isNavigationVisible,
-                onShareTapped: {
-                    // 分享功能占位符 - 显示提示
-                    showSharePlaceholder()
-                },
-                onRecordTapped: {
-                    // 记录功能占位符 - 显示提示
-                    showRecordPlaceholder()
-                }
+                onShareTapped: onShareTapped,
+                onRecordTapped: onRecordTapped
             )
         }
         .ignoresSafeArea()
@@ -99,4 +93,8 @@ extension ComicResultView {
         // 这里可以添加记录相关的功能
         // 例如：保存阅读进度、添加书签等
     }
+
+    /// 统一按钮回调
+    private var onShareTapped: () -> Void { { showSharePlaceholder() } }
+    private var onRecordTapped: () -> Void { { showRecordPlaceholder() } }
 }
