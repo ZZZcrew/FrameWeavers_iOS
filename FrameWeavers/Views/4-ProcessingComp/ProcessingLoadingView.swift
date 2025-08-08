@@ -21,7 +21,7 @@ struct ProcessingLoadingView: View {
 
             Text("\(Int(progress * 100))%")
                 .font(.custom("STKaiti", size: 14))
-                .foregroundColor(Color(hex: "#2F2617"))
+                .foregroundColor(Color(hex: "#855C24"))
         }
     }
     
