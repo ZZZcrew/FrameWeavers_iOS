@@ -58,11 +58,3 @@ private extension ComicResultView {
         }
     }
 }
-
-// MARK: - Adaptive Properties
-private extension ComicResultView {
-    /// 是否为紧凑尺寸设备
-    var isCompact: Bool {
-        horizontalSizeClass == .compact
-    }
-}
