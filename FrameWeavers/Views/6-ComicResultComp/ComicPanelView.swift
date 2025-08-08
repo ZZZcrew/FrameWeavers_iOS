@@ -109,43 +109,6 @@ struct ComicPageFooterView: View {
     }
 }
 
-/// `ComicPanelView` 的自适应属性集合 - 仅封装尺寸与间距计算
-struct ComicPanelResponsiveProps {
-    let horizontalSizeClass: UserInterfaceSizeClass?
-    let verticalSizeClass: UserInterfaceSizeClass?
-
-    var isCompact: Bool { horizontalSizeClass == .compact }
-    var isLandscape: Bool { verticalSizeClass == .compact }
-
-    var landscapeSpacing: CGFloat { horizontalSizeClass == .regular ? 40 : 30 }
-    var landscapeHorizontalPadding: CGFloat { horizontalSizeClass == .regular ? 25 : 20 }
-    var landscapeVerticalPadding: CGFloat { 20 }
-    var landscapeTextAreaWidth: CGFloat { horizontalSizeClass == .regular ? 280 : 240 }
-    var landscapeTextContentMinHeight: CGFloat { horizontalSizeClass == .regular ? 220 : 200 }
-    var landscapeTextHorizontalPadding: CGFloat { horizontalSizeClass == .regular ? 12 : 10 }
-    var landscapeTextTopPadding: CGFloat { horizontalSizeClass == .regular ? 25 : 20 }
-    var landscapePageNumberAreaHeight: CGFloat { horizontalSizeClass == .regular ? 70 : 60 }
-    var landscapePageNumberFontSize: CGFloat { horizontalSizeClass == .regular ? 17 : 16 }
-    var landscapeFontSize: CGFloat { horizontalSizeClass == .regular ? 18 : 16 }
-    var landscapeLineSpacing: CGFloat { horizontalSizeClass == .regular ? 8 : 6 }
-    var landscapeIconSpacing: CGFloat { horizontalSizeClass == .regular ? 15 : 12 }
-    var landscapeIconSize: CGFloat { horizontalSizeClass == .regular ? 35 : 30 }
-
-    var portraitSpacing: CGFloat { isCompact ? 20 : 30 }
-    var portraitTopSpacing: CGFloat { isCompact ? 20 : 30 }
-    var portraitMiddleSpacing: CGFloat { isCompact ? 20 : 30 }
-    var portraitBottomSpacing: CGFloat { isCompact ? 20 : 30 }
-    var portraitHorizontalPadding: CGFloat { isCompact ? 20 : 30 }
-    var portraitImageHeight: CGFloat { isCompact ? 300 : 400 }
-    var portraitFontSize: CGFloat { isCompact ? 16 : 18 }
-    var portraitLineSpacing: CGFloat { isCompact ? 6 : 8 }
-    var portraitIconSpacing: CGFloat { isCompact ? 12 : 15 }
-    var portraitIconSize: CGFloat { isCompact ? 30 : 35 }
-    var portraitTextContentMinHeight: CGFloat { isCompact ? 120 : 150 }
-    var portraitTextHorizontalPadding: CGFloat { isCompact ? 16 : 20 }
-    var portraitPageNumberFontSize: CGFloat { isCompact ? 16 : 17 }
-    var portraitTextSpacing: CGFloat { isCompact ? 16 : 20 }
-}
 
 // MARK: - Layout Components
 private extension ComicPanelView {

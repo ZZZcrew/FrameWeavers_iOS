@@ -55,67 +55,6 @@ private extension QuestionsView {
     var completionSection: some View { QuestionsCompletionMarkView() }
 }
 
-// MARK: - Adaptive Properties
-private extension QuestionsView {
-    /// 是否为紧凑尺寸设备
-    var isCompact: Bool {
-        horizontalSizeClass == .compact
-    }
-
-    /// 自适应字体大小（用于问题内容）
-    var adaptiveFontSize: CGFloat {
-        return horizontalSizeClass == .regular ? 20 : 18
-    }
-
-    /// 完成标记字体大小
-    var adaptiveCompletionFontSize: CGFloat {
-        return horizontalSizeClass == .regular ? 18 : 16
-    }
-
-    /// 自适应行间距
-    var adaptiveLineSpacing: CGFloat {
-        return horizontalSizeClass == .regular ? 10 : 8
-    }
-    
-    // MARK: - 横屏属性
-    
-    /// 横屏内容最小高度
-    var landscapeContentMinHeight: CGFloat {
-        horizontalSizeClass == .regular ? 220 : 200
-    }
-
-    /// 横屏内容水平边距
-    var landscapeContentHorizontalPadding: CGFloat {
-        horizontalSizeClass == .regular ? 50 : 40
-    }
-
-    /// 横屏内容顶部边距
-    var landscapeContentTopPadding: CGFloat {
-        horizontalSizeClass == .regular ? 25 : 20
-    }
-
-    /// 横屏外层水平边距
-    var landscapeOuterHorizontalPadding: CGFloat {
-        horizontalSizeClass == .regular ? 25 : 20
-    }
-
-    /// 横屏垂直边距
-    var landscapeVerticalPadding: CGFloat {
-        horizontalSizeClass == .regular ? 25 : 20
-    }
-
-    /// 横屏完成区域高度
-    var landscapeCompletionAreaHeight: CGFloat {
-        horizontalSizeClass == .regular ? 70 : 60
-    }
-    
-    /// 横屏水印底部边距
-    var landscapeWatermarkBottomPadding: CGFloat {
-        horizontalSizeClass == .regular ? 15 : 12
-    }
-    
-}
-
 // MARK: - Inline Components (embedded to reduce file count)
 // 将三个独立组件内嵌到此文件，避免跨文件引用同时降低文件数量
 
