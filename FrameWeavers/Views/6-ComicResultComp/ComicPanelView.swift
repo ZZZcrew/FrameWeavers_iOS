@@ -40,7 +40,6 @@ struct ComicImageSectionView: View {
                 RoundedRectangle(cornerRadius: 0)
                     .stroke(Color(hex: "#2F2617"), lineWidth: 2)
             )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -88,13 +87,9 @@ struct ComicPageFooterView: View {
             .font(.custom("STKaiti", size: pageNumberFontSize))
             .dynamicTypeSize(isFontRestricted ? ...DynamicTypeSize.large : ...DynamicTypeSize.accessibility1)
             .foregroundColor(Color(hex: "#2F2617"))
-            .frame(maxWidth: .infinity)
-        .if(areaHeight != nil) { view in
-            view.frame(height: areaHeight!)
-        }
-        .if(horizontalPadding != nil) { view in
-            view.padding(.horizontal, horizontalPadding!)
-        }
+            .if(horizontalPadding != nil) { view in
+                view.padding(.horizontal, horizontalPadding!)
+            }
     }
 }
 
@@ -116,7 +111,7 @@ private extension ComicPanelView {
                     .frame(width: layout.textAreaWidth)
                     .padding(.trailing, layout.horizontalPadding)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.vertical, layout.verticalPadding)
 
             // 底部水印，使用与 QuestionsView 相似的 padding 值，随页面一起翻动
