@@ -36,22 +36,18 @@ struct ComicImageSectionView: View {
     let imageUrl: String
 
     var body: some View {
-        VStack {
-            AsyncImageView(imageUrl: imageUrl)
-                .aspectRatio(contentMode: .fit)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 0)
-                        .stroke(Color(hex: "#2F2617"), lineWidth: 2)
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
+        AsyncImageView(imageUrl: imageUrl)
+            .aspectRatio(contentMode: .fit)
+            .overlay(
+                RoundedRectangle(cornerRadius: 0)
+                    .stroke(Color(hex: "#2F2617"), lineWidth: 2)
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
 /// 漫画叙述文本组件 - 仅负责展示叙述文本与占位
 struct ComicNarrationTextView: View {
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-
     let narration: String?
     let fontSize: CGFloat
     let lineSpacing: CGFloat
@@ -59,25 +55,23 @@ struct ComicNarrationTextView: View {
     let iconSize: CGFloat
 
     var body: some View {
-        VStack {
-            if let narration = narration {
-                Text(narration)
+        if let narration = narration {
+            Text(narration)
+                .font(.custom("STKaiti", size: fontSize))
+                .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                .foregroundColor(Color(hex: "#2F2617"))
+                .lineSpacing(lineSpacing)
+                .multilineTextAlignment(.center)
+                .lineLimit(nil)
+        } else {
+            VStack(spacing: iconSpacing) {
+                Image(systemName: "text.bubble")
+                    .font(.system(size: iconSize))
+                    .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
+                Text("暂无文本描述")
                     .font(.custom("STKaiti", size: fontSize))
                     .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-                    .foregroundColor(Color(hex: "#2F2617"))
-                    .lineSpacing(lineSpacing)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(nil)
-            } else {
-                VStack(spacing: iconSpacing) {
-                    Image(systemName: "text.bubble")
-                        .font(.system(size: iconSize))
-                        .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
-                    Text("暂无文本描述")
-                        .font(.custom("STKaiti", size: fontSize))
-                        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-                        .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
-                }
+                    .foregroundColor(Color(hex: "#2F2617").opacity(0.5))
             }
         }
     }
