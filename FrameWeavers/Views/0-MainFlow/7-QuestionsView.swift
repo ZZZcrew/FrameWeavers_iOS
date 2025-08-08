@@ -24,17 +24,6 @@ struct QuestionsView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        // MARK: - 沉浸式体验
-        // 1. 隐藏系统覆盖层（如Home Indicator）
-        .persistentSystemOverlays(.hidden)
-        .onAppear {
-            // 强制横屏
-            OrientationManager.shared.forceLandscapeOrientation()
-        }
-        .onDisappear {
-            // 恢复默认方向设置
-            OrientationManager.shared.restoreDefaultOrientation()
-        }
     }
 }
 

@@ -32,19 +32,8 @@ struct ComicResultView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarHidden(true) // 隐藏系统导航栏
-        // MARK: - 沉浸式体验
-        // 1. 隐藏系统覆盖层（如Home Indicator）
-        .persistentSystemOverlays(.hidden)
-        .onAppear {
-            // 初始隐藏菜单栏
-            viewModel.isNavigationVisible = false
-            // 强制横屏
-            OrientationManager.shared.forceLandscapeOrientation()
-        }
-        .onDisappear {
-            // 恢复默认方向设置
-            OrientationManager.shared.restoreDefaultOrientation()
-        }
+        .forceLandscape()
+        .onAppear { viewModel.isNavigationVisible = false }
     }
     
 }

@@ -99,3 +99,26 @@ extension View {
         })
     }
 }
+
+// MARK: - Orientation Helpers
+
+/// 统一的横屏强制修饰器，避免在各个视图中重复编写横屏控制逻辑
+struct ForceLandscapeModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .persistentSystemOverlays(.hidden)
+            .onAppear {
+                OrientationManager.shared.forceLandscapeOrientation()
+            }
+            .onDisappear {
+                OrientationManager.shared.restoreDefaultOrientation()
+            }
+    }
+}
+
+extension View {
+    /// 应用强制横屏的修饰器
+    func forceLandscape() -> some View {
+        modifier(ForceLandscapeModifier())
+    }
+}
