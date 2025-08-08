@@ -103,7 +103,6 @@ private extension ComicPanelView {
             HStack(spacing: layout.spacing) {
                 // 左侧：图片区域
                 ComicImageSectionView(imageUrl: panel.imageUrl)
-                    .frame(maxWidth: .infinity)
                     .padding(.leading, layout.horizontalPadding)
 
                 // 右侧：文本区域
@@ -129,7 +128,6 @@ private extension ComicPanelView {
             
             // 上方：图片区域
             ComicImageSectionView(imageUrl: panel.imageUrl)
-                .frame(maxWidth: .infinity)
                 .frame(height: layout.imageHeight)
                 .padding(.horizontal, layout.horizontalPadding)
 
@@ -160,7 +158,6 @@ private extension ComicPanelView {
                     iconSpacing: layout.iconSpacing,
                     iconSize: layout.iconSize
                 )
-                .frame(maxWidth: .infinity)
                 .frame(minHeight: layout.textContentMinHeight)
                 .padding(.horizontal, layout.textHorizontalPadding)
                 .padding(.top, layout.textTopPadding)
@@ -185,7 +182,6 @@ private extension ComicPanelView {
                     iconSpacing: layout.iconSpacing,
                     iconSize: layout.iconSize
                 )
-                .frame(maxWidth: .infinity)
                 .frame(minHeight: layout.textContentMinHeight)
                 .padding(.horizontal, layout.textHorizontalPadding)
 
@@ -197,7 +193,6 @@ private extension ComicPanelView {
                     areaHeight: nil,
                     horizontalPadding: nil
                 )
-                .frame(maxWidth: .infinity)
             }
         }
     }
