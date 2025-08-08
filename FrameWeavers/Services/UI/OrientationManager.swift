@@ -26,3 +26,5 @@ class OrientationManager {
         UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
     }
 }
+
+
