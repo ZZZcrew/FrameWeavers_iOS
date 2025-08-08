@@ -15,12 +15,15 @@ struct ComicPageController: UIViewControllerRepresentable {
         let pageViewController = UIPageViewController(
             transitionStyle: .pageCurl,
             navigationOrientation: .horizontal,
-            options: nil
+            options: [UIPageViewController.OptionsKey.spineLocation: UIPageViewController.SpineLocation.min.rawValue]
         )
-        
+
         pageViewController.dataSource = context.coordinator
         pageViewController.delegate = context.coordinator
-        
+
+        pageViewController.isDoubleSided = false
+        pageViewController.view.clipsToBounds = true
+
         // 设置初始页面
         let initialViewController = context.coordinator.createViewController(for: 0)
         pageViewController.setViewControllers(
@@ -28,7 +31,7 @@ struct ComicPageController: UIViewControllerRepresentable {
             direction: .forward,
             animated: false
         )
-        
+
         return pageViewController
     }
     
