@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 互动问题页面视图 - 符合MVVM架构和现代响应式设计规范，强制横屏显示
+/// 互动问题页面视图 - 符合MVVM架构和现代响应式设计规范
 struct QuestionsView: View {
     // MARK: - Environment
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -44,10 +44,7 @@ private extension QuestionsView {
     var completionSection: some View { QuestionsCompletionMarkView() }
 }
 
-// MARK: - Inline Components (embedded to reduce file count)
-// 将三个独立组件内嵌到此文件，避免跨文件引用同时降低文件数量
-
-/// 问题内容文本组件 - 直接嵌入同文件，避免跨文件引用
+/// 问题内容文本组件
 struct QuestionsContentTextView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     let questions: [String]
