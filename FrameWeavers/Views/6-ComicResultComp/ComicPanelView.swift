@@ -29,8 +29,6 @@ struct ComicPanelView: View {
     }
 }
 
-// MARK: - Inline Components (嵌入以减少文件数量)
-
 /// 漫画图片区组件 - 仅负责展示图片与边框
 struct ComicImageSectionView: View {
     let imageUrl: String
@@ -150,8 +148,6 @@ private extension ComicPanelView {
 
 // MARK: - UI Components
 private extension ComicPanelView {
-    // 图片区域已抽离为 `ComicImageSectionView`，保留此处空隙以便阅读
-
     /// 横屏文本区域组件
     var landscapeTextSection: some View {
         let layout = LayoutCalculator(horizontalSizeClass: horizontalSizeClass, verticalSizeClass: verticalSizeClass).comicPanelLandscape
