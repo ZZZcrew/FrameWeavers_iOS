@@ -97,16 +97,16 @@ struct AnimatedPinView: View {
         animationPhase = .pullOut
 
         // 第一阶段：拔出动画
-        withAnimation(.easeIn(duration: 0.15)) {
-            pinOffset = -12  // 向上拔出
-            pinRotation = Double.random(in: -5...5)  // 轻微摇摆
-            pinScale = 1.05   // 稍微放大
+        withAnimation(.easeOut(duration: 0.15)) {
+            pinOffset = -15  // 向上拔出
+            pinRotation = Double.random(in: -8...8)  // 轻微摇摆
+            pinScale = 1.08   // 稍微放大
         }
 
         withAnimation(.easeOut(duration: 0.1).delay(0.15)) {
-            pinOffset = -25  // 继续向上拔出
-            pinRotation = Double.random(in: -10...10)  // 更大摇摆
-            pinScale = 1.1
+            pinOffset = -30  // 继续向上拔出
+            pinRotation = Double.random(in: -15...15)  // 更大摇摆
+            pinScale = 1.15
             showShadow = false  // 隐藏阴影
         }
 
@@ -119,11 +119,11 @@ struct AnimatedPinView: View {
             let newPosition = CGPoint(x: pinPositions[newIndex].x, y: pinPositions[newIndex].y)
 
             // 同时进行位置移动和高度变化的动画
-            withAnimation(.easeInOut(duration: 1.2)) {  // 增加到1.2秒，让移动更慢更明显
+            withAnimation(.easeInOut(duration: 0.8)) {  // 缩短到0.8秒，让移动更流畅
                 animatedPosition = newPosition  // 平滑移动到新位置
-                pinOffset = -35  // 飞行到最高点
-                pinRotation = Double.random(in: -20...20)  // 飞行中的旋转
-                pinScale = 1.15  // 在空中时稍大
+                pinOffset = -40  // 飞行到最高点
+                pinRotation = Double.random(in: -25...25)  // 飞行中的旋转
+                pinScale = 1.2  // 在空中时稍大
             }
 
             // 更新内部位置索引
@@ -142,9 +142,10 @@ struct AnimatedPinView: View {
             }
 
             // 弹回效果
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            withAnimation(.interpolatingSpring(stiffness: 200, damping: 15)) {
                 pinOffset = 0
                 pinScale = 1.0
+                pinRotation = 0
             }
 
             try? await Task.sleep(nanoseconds: 300_000_000) // 0.3秒
@@ -162,26 +163,26 @@ struct AnimatedPinView: View {
     /// 初始插入动画 - 优化性能版本
     private func startInsertAnimation() {
         // 初始状态
-        pinOffset = -50
+        pinOffset = -60
         pinScale = 1.3
-        pinRotation = Double.random(in: -15...15)
+        pinRotation = Double.random(in: -20...20)
         showShadow = false
 
         // 使用Task替代多个DispatchQueue调用
         Task { @MainActor in
             // 快速下降
-            withAnimation(.easeIn(duration: 0.4)) {
-                pinOffset = -5
-                pinScale = 1.1
-                pinRotation = Double.random(in: -5...5)
+            withAnimation(.easeOut(duration: 0.3)) {
+                pinOffset = -10
+                pinScale = 1.15
+                pinRotation = Double.random(in: -10...10)
             }
 
             try? await Task.sleep(nanoseconds: 400_000_000) // 0.4秒
 
             // 插入冲击
-            withAnimation(.easeIn(duration: 0.1)) {
-                pinOffset = 3
-                pinScale = 0.9
+            withAnimation(.easeIn(duration: 0.08)) {
+                pinOffset = 5
+                pinScale = 0.85
                 pinRotation = 0
                 showShadow = true
             }
@@ -189,7 +190,7 @@ struct AnimatedPinView: View {
             try? await Task.sleep(nanoseconds: 100_000_000) // 0.1秒
 
             // 弹回到正确位置
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+            withAnimation(.interpolatingSpring(stiffness: 180, damping: 12)) {
                 pinOffset = 0
                 pinScale = 1.0
             }
