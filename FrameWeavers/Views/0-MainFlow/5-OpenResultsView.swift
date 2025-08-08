@@ -43,10 +43,35 @@ extension OpenResultsView {
                 Spacer()
 
                 if let firstPanel = comicResult.panels.first {
-                    AsyncImageView(imageUrl: firstPanel.imageUrl)
-                        .aspectRatio(contentMode: .fit)
+                    ZStack {
+                        AsyncImageView(imageUrl: firstPanel.imageUrl)
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: .infinity, maxHeight: landscapeImageHeight)
+                        
+                        // 图片上的覆盖标题（位于图片底部）
+                        VStack {
+                            Spacer()
+
+                            Text(comicResult.title)
+                                .font(.custom("WSQuanXing", size: landscapeTitleSize + 4))
+                                .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                                .foregroundColor(Color(hex: "#B30305"))
+                                .multilineTextAlignment(.center)
+                                .padding(.bottom, 40)
+                                // 硬描边（外描边，权重约 3）通过多个零半径阴影模拟 + 柔和发光
+                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 1, y: 0)
+                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -1, y: 0)
+                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0, y: 1)
+                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0, y: -1)
+                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0.707, y: 0.707)
+                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -0.707, y: -0.707)
+                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0.707, y: -0.707)
+                                .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -0.707, y: 0.707)
+                                .shadow(color: Color(hex: "#CEB899"), radius: 1)
+                        }
                         .frame(maxWidth: .infinity, maxHeight: landscapeImageHeight)
-                } 
+                    }
+                }
 
                 Spacer()
             }
@@ -58,7 +83,7 @@ extension OpenResultsView {
 
                 // 显示连环画标题
                 Text(comicResult.title)
-                    .font(.custom("WSQuanXing", size: landscapeTitleSize))
+                    .font(.custom("STKaiti", size: landscapeTitleSize))
                     .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                     .fontWeight(.bold)
                     .foregroundColor(Color(hex: "#855C23"))
@@ -73,7 +98,7 @@ extension OpenResultsView {
                     .fontWeight(.bold)
                     .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
                     .opacity(0.6)
-                    .multilineTextAlignment(.center)
+                    .multilineTextAlignment(.leading)
                     .lineLimit(nil)
                     .padding(.horizontal, landscapeTextPadding)
 
@@ -104,9 +129,34 @@ extension OpenResultsView {
 
             // 图片区域
             if let firstPanel = comicResult.panels.first {
-                AsyncImageView(imageUrl: firstPanel.imageUrl)
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxHeight: portraitImageHeight)
+                ZStack {
+                    AsyncImageView(imageUrl: firstPanel.imageUrl)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(maxHeight: portraitImageHeight)
+                    
+                    // 图片上的覆盖标题（位于图片底部）
+                    VStack {
+                        Spacer()
+
+                        Text(comicResult.title)
+                            .font(.custom("WSQuanXing", size: landscapeTitleSize + 4))
+                            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                            .foregroundColor(Color(hex: "#B30305"))
+                            .multilineTextAlignment(.center)
+                            .padding(.bottom, 30)
+                            // 硬描边（外描边，权重约 3）通过多个零半径阴影模拟 + 柔和发光
+                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 1, y: 0)
+                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -1, y: 0)
+                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0, y: 1)
+                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0, y: -1)
+                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0.707, y: 0.707)
+                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -0.707, y: -0.707)
+                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: 0.707, y: -0.707)
+                            .shadow(color: Color(hex: "#CEB899"), radius: 0, x: -0.707, y: 0.707)
+                            .shadow(color: Color(hex: "#CEB899"), radius: 1)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: landscapeImageHeight)
+                }
             } 
 
             // 图片和文本之间的弹性间距
@@ -130,7 +180,7 @@ extension OpenResultsView {
                     .fontWeight(.bold)
                     .foregroundColor(Color(red: 0.18, green: 0.15, blue: 0.09))
                     .opacity(0.6)
-                    .multilineTextAlignment(.center)
+                    .multilineTextAlignment(.leading)
                     .lineLimit(nil)
                     .lineSpacing(4)
                     .padding(.horizontal, portraitTextPadding)
