@@ -61,7 +61,7 @@ struct AsyncImageView: View {
                     .foregroundColor(Color(hex: "#2F2617"))
                     .padding(.top, 8)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(maxWidth: .infinity)
             .background(Color.gray.opacity(0.1))
 
         case .minimal:
@@ -87,7 +87,7 @@ struct AsyncImageView: View {
                     .font(.custom("STKaiti", size: 12))
                     .foregroundColor(Color(hex: "#2F2617"))
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(maxWidth: .infinity)
             .background(Color.gray.opacity(0.1))
 
         case .minimal:

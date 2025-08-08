@@ -34,14 +34,12 @@ struct TypewriterView: View {
             Text(fullText)
                 .lineSpacing(8)
                 .opacity(0) // 完全透明，只用于占位
-                .frame(maxWidth: .infinity, alignment: .center)
 
             // 实际显示的打字机文本
             VStack(alignment: .center, spacing: 0) {
                 HStack(spacing: 0) {
                     Text(displayedText)
                         .lineSpacing(8)
-                        .frame(maxWidth: .infinity, alignment: .center)
 
                     if showCursor {
                         Text("|")
